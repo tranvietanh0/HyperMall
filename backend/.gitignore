@@ -1,0 +1,33 @@
+# ===== Maven =====
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# ===== Java =====
+*.class
+*.jar
+*.war
+*.ear
+*.logs
+*.log
+hs_err_pid*
+
+# ===== IDE =====
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.factorypath
+
+# ===== Spring Boot =====
+application-local.yml
+application-local.properties
+
+# ===== Environment =====
+.env
+*.pem
+*.key

@@ -1,0 +1,57 @@
+version: '3.8'
+
+# Development environment - only infrastructure services
+# Backend services will be run locally for faster development
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hypermall-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - hypermall-dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: hypermall-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - hypermall-dev
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: hypermall-rabbitmq-dev
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - hypermall-dev
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: hypermall-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    ports:
+      - "9200:9200"
+    networks:
+      - hypermall-dev
+
+volumes:
+  mysql_dev_data:
+
+networks:
+  hypermall-dev:
+    driver: bridge
