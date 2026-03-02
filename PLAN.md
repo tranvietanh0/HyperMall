@@ -836,13 +836,51 @@ npm run dev
 
 ---
 
+#### Phase 2: User & Authentication (03/03/2026)
+
+**2.1 User Service** ✅
+- `backend/user-service/` - Port 8081
+- `UserServiceApplication.java`
+
+**2.2 Entities** ✅
+- `User.java` - User entity với email, password, fullName, phone, avatar, role, status
+- `Address.java` - Address entity với province, district, ward, addressDetail
+- `UserRole.java` - Enum: BUYER, SELLER, ADMIN
+- `UserStatus.java` - Enum: ACTIVE, INACTIVE, BANNED
+- `AddressType.java` - Enum: HOME, OFFICE
+
+**2.3 Repositories** ✅
+- `UserRepository.java` - findByEmail, existsByEmail, findByVerificationToken, findByResetPasswordToken
+- `AddressRepository.java` - findByUserId, clearDefaultAddress
+
+**2.4 DTOs** ✅
+- Auth: `RegisterRequest`, `LoginRequest`, `AuthResponse`, `RefreshTokenRequest`, `ForgotPasswordRequest`, `ResetPasswordRequest`
+- User: `UserResponse`, `UpdateProfileRequest`, `ChangePasswordRequest`
+- Address: `AddressRequest`, `AddressResponse`
+
+**2.5 Services** ✅
+- `AuthService.java` - register, login, refreshToken, logout, forgotPassword, resetPassword, verifyEmail
+- `UserService.java` - getCurrentUser, updateProfile, changePassword, updateAvatar
+- `AddressService.java` - getAddresses, createAddress, updateAddress, deleteAddress, setDefaultAddress
+
+**2.6 Controllers** ✅
+- `AuthController.java` - /api/auth/*
+- `UserController.java` - /api/users/*
+- `AddressController.java` - /api/users/addresses/*
+
+**2.7 Config** ✅
+- `SecurityConfig.java` - JWT authentication, BCrypt password encoder
+- `OpenApiConfig.java` - Swagger/OpenAPI configuration
+- `application.yml` - Database, Redis, Eureka, JWT config
+
+---
+
 ### In Progress 🔄
-- [ ] Phase 2: User & Authentication
+- [ ] Phase 3: Product & Category
 
 ---
 
 ### Pending ⏳
-- [ ] Phase 3: Product & Category
 - [ ] Phase 4: Cart & Checkout
 - [ ] Phase 5: Payment Integration
 - [ ] Phase 6: Inventory & Shipping

@@ -9,7 +9,7 @@ HyperMall is a large-scale e-commerce platform using microservices architecture 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS + Redux Toolkit
-- **Backend**: Spring Boot 3.2 (Java 17) + Spring Cloud 2023.0.0
+- **Backend**: Spring Boot 3.4.3 (Java 17) + Spring Cloud 2024.0.0
 - **Infrastructure**: MySQL 8.0, Redis, RabbitMQ, Elasticsearch 8.x
 - **Service Discovery**: Netflix Eureka
 - **Configuration**: Spring Cloud Config Server
@@ -81,6 +81,15 @@ All microservices depend on `common-lib` which provides:
 - **Path aliases**: `@components`, `@pages`, `@hooks`, `@services`, `@store`, `@types`, `@utils`, `@config`
 - **State**: Redux Toolkit slices in `store/slices/` (auth, cart, product, ui)
 - **API**: Services in `services/` use axios with base URL proxied to `localhost:8080/api`
+
+### Implemented Services
+
+| Service | Status | Key Features |
+|---------|--------|--------------|
+| service-registry | ✅ | Eureka Server |
+| config-server | ✅ | Centralized config |
+| api-gateway | ✅ | Routing, JWT filter, Rate limiting |
+| user-service | ✅ | Auth (register/login/JWT), User CRUD, Address management |
 
 ## Key Patterns
 
