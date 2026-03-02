@@ -1,0 +1,19 @@
+# Common configuration shared across all services
+# These values can be overridden by individual services
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckp3dFRva2VuR2VuZXJhdGlvbjEyMzQ1Njc4OTAxMjM0NTY3ODkw}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900000}     # 15 minutes
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000} # 7 days
+
+spring:
+  jackson:
+    date-format: dd/MM/yyyy HH:mm:ss
+    time-zone: Asia/Ho_Chi_Minh
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+      fail-on-empty-beans: false
+    deserialization:
+      fail-on-unknown-properties: false

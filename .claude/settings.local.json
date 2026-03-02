@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java:*)",
+      "Bash(\"C:/ProgramData/chocolatey/lib/maven/apache-maven-3.9.12/bin/mvn.cmd\":*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker info:*)",
+      "Bash(docker compose:*)",
+      "Bash(docker pull:*)",
+      "Bash(mvn clean:*)",
+      "Bash(dir C:\\\\Program:*)",
+      "Bash(export:*)",
+      "Bash(\"C:/Program Files/Eclipse Adoptium/jdk-17.0.18/bin/java\":*)",
+      "Bash(\"$JAVA_HOME\\\\bin\\\\java.exe\":*)",
+      "Bash(\"/c/Program Files/Eclipse Adoptium/jdk-17.0.18/bin/java.exe\":*)",
+      "Bash(cmd:*)",
+      "Bash(where java:*)",
+      "Bash(\"/c/Program Files/Java/jdk-17.0.18/bin/java.exe\":*)",
+      "Bash(curl:*)"
+    ]
+  }
+}
