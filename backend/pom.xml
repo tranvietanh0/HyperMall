@@ -24,9 +24,9 @@
         <module>service-registry</module>
         <module>config-server</module>
         <module>api-gateway</module>
+        <module>user-service</module>
         <!-- TODO: Add these modules when created -->
         <!--
-        <module>user-service</module>
         <module>product-service</module>
         <module>cart-service</module>
         <module>order-service</module>
