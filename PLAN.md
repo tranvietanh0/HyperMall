@@ -899,14 +899,65 @@ npm run dev
 
 ---
 
+---
+
+#### Phase 4: Cart & Checkout (03/03/2026)
+
+**4.1 Cart Service (Backend)** ✅
+- `backend/cart-service/pom.xml` - Maven configuration (Redis only, no MySQL)
+- `CartServiceApplication.java` - Main Spring Boot application
+- **Model (2)**: `Cart`, `CartItem` - POJOs serialized to Redis (key: `cart:{userId}`)
+- **DTOs (5)**: `AddCartItemRequest`, `UpdateCartItemRequest`, `CartItemResponse`, `CartResponse`, `CheckoutPreviewResponse`
+- **Service**: `CartService` - getCart, addItem, updateItem, removeItem, clearCart, checkoutPreview, selectAll
+- **Controller**: `CartController` - GET/POST/PUT/DELETE `/api/cart`, `/api/cart/items/**`, `/api/cart/checkout-preview`, `/api/cart/select-all`
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+
+**4.2 Order Service (Backend)** ✅
+- `backend/order-service/pom.xml` - Maven configuration (MySQL + Redis + RabbitMQ)
+- `OrderServiceApplication.java` - Main Spring Boot application
+- **Entities (7)**: `Order`, `OrderItem`, `ShippingAddress` (Embeddable), `OrderStatus`, `PaymentStatus`, `PaymentMethod`
+- **DTOs (7)**: `CreateOrderRequest`, `OrderItemRequest`, `ShippingAddressRequest`, `CancelOrderRequest`, `OrderResponse`, `OrderDetailResponse`, `OrderItemResponse`, `ShippingAddressResponse`
+- **Mapper**: `OrderMapper` - MapStruct interface
+- **Repositories (2)**: `OrderRepository`, `OrderItemRepository`
+- **Service**: `OrderService` - createOrder, getUserOrders, getOrderById, getOrderByNumber, cancelOrder, getSellerOrders, updateOrderStatus
+- **Controllers (2)**: `OrderController` (`/api/orders/**`), `SellerOrderController` (`/api/seller/orders/**`)
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+
+**4.3 Parent POM** ✅
+- Added `cart-service` and `order-service` as Maven modules
+
+---
+
+#### Phase 5: Payment Integration (03/03/2026)
+
+**5.1 Payment Service (Backend)** ✅
+- `backend/payment-service/pom.xml` - Maven configuration (MySQL + WebFlux for HTTP client)
+- `PaymentServiceApplication.java` - Main Spring Boot application
+- **Entity**: `Payment` - stores payment record with status, transactionId, gatewayResponse
+- **Enums**: `PaymentMethod` (COD, VNPAY, MOMO, ZALOPAY, BANK_TRANSFER, WALLET), `PaymentStatus`
+- **DTOs (5)**: `CreatePaymentRequest`, `PaymentResponse`, `VNPayCallbackRequest`, `MoMoCallbackRequest`, `ZaloPayCallbackRequest`
+- **Gateways (3)**:
+  - `VNPayGateway` - HMAC SHA512 signing, payment URL generation, callback verification
+  - `MoMoGateway` - HMAC SHA256, REST call to MoMo API sandbox, IPN callback handling
+  - `ZaloPayGateway` - HMAC SHA256, REST call to ZaloPay sandbox, callback handling
+- **Properties (3)**: `VNPayProperties`, `MoMoProperties`, `ZaloPayProperties` (ConfigurationProperties)
+- **Mapper**: `PaymentMapper`, **Repository**: `PaymentRepository`
+- **Service**: `PaymentService` - createPayment, getPaymentById, handleVNPayCallback, handleMoMoCallback, handleZaloPayCallback
+- **Controller**: `PaymentController` - POST /create, GET /{id}, GET /vnpay/callback, POST /momo/callback, POST /zalopay/callback
+- **Config**: `SecurityConfig` (callbacks public), `OpenApiConfig`, `WebClientConfig`, `application.yml`
+
+**5.2 Parent POM** ✅
+- Added `payment-service` as Maven module
+
+---
+
 ### In Progress 🔄
 - [ ] Phase 3: Frontend implementation (Services, Redux, Hooks, Components, Pages)
 
 ---
 
 ### Pending ⏳
-- [ ] Phase 4: Cart & Checkout
-- [ ] Phase 5: Payment Integration
+- [ ] Phase 4: Frontend (Cart UI, Checkout flow)
 - [ ] Phase 6: Inventory & Shipping
 - [ ] Phase 7: Promotion & Voucher
 - [ ] Phase 8: Review & Rating

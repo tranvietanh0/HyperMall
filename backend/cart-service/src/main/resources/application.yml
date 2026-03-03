@@ -1,0 +1,49 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: cart-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 3
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:hypermall-secret-key-for-jwt-token-generation-minimum-256-bits-required}
+  cart:
+    max-items: 50
+    item-expiration-days: 30
+
+logging:
+  level:
+    com.hypermall: DEBUG
