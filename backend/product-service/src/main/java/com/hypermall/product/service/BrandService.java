@@ -7,6 +7,7 @@ import com.hypermall.product.dto.response.BrandResponse;
 import com.hypermall.product.entity.Brand;
 import com.hypermall.product.mapper.ProductMapper;
 import com.hypermall.product.repository.BrandRepository;
+import com.hypermall.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.List;
 public class BrandService {
 
     private final BrandRepository brandRepository;
+    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
@@ -95,6 +97,13 @@ public class BrandService {
     @Transactional
     public void deleteBrand(Long id) {
         Brand brand = findBrandById(id);
+
+        // Check if brand has products
+        long productCount = productRepository.countByBrandId(id);
+        if (productCount > 0) {
+            throw new BadRequestException("Cannot delete brand with " + productCount + " products. Remove or reassign products first.");
+        }
+
         brandRepository.delete(brand);
         log.info("Brand deleted: {} (ID: {})", brand.getName(), brand.getId());
     }

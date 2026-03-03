@@ -58,7 +58,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductById(Long id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         if (product.getStatus() != ProductStatus.ACTIVE) {
@@ -70,7 +70,7 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductBySlug(String slug) {
-        Product product = productRepository.findBySlug(slug)
+        Product product = productRepository.findWithDetailsBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
 
         if (product.getStatus() != ProductStatus.ACTIVE) {

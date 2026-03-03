@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,9 +38,9 @@ public class ProductDetailResponse {
     private LocalDateTime updatedAt;
 
     public BigDecimal getDiscountPercentage() {
-        if (salePrice != null && basePrice.compareTo(BigDecimal.ZERO) > 0) {
+        if (salePrice != null && basePrice != null && basePrice.compareTo(BigDecimal.ZERO) > 0) {
             BigDecimal discount = basePrice.subtract(salePrice);
-            return discount.multiply(BigDecimal.valueOf(100)).divide(basePrice, 2, BigDecimal.ROUND_HALF_UP);
+            return discount.multiply(BigDecimal.valueOf(100)).divide(basePrice, 2, RoundingMode.HALF_UP);
         }
         return BigDecimal.ZERO;
     }
