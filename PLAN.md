@@ -928,6 +928,29 @@ npm run dev
 
 ---
 
+#### Phase 5: Payment Integration (03/03/2026)
+
+**5.1 Payment Service (Backend)** ✅
+- `backend/payment-service/pom.xml` - Maven configuration (MySQL + WebFlux for HTTP client)
+- `PaymentServiceApplication.java` - Main Spring Boot application
+- **Entity**: `Payment` - stores payment record with status, transactionId, gatewayResponse
+- **Enums**: `PaymentMethod` (COD, VNPAY, MOMO, ZALOPAY, BANK_TRANSFER, WALLET), `PaymentStatus`
+- **DTOs (5)**: `CreatePaymentRequest`, `PaymentResponse`, `VNPayCallbackRequest`, `MoMoCallbackRequest`, `ZaloPayCallbackRequest`
+- **Gateways (3)**:
+  - `VNPayGateway` - HMAC SHA512 signing, payment URL generation, callback verification
+  - `MoMoGateway` - HMAC SHA256, REST call to MoMo API sandbox, IPN callback handling
+  - `ZaloPayGateway` - HMAC SHA256, REST call to ZaloPay sandbox, callback handling
+- **Properties (3)**: `VNPayProperties`, `MoMoProperties`, `ZaloPayProperties` (ConfigurationProperties)
+- **Mapper**: `PaymentMapper`, **Repository**: `PaymentRepository`
+- **Service**: `PaymentService` - createPayment, getPaymentById, handleVNPayCallback, handleMoMoCallback, handleZaloPayCallback
+- **Controller**: `PaymentController` - POST /create, GET /{id}, GET /vnpay/callback, POST /momo/callback, POST /zalopay/callback
+- **Config**: `SecurityConfig` (callbacks public), `OpenApiConfig`, `WebClientConfig`, `application.yml`
+
+**5.2 Parent POM** ✅
+- Added `payment-service` as Maven module
+
+---
+
 ### In Progress 🔄
 - [ ] Phase 3: Frontend implementation (Services, Redux, Hooks, Components, Pages)
 
@@ -935,7 +958,6 @@ npm run dev
 
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 5: Payment Integration
 - [ ] Phase 6: Inventory & Shipping
 - [ ] Phase 7: Promotion & Voucher
 - [ ] Phase 8: Review & Rating

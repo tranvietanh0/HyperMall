@@ -1,0 +1,74 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: payment-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 3
+  datasource:
+    url: jdbc:mysql://localhost:3306/hypermall_payment?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:hypermall-secret-key-for-jwt-token-generation-minimum-256-bits-required}
+  payment:
+    vnpay:
+      tmn-code: ${VNPAY_TMN_CODE:}
+      hash-secret: ${VNPAY_HASH_SECRET:}
+      url: ${VNPAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      return-url: ${VNPAY_RETURN_URL:http://localhost:3000/payment/vnpay/callback}
+    momo:
+      partner-code: ${MOMO_PARTNER_CODE:}
+      access-key: ${MOMO_ACCESS_KEY:}
+      secret-key: ${MOMO_SECRET_KEY:}
+      api-url: ${MOMO_API_URL:https://test-payment.momo.vn}
+      return-url: ${MOMO_RETURN_URL:http://localhost:3000/payment/momo/callback}
+      notify-url: ${MOMO_NOTIFY_URL:http://localhost:8085/api/payments/momo/callback}
+    zalopay:
+      app-id: ${ZALOPAY_APP_ID:}
+      key1: ${ZALOPAY_KEY1:}
+      key2: ${ZALOPAY_KEY2:}
+      endpoint: ${ZALOPAY_ENDPOINT:https://sb-openapi.zalopay.vn/v2}
+      callback-url: ${ZALOPAY_CALLBACK_URL:http://localhost:8085/api/payments/zalopay/callback}
+
+logging:
+  level:
+    com.hypermall: DEBUG
