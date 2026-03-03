@@ -7,6 +7,7 @@ import com.hypermall.product.dto.response.CategoryResponse;
 import com.hypermall.product.entity.Category;
 import com.hypermall.product.mapper.ProductMapper;
 import com.hypermall.product.repository.CategoryRepository;
+import com.hypermall.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
@@ -33,8 +36,8 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public List<CategoryResponse> getCategoryTree() {
-        List<Category> allCategories = categoryRepository.findAll();
-        List<CategoryResponse> tree = buildCategoryTree(allCategories, null);
+        List<Category> allCategories = categoryRepository.findAllByOrderBySortOrderAsc();
+        List<CategoryResponse> tree = buildCategoryTreeEfficient(allCategories);
         log.debug("Built category tree with {} root categories", tree.size());
         return tree;
     }
@@ -157,28 +160,54 @@ public class CategoryService {
             throw new BadRequestException("Cannot delete category with " + childCount + " child categories. Delete children first.");
         }
 
+        // Check if category has products
+        long productCount = productRepository.countByCategoryId(id);
+        if (productCount > 0) {
+            throw new BadRequestException("Cannot delete category with " + productCount + " products. Remove or reassign products first.");
+        }
+
         categoryRepository.delete(category);
         log.info("Category deleted: {} (ID: {})", category.getName(), category.getId());
     }
 
     /**
-     * Helper method to build category tree structure
+     * Efficient O(n) algorithm to build category tree using Map
      */
-    private List<CategoryResponse> buildCategoryTree(List<Category> categories, Long parentId) {
-        return categories.stream()
-                .filter(category -> {
-                    if (parentId == null) {
-                        return category.getParentId() == null;
-                    }
-                    return parentId.equals(category.getParentId());
-                })
-                .map(category -> {
-                    CategoryResponse response = productMapper.toCategoryResponse(category);
-                    List<CategoryResponse> children = buildCategoryTree(categories, category.getId());
-                    response.setChildren(children.isEmpty() ? null : children);
-                    return response;
-                })
-                .collect(Collectors.toList());
+    private List<CategoryResponse> buildCategoryTreeEfficient(List<Category> categories) {
+        // Convert all categories to response DTOs and store in a map
+        Map<Long, CategoryResponse> categoryMap = categories.stream()
+                .collect(Collectors.toMap(
+                        Category::getId,
+                        category -> {
+                            CategoryResponse response = productMapper.toCategoryResponse(category);
+                            response.setChildren(new ArrayList<>());
+                            return response;
+                        }
+                ));
+
+        List<CategoryResponse> rootCategories = new ArrayList<>();
+
+        // Build tree by linking children to parents
+        for (Category category : categories) {
+            CategoryResponse response = categoryMap.get(category.getId());
+            if (category.getParentId() == null) {
+                rootCategories.add(response);
+            } else {
+                CategoryResponse parent = categoryMap.get(category.getParentId());
+                if (parent != null) {
+                    parent.getChildren().add(response);
+                }
+            }
+        }
+
+        // Set empty children lists to null for cleaner JSON
+        categoryMap.values().forEach(cat -> {
+            if (cat.getChildren() != null && cat.getChildren().isEmpty()) {
+                cat.setChildren(null);
+            }
+        });
+
+        return rootCategories;
     }
 
     private Category findCategoryById(Long id) {

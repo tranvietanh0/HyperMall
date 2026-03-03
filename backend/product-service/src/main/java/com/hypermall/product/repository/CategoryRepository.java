@@ -23,6 +23,8 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     List<Category> findByIsActiveTrueOrderBySortOrderAsc();
 
+    List<Category> findAllByOrderBySortOrderAsc();
+
     @Query("SELECT c FROM Category c WHERE c.parentId IS NULL AND c.isActive = true ORDER BY c.sortOrder ASC")
     List<Category> findRootCategoriesActive();
 

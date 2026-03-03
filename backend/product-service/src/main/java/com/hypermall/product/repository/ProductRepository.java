@@ -4,6 +4,7 @@ import com.hypermall.product.entity.Product;
 import com.hypermall.product.entity.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,12 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySlug(String slug);
+
+    @EntityGraph(attributePaths = {"category", "brand", "images", "variants"})
+    Optional<Product> findWithDetailsById(Long id);
+
+    @EntityGraph(attributePaths = {"category", "brand", "images", "variants"})
+    Optional<Product> findWithDetailsBySlug(String slug);
 
     boolean existsBySlug(String slug);
 
@@ -64,4 +71,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p WHERE p.status = :status " +
             "ORDER BY p.createdAt DESC")
     Page<Product> findNewest(@Param("status") ProductStatus status, Pageable pageable);
+
+    long countByBrandId(Long brandId);
+
+    long countByCategoryId(Long categoryId);
 }
