@@ -11,6 +11,7 @@ export interface Category {
   sortOrder: number;
   isActive: boolean;
   children?: Category[];
+  createdAt: string;
 }
 
 export interface Brand {
@@ -19,10 +20,12 @@ export interface Brand {
   slug: string;
   logo?: string;
   description?: string;
+  createdAt: string;
 }
 
 export interface ProductImage {
   id: number;
+  productId: number;
   url: string;
   sortOrder: number;
   isMain: boolean;
@@ -45,10 +48,11 @@ export interface Product {
   id: number;
   sellerId: number;
   categoryId: number;
+  categoryName: string;
   brandId?: number;
+  brandName?: string;
   name: string;
   slug: string;
-  description: string;
   shortDescription?: string;
   thumbnail: string;
   basePrice: number;
@@ -61,18 +65,27 @@ export interface Product {
   createdAt: string;
 }
 
-export interface ProductDetail extends Product {
-  images: ProductImage[];
-  variants: ProductVariant[];
+export interface ProductDetail {
+  id: number;
+  sellerId: number;
   category: Category;
   brand?: Brand;
-  seller: {
-    id: number;
-    shopName: string;
-    shopSlug: string;
-    logo?: string;
-    rating: number;
-  };
+  name: string;
+  slug: string;
+  description: string;
+  shortDescription?: string;
+  thumbnail: string;
+  basePrice: number;
+  salePrice?: number;
+  status: ProductStatus;
+  totalSold: number;
+  avgRating: number;
+  totalReviews: number;
+  hasVariants: boolean;
+  images: ProductImage[];
+  variants: ProductVariant[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ProductFilter {

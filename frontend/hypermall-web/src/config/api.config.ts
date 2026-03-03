@@ -42,6 +42,12 @@ export const API_ENDPOINTS = {
     TREE: '/categories/tree',
   },
 
+  // Brands
+  BRANDS: {
+    LIST: '/brands',
+    DETAIL: (id: string) => `/brands/${id}`,
+  },
+
   // Cart
   CART: {
     GET: '/cart',
