@@ -899,13 +899,42 @@ npm run dev
 
 ---
 
+---
+
+#### Phase 4: Cart & Checkout (03/03/2026)
+
+**4.1 Cart Service (Backend)** ✅
+- `backend/cart-service/pom.xml` - Maven configuration (Redis only, no MySQL)
+- `CartServiceApplication.java` - Main Spring Boot application
+- **Model (2)**: `Cart`, `CartItem` - POJOs serialized to Redis (key: `cart:{userId}`)
+- **DTOs (5)**: `AddCartItemRequest`, `UpdateCartItemRequest`, `CartItemResponse`, `CartResponse`, `CheckoutPreviewResponse`
+- **Service**: `CartService` - getCart, addItem, updateItem, removeItem, clearCart, checkoutPreview, selectAll
+- **Controller**: `CartController` - GET/POST/PUT/DELETE `/api/cart`, `/api/cart/items/**`, `/api/cart/checkout-preview`, `/api/cart/select-all`
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+
+**4.2 Order Service (Backend)** ✅
+- `backend/order-service/pom.xml` - Maven configuration (MySQL + Redis + RabbitMQ)
+- `OrderServiceApplication.java` - Main Spring Boot application
+- **Entities (7)**: `Order`, `OrderItem`, `ShippingAddress` (Embeddable), `OrderStatus`, `PaymentStatus`, `PaymentMethod`
+- **DTOs (7)**: `CreateOrderRequest`, `OrderItemRequest`, `ShippingAddressRequest`, `CancelOrderRequest`, `OrderResponse`, `OrderDetailResponse`, `OrderItemResponse`, `ShippingAddressResponse`
+- **Mapper**: `OrderMapper` - MapStruct interface
+- **Repositories (2)**: `OrderRepository`, `OrderItemRepository`
+- **Service**: `OrderService` - createOrder, getUserOrders, getOrderById, getOrderByNumber, cancelOrder, getSellerOrders, updateOrderStatus
+- **Controllers (2)**: `OrderController` (`/api/orders/**`), `SellerOrderController` (`/api/seller/orders/**`)
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+
+**4.3 Parent POM** ✅
+- Added `cart-service` and `order-service` as Maven modules
+
+---
+
 ### In Progress 🔄
 - [ ] Phase 3: Frontend implementation (Services, Redux, Hooks, Components, Pages)
 
 ---
 
 ### Pending ⏳
-- [ ] Phase 4: Cart & Checkout
+- [ ] Phase 4: Frontend (Cart UI, Checkout flow)
 - [ ] Phase 5: Payment Integration
 - [ ] Phase 6: Inventory & Shipping
 - [ ] Phase 7: Promotion & Voucher
