@@ -27,14 +27,30 @@ npm run test:coverage  # Run tests with coverage
 
 ### Backend
 ```bash
-# Build all services from backend/
+# Build all services from backend/ (builds all modules in parent POM)
 mvn clean install -DskipTests
+
+# Build single service
+cd backend/<service-name>
+mvn clean package -DskipTests
 
 # Run individual service
 cd backend/<service-name>
 mvn spring-boot:run
 
-# Start services in order: service-registry → config-server → api-gateway → other services
+# Run tests for a single service
+cd backend/<service-name>
+mvn test
+
+# Run tests for all services
+cd backend/
+mvn test
+
+# IMPORTANT: Start services in order
+# 1. service-registry (8761) - must be running first
+# 2. config-server (8888) - depends on service-registry
+# 3. api-gateway (8080) - depends on service-registry & config-server
+# 4. other services - depend on service-registry & config-server
 ```
 
 ### Infrastructure
@@ -90,6 +106,7 @@ All microservices depend on `common-lib` which provides:
 | config-server | ✅ | Centralized config |
 | api-gateway | ✅ | Routing, JWT filter, Rate limiting |
 | user-service | ✅ | Auth (register/login/JWT), User CRUD, Address management |
+| product-service | ✅ | Product CRUD, Category tree, Brand management, Seller products |
 
 ## Key Patterns
 
@@ -98,3 +115,51 @@ All microservices depend on `common-lib` which provides:
 - Frontend dev server proxies `/api/*` requests to the API Gateway
 - Use MapStruct for DTO mapping (configured in parent POM)
 - Lombok is available in all backend modules
+
+## Multi-Module Maven Structure
+
+The backend uses Maven multi-module structure with shared dependency management:
+- **Parent POM** (`backend/pom.xml`): Defines all dependency versions and common plugins
+- **common-lib**: Must be built first as all services depend on it
+- When building from root `backend/`, all modules build in correct order automatically
+- Services reference common-lib with `${project.version}` (currently 1.0.0-SNAPSHOT)
+
+## Database Setup
+
+Each microservice uses its own database schema:
+- **user-service**: `hypermall_users`
+- **product-service**: `hypermall_products` (when implemented)
+- **cart-service**: `hypermall_cart` (when implemented)
+- **order-service**: `hypermall_orders` (when implemented)
+
+Database initialization SQL is in `infrastructure/docker/mysql/init.sql`. When using `docker-compose.dev.yml`, databases are auto-created on first startup.
+
+For local MySQL without Docker:
+```bash
+mysql -u root -p
+CREATE DATABASE hypermall_users;
+# Create other databases as services are added
+```
+
+## Configuration Server Details
+
+- Uses **native profile** (file-based, not Git)
+- Configurations stored in `config-server/src/main/resources/configurations/`
+- Each service has its own YAML file (e.g., `user-service.yml`)
+- Services fetch config on startup via `spring.config.import=optional:configserver:http://localhost:8888`
+- Protected with basic auth: `config/config123`
+
+## Service Dependencies & Startup Order
+
+Critical startup sequence:
+1. **Infrastructure** (MySQL, Redis, RabbitMQ, Elasticsearch) - via Docker Compose
+2. **service-registry** (Eureka) - all services register here
+3. **config-server** - provides centralized configuration
+4. **api-gateway** - routes external requests to services
+5. **business services** (user-service, etc.) - can start in any order after 1-4
+
+If a service fails to start, check:
+- Eureka is accessible at http://localhost:8761
+- Config server is accessible at http://localhost:8888
+- Database is running and schema exists
+- Redis is running (required for JWT token storage)

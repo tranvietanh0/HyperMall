@@ -16,7 +16,13 @@
       "Bash(cmd:*)",
       "Bash(where java:*)",
       "Bash(\"/c/Program Files/Java/jdk-17.0.18/bin/java.exe\":*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(test:*)",
+      "Bash(\"C:/ProgramData/chocolatey/lib/maven/apache-maven-3.9.12/bin/mvn.cmd\" clean compile -DskipTests)",
+      "Bash(docker --version:*)",
+      "Bash(node --version:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev)"
     ]
   }
 }
