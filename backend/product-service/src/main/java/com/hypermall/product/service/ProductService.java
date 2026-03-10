@@ -178,10 +178,10 @@ public class ProductService {
             });
         }
 
-        product = productRepository.save(product);
-        log.info("Product created: {} (ID: {}) by seller {}", product.getName(), product.getId(), sellerId);
+        Product savedProduct = productRepository.save(product);
+        log.info("Product created: {} (ID: {}) by seller {}", savedProduct.getName(), savedProduct.getId(), sellerId);
 
-        return productMapper.toProductDetailResponse(product);
+        return productMapper.toProductDetailResponse(savedProduct);
     }
 
     @Transactional
@@ -264,10 +264,10 @@ public class ProductService {
             product.setHasVariants(request.getHasVariants());
         }
 
-        product = productRepository.save(product);
-        log.info("Product updated: {} (ID: {}) by seller {}", product.getName(), product.getId(), sellerId);
+        Product savedProduct = productRepository.save(product);
+        log.info("Product updated: {} (ID: {}) by seller {}", savedProduct.getName(), savedProduct.getId(), sellerId);
 
-        return productMapper.toProductDetailResponse(product);
+        return productMapper.toProductDetailResponse(savedProduct);
     }
 
     @Transactional
@@ -280,7 +280,10 @@ public class ProductService {
             throw new ForbiddenException("You don't have permission to delete this product");
         }
 
-        productRepository.delete(product);
-        log.info("Product deleted: {} (ID: {}) by seller {}", product.getName(), product.getId(), sellerId);
+        // Soft delete - set status to DELETED and record deletion time
+        product.setStatus(ProductStatus.DELETED);
+        product.setDeletedAt(java.time.LocalDateTime.now());
+        productRepository.save(product);
+        log.info("Product soft deleted: {} (ID: {}) by seller {}", product.getName(), product.getId(), sellerId);
     }
 }

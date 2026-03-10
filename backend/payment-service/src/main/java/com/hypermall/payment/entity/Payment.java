@@ -59,6 +59,12 @@ public class Payment {
     @Column(name = "failure_reason", length = 500)
     private String failureReason;
 
+    @Column(name = "callback_reference_id", length = 100, unique = true)
+    private String callbackReferenceId;
+
+    @Column(name = "callback_processed_at")
+    private LocalDateTime callbackProcessedAt;
+
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 

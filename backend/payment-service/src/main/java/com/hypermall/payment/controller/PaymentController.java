@@ -81,6 +81,15 @@ public class PaymentController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping("/{id}/refund")
+    @Operation(summary = "Initiate a refund for a payment", security = @SecurityRequirement(name = "Bearer Authentication"))
+    public ResponseEntity<ApiResponse<PaymentResponse>> refundPayment(
+            @PathVariable Long id,
+            @Valid @RequestBody RefundRequest request) {
+        PaymentResponse payment = paymentService.refundPayment(id, request.getAmount(), request.getReason());
+        return ResponseEntity.ok(ApiResponse.success("Refund initiated", payment));
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {

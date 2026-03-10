@@ -24,4 +24,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findTopByOrderIdOrderByCreatedAtDesc(Long orderId);
 
     List<Payment> findByOrderIdAndStatus(Long orderId, PaymentStatus status);
+
+    Optional<Payment> findByCallbackReferenceId(String callbackReferenceId);
+
+    boolean existsByCallbackReferenceId(String callbackReferenceId);
 }

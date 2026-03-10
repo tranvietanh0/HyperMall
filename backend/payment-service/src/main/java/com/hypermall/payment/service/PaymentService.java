@@ -6,6 +6,7 @@ import com.hypermall.payment.dto.*;
 import com.hypermall.payment.entity.Payment;
 import com.hypermall.payment.entity.PaymentMethod;
 import com.hypermall.payment.entity.PaymentStatus;
+import com.hypermall.payment.exception.PaymentMethodNotImplementedException;
 import com.hypermall.payment.gateway.MoMoGateway;
 import com.hypermall.payment.gateway.VNPayGateway;
 import com.hypermall.payment.gateway.ZaloPayGateway;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,6 +90,16 @@ public class PaymentService {
 
         String orderNumber = params.get("vnp_TxnRef");
         String transactionId = params.get("vnp_TransactionNo");
+
+        // Idempotency check: create unique callback reference ID
+        String callbackReferenceId = "vnpay_" + orderNumber + "_" + transactionId;
+        if (paymentRepository.existsByCallbackReferenceId(callbackReferenceId)) {
+            log.info("VNPay callback already processed for reference: {}", callbackReferenceId);
+            Payment existingPayment = paymentRepository.findByCallbackReferenceId(callbackReferenceId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Payment not found for callback reference: " + callbackReferenceId));
+            return paymentMapper.toPaymentResponse(existingPayment);
+        }
+
         boolean success = vnPayGateway.isPaymentSuccess(params);
 
         Payment payment = paymentRepository.findByOrderNumber(orderNumber)
@@ -95,6 +107,8 @@ public class PaymentService {
 
         payment.setTransactionId(transactionId);
         payment.setGatewayResponse(params.toString());
+        payment.setCallbackReferenceId(callbackReferenceId);
+        payment.setCallbackProcessedAt(LocalDateTime.now());
 
         if (success) {
             payment.setStatus(PaymentStatus.SUCCESS);
@@ -131,11 +145,20 @@ public class PaymentService {
             return Map.of("resultCode", 1, "message", "Invalid signature");
         }
 
+        // Idempotency check: create unique callback reference ID
+        String callbackReferenceId = "momo_" + request.getOrderId() + "_" + request.getTransId();
+        if (paymentRepository.existsByCallbackReferenceId(callbackReferenceId)) {
+            log.info("MoMo callback already processed for reference: {}", callbackReferenceId);
+            return Map.of("resultCode", 0, "message", "Callback already processed");
+        }
+
         Payment payment = paymentRepository.findByOrderNumber(request.getOrderId())
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for order: " + request.getOrderId()));
 
         payment.setTransactionId(String.valueOf(request.getTransId()));
         payment.setGatewayResponse(params.toString());
+        payment.setCallbackReferenceId(callbackReferenceId);
+        payment.setCallbackProcessedAt(LocalDateTime.now());
 
         if (moMoGateway.isPaymentSuccess(params)) {
             payment.setStatus(PaymentStatus.SUCCESS);
@@ -160,14 +183,25 @@ public class PaymentService {
 
         Map<String, Object> data = request.getData();
         String appTransId = (String) data.get("app_trans_id");
+        String zpTransId = String.valueOf(data.get("zp_trans_id"));
+
+        // Idempotency check: create unique callback reference ID
+        String callbackReferenceId = "zalopay_" + appTransId + "_" + zpTransId;
+        if (paymentRepository.existsByCallbackReferenceId(callbackReferenceId)) {
+            log.info("ZaloPay callback already processed for reference: {}", callbackReferenceId);
+            return Map.of("return_code", 1, "return_message", "Callback already processed");
+        }
+
         // Extract order number from app_trans_id format: "yyMMdd_orderNumber"
         String orderNumber = appTransId.contains("_") ? appTransId.substring(appTransId.indexOf("_") + 1) : appTransId;
 
         Payment payment = paymentRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found for order: " + orderNumber));
 
-        payment.setTransactionId(String.valueOf(data.get("zp_trans_id")));
+        payment.setTransactionId(zpTransId);
         payment.setGatewayResponse(data.toString());
+        payment.setCallbackReferenceId(callbackReferenceId);
+        payment.setCallbackProcessedAt(LocalDateTime.now());
 
         if (zaloPayGateway.isPaymentSuccess(data)) {
             payment.setStatus(PaymentStatus.SUCCESS);
@@ -201,7 +235,66 @@ public class PaymentService {
                     request.getOrderNumber(),
                     request.getAmount()
             );
+            case BANK_TRANSFER -> throw new PaymentMethodNotImplementedException("BANK_TRANSFER");
+            case WALLET -> throw new PaymentMethodNotImplementedException("WALLET");
             default -> throw new BadRequestException("Unsupported payment method for online payment: " + request.getMethod());
         };
+    }
+
+    /**
+     * Initiates a refund for a completed payment.
+     * This is a stub implementation that will need to be expanded
+     * to integrate with each payment gateway's refund API.
+     *
+     * @param paymentId the ID of the payment to refund
+     * @param amount the amount to refund (null for full refund)
+     * @param reason the reason for the refund
+     * @return the updated payment response
+     */
+    @Transactional
+    public PaymentResponse refundPayment(Long paymentId, BigDecimal amount, String reason) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + paymentId));
+
+        if (payment.getStatus() != PaymentStatus.SUCCESS) {
+            throw new BadRequestException("Cannot refund a payment that is not successful. Current status: " + payment.getStatus());
+        }
+
+        BigDecimal refundAmount = amount != null ? amount : payment.getAmount();
+        if (refundAmount.compareTo(payment.getAmount()) > 0) {
+            throw new BadRequestException("Refund amount cannot exceed the payment amount");
+        }
+
+        // TODO: Implement actual gateway-specific refund logic
+        // For now, mark the payment as refunded
+        log.info("Initiating refund for payment {} (order: {}), amount: {}, reason: {}",
+                paymentId, payment.getOrderNumber(), refundAmount, reason);
+
+        switch (payment.getMethod()) {
+            case VNPAY:
+                // TODO: Call VNPay refund API
+                log.warn("VNPay refund API integration not yet implemented");
+                break;
+            case MOMO:
+                // TODO: Call MoMo refund API
+                log.warn("MoMo refund API integration not yet implemented");
+                break;
+            case ZALOPAY:
+                // TODO: Call ZaloPay refund API
+                log.warn("ZaloPay refund API integration not yet implemented");
+                break;
+            case COD:
+                // COD refunds are handled manually
+                log.info("COD refund processed manually");
+                break;
+            default:
+                throw new BadRequestException("Refund not supported for payment method: " + payment.getMethod());
+        }
+
+        payment.setStatus(PaymentStatus.REFUNDED);
+        payment.setRefundedAt(LocalDateTime.now());
+        payment.setFailureReason("Refund reason: " + reason);
+
+        return paymentMapper.toPaymentResponse(paymentRepository.save(payment));
     }
 }

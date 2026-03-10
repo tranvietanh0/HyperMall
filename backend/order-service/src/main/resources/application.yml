@@ -62,6 +62,7 @@ app:
     payment-timeout-minutes: 30
     auto-cancel-after-hours: 24
     auto-complete-after-days: 7
+    default-shipping-fee: 30000
 
 logging:
   level:

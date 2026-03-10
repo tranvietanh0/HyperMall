@@ -42,7 +42,7 @@ public class CartController {
     @Operation(summary = "Update cart item quantity or selection")
     public ResponseEntity<ApiResponse<CartResponse>> updateItem(
             @CurrentUser UserPrincipal currentUser,
-            @PathVariable Long itemId,
+            @PathVariable String itemId,
             @Valid @RequestBody UpdateCartItemRequest request) {
         CartResponse cart = cartService.updateItem(currentUser.getId(), itemId, request);
         return ResponseEntity.ok(ApiResponse.success("Cart item updated", cart));
@@ -52,7 +52,7 @@ public class CartController {
     @Operation(summary = "Remove item from cart")
     public ResponseEntity<ApiResponse<CartResponse>> removeItem(
             @CurrentUser UserPrincipal currentUser,
-            @PathVariable Long itemId) {
+            @PathVariable String itemId) {
         CartResponse cart = cartService.removeItem(currentUser.getId(), itemId);
         return ResponseEntity.ok(ApiResponse.success("Item removed from cart", cart));
     }

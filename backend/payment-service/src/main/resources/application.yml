@@ -68,6 +68,9 @@ app:
       key2: ${ZALOPAY_KEY2:}
       endpoint: ${ZALOPAY_ENDPOINT:https://sb-openapi.zalopay.vn/v2}
       callback-url: ${ZALOPAY_CALLBACK_URL:http://localhost:8085/api/payments/zalopay/callback}
+      redirect-url: ${ZALOPAY_REDIRECT_URL:http://localhost:3000/payment/zalopay/callback}
+    http:
+      timeout: ${PAYMENT_HTTP_TIMEOUT:10000}
 
 logging:
   level:

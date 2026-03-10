@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypermall.payment.properties.MoMoProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class MoMoGateway {
 
     private final MoMoProperties properties;
-    private final WebClient.Builder webClientBuilder;
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     public String createPaymentUrl(Long orderId, String orderNumber, BigDecimal amount) {
@@ -58,16 +59,19 @@ public class MoMoGateway {
         requestBody.put("signature", signature);
 
         try {
-            String responseBody = webClientBuilder.build()
-                    .post()
-                    .uri(properties.getApiUrl() + "/v2/gateway/api/create")
-                    .header("Content-Type", "application/json")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            Map<?, ?> response = objectMapper.readValue(responseBody, Map.class);
+            HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(
+                    properties.getApiUrl() + "/v2/gateway/api/create",
+                    HttpMethod.POST,
+                    httpEntity,
+                    String.class
+            );
+
+            Map<?, ?> response = objectMapper.readValue(responseEntity.getBody(), Map.class);
             int resultCode = (int) response.get("resultCode");
 
             if (resultCode == 0) {

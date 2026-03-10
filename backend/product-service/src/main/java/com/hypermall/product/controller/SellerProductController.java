@@ -59,7 +59,7 @@ public class SellerProductController {
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getMyProducts(
             @CurrentUser UserPrincipal currentUser,
             Pageable pageable) {
-        PageResponse<ProductResponse> products = productService.getProductsBySeller(currentUser.getId(), pageable);
+        PageResponse<ProductResponse> products = PageResponse.of(productService.getProductsBySeller(currentUser.getId(), pageable));
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 }

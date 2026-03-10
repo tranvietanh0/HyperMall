@@ -97,6 +97,9 @@ public class Product {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     public void addImage(ProductImage image) {
         images.add(image);
         image.setProduct(this);

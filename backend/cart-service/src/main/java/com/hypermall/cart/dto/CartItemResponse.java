@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 @Data
 public class CartItemResponse {
-    private Long id;
+    private String id;
     private Long productId;
     private Long variantId;
     private Long sellerId;

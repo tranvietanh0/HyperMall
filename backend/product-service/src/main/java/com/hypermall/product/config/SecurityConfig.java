@@ -33,6 +33,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/brands/**").permitAll()
                         .requestMatchers("/actuator/health").authenticated()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").authenticated()
+                        // Protected endpoints (ADMIN role)
+                        .requestMatchers("/api/admin/categories/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/brands/**").hasRole("ADMIN")
                         // Protected endpoints (SELLER role)
                         .requestMatchers("/api/seller/products/**").hasRole("SELLER")
                         // Authenticated endpoints

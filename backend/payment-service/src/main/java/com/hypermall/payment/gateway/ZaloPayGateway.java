@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypermall.payment.properties.ZaloPayProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -20,7 +21,7 @@ import java.util.*;
 public class ZaloPayGateway {
 
     private final ZaloPayProperties properties;
-    private final WebClient.Builder webClientBuilder;
+    private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
     public String createPaymentUrl(Long orderId, String orderNumber, BigDecimal amount) {
@@ -28,7 +29,7 @@ public class ZaloPayGateway {
         String appTransId = new SimpleDateFormat("yyMMdd").format(new Date()) + "_" + orderNumber;
         String appUser = "hypermall_user_" + orderId;
         long amountLong = amount.longValue();
-        String embedData = "{\"redirecturl\":\"" + "http://localhost:3000/payment/zalopay/callback" + "\"}";
+        String embedData = "{\"redirecturl\":\"" + properties.getRedirectUrl() + "\"}";
         String item = "[]";
         String description = "Thanh toan don hang " + orderNumber;
 
@@ -50,16 +51,19 @@ public class ZaloPayGateway {
         requestBody.put("callback_url", properties.getCallbackUrl());
 
         try {
-            String responseBody = webClientBuilder.build()
-                    .post()
-                    .uri(properties.getEndpoint() + "/create")
-                    .header("Content-Type", "application/json")
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            Map<?, ?> response = objectMapper.readValue(responseBody, Map.class);
+            HttpEntity<Map<String, Object>> httpEntity = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(
+                    properties.getEndpoint() + "/create",
+                    HttpMethod.POST,
+                    httpEntity,
+                    String.class
+            );
+
+            Map<?, ?> response = objectMapper.readValue(responseEntity.getBody(), Map.class);
             int returnCode = (int) response.get("return_code");
 
             if (returnCode == 1) {

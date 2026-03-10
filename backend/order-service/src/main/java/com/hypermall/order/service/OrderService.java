@@ -9,8 +9,11 @@ import com.hypermall.order.mapper.OrderMapper;
 import com.hypermall.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +22,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
+    private static final int MAX_ORDER_NUMBER_RETRIES = 5;
+
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+
+    @Value("${app.order.auto-cancel-after-hours:24}")
+    private int autoCancelAfterHours;
+
+    @Value("${app.order.default-shipping-fee:30000}")
+    private long defaultShippingFee;
 
     @Transactional
     public OrderDetailResponse createOrder(Long userId, CreateOrderRequest request) {
@@ -36,7 +47,7 @@ public class OrderService {
                 .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal shippingFee = BigDecimal.valueOf(30000); // flat fee, real impl would call shipping service
+        BigDecimal shippingFee = BigDecimal.valueOf(defaultShippingFee); // configurable, real impl would call shipping service
         BigDecimal discount = BigDecimal.ZERO; // real impl would apply voucher
         BigDecimal total = subtotal.add(shippingFee).subtract(discount);
 
@@ -51,7 +62,6 @@ public class OrderService {
                 .build();
 
         Order order = Order.builder()
-                .orderNumber(generateOrderNumber())
                 .userId(userId)
                 .sellerId(request.getSellerId())
                 .paymentMethod(request.getPaymentMethod())
@@ -85,10 +95,33 @@ public class OrderService {
             order.setStatus(OrderStatus.PENDING_PAYMENT);
         }
 
-        Order saved = orderRepository.save(order);
+        // Save order with retry logic for order number generation to handle race conditions
+        Order saved = saveOrderWithRetry(order);
         log.info("Order created: {} (ID: {}) by user {}", saved.getOrderNumber(), saved.getId(), userId);
 
         return orderMapper.toOrderDetailResponse(saved);
+    }
+
+    /**
+     * Saves the order with retry logic for order number generation.
+     * If a duplicate order number is detected (DataIntegrityViolationException),
+     * it generates a new order number and retries.
+     */
+    private Order saveOrderWithRetry(Order order) {
+        int attempts = 0;
+        while (attempts < MAX_ORDER_NUMBER_RETRIES) {
+            try {
+                order.setOrderNumber(generateOrderNumber());
+                return orderRepository.save(order);
+            } catch (DataIntegrityViolationException e) {
+                attempts++;
+                log.warn("Order number collision detected, attempt {}/{}", attempts, MAX_ORDER_NUMBER_RETRIES);
+                if (attempts >= MAX_ORDER_NUMBER_RETRIES) {
+                    throw new BadRequestException("Failed to generate unique order number after " + MAX_ORDER_NUMBER_RETRIES + " attempts");
+                }
+            }
+        }
+        throw new BadRequestException("Failed to create order");
     }
 
     @Transactional(readOnly = true)
@@ -204,16 +237,45 @@ public class OrderService {
         }
     }
 
+    /**
+     * Generates a unique order number using timestamp and UUID suffix.
+     * Format: HM + yyyyMMddHHmmss + 8 random hex characters
+     * The uniqueness is enforced by the database unique constraint with retry logic in saveOrderWithRetry().
+     */
     private String generateOrderNumber() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        int random = ThreadLocalRandom.current().nextInt(1000, 9999);
-        String orderNumber = "HM" + timestamp + random;
+        String randomSuffix = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+        return "HM" + timestamp + randomSuffix;
+    }
 
-        // Ensure uniqueness
-        while (orderRepository.existsByOrderNumber(orderNumber)) {
-            random = ThreadLocalRandom.current().nextInt(1000, 9999);
-            orderNumber = "HM" + timestamp + random;
+    /**
+     * Scheduled task that runs every hour to auto-cancel orders that have been
+     * in PENDING_PAYMENT status for longer than the configured duration.
+     */
+    @Scheduled(fixedRateString = "${app.order.auto-cancel-check-interval-ms:3600000}")
+    @Transactional
+    public void autoCancelExpiredOrders() {
+        LocalDateTime cutoffTime = LocalDateTime.now().minusHours(autoCancelAfterHours);
+        List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(
+                OrderStatus.PENDING_PAYMENT, cutoffTime);
+
+        if (expiredOrders.isEmpty()) {
+            log.debug("No expired orders found for auto-cancellation");
+            return;
         }
-        return orderNumber;
+
+        log.info("Found {} expired orders to auto-cancel", expiredOrders.size());
+
+        for (Order order : expiredOrders) {
+            try {
+                order.setStatus(OrderStatus.CANCELLED);
+                order.setCancelReason("Auto-cancelled due to payment timeout after " + autoCancelAfterHours + " hours");
+                order.setCancelledAt(LocalDateTime.now());
+                orderRepository.save(order);
+                log.info("Auto-cancelled order: {} (ID: {})", order.getOrderNumber(), order.getId());
+            } catch (Exception e) {
+                log.error("Failed to auto-cancel order: {} (ID: {})", order.getOrderNumber(), order.getId(), e);
+            }
+        }
     }
 }

@@ -32,8 +32,8 @@ public class ProductController {
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Double minRating,
             Pageable pageable) {
-        PageResponse<ProductResponse> products = productService.getProducts(
-                keyword, categoryId, brandId, minPrice, maxPrice, minRating, pageable);
+        PageResponse<ProductResponse> products = PageResponse.of(productService.getProducts(
+                keyword, categoryId, brandId, minPrice, maxPrice, minRating, pageable));
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 
@@ -56,7 +56,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getProductsByCategory(
             @PathVariable Long categoryId,
             Pageable pageable) {
-        PageResponse<ProductResponse> products = productService.getProductsByCategory(categoryId, pageable);
+        PageResponse<ProductResponse> products = PageResponse.of(productService.getProductsByCategory(categoryId, pageable));
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 
@@ -65,7 +65,7 @@ public class ProductController {
     public ResponseEntity<ApiResponse<PageResponse<ProductResponse>>> getProductsBySeller(
             @PathVariable Long sellerId,
             Pageable pageable) {
-        PageResponse<ProductResponse> products = productService.getProductsBySeller(sellerId, pageable);
+        PageResponse<ProductResponse> products = PageResponse.of(productService.getProductsBySeller(sellerId, pageable));
         return ResponseEntity.ok(ApiResponse.success(products));
     }
 }

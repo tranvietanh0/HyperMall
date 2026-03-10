@@ -47,6 +47,21 @@ public class CartService {
             throw new BadRequestException("Cart is full. Maximum " + maxItems + " items allowed.");
         }
 
+        // TODO: [Product-Service Integration] Validate product exists and is available
+        // Call product-service via Feign client or WebClient to verify:
+        // - Product exists and is active
+        // - Variant exists (if variantId is provided)
+        // - Get seller information
+        // Example: ProductResponse product = productServiceClient.getProduct(request.getProductId());
+
+        // TODO: [Product-Service Integration] Fetch current price from product-service
+        // The price should be fetched in real-time to ensure accuracy
+        // Example: BigDecimal currentPrice = productServiceClient.getPrice(request.getProductId(), request.getVariantId());
+
+        // TODO: [Inventory-Service Integration] Check inventory availability
+        // Validate that requested quantity is available in stock
+        // Example: inventoryServiceClient.checkAvailability(request.getProductId(), request.getVariantId(), request.getQuantity());
+
         // Check if same product+variant already in cart
         Optional<CartItem> existing = cart.getItems().stream()
                 .filter(item -> item.getProductId().equals(request.getProductId())
@@ -58,12 +73,12 @@ public class CartService {
             log.debug("Updated quantity for product {} in cart for user {}", request.getProductId(), userId);
         } else {
             CartItem newItem = CartItem.builder()
-                    .id(System.currentTimeMillis())
+                    .id(UUID.randomUUID().toString())
                     .productId(request.getProductId())
                     .variantId(request.getVariantId())
                     .sellerId(request.getSellerId())
                     .quantity(request.getQuantity())
-                    .price(BigDecimal.ZERO) // price will be fetched from product service in a real scenario
+                    .price(BigDecimal.ZERO) // TODO: Replace with actual price from product-service
                     .selected(true)
                     .build();
             cart.getItems().add(newItem);
@@ -74,8 +89,12 @@ public class CartService {
         return toCartResponse(cart);
     }
 
-    public CartResponse updateItem(Long userId, Long itemId, UpdateCartItemRequest request) {
+    public CartResponse updateItem(Long userId, String itemId, UpdateCartItemRequest request) {
         Cart cart = loadCart(userId);
+
+        // TODO: [Inventory-Service Integration] Validate quantity against available stock
+        // Before updating quantity, check if the new quantity is available
+        // Example: inventoryServiceClient.checkAvailability(item.getProductId(), item.getVariantId(), request.getQuantity());
 
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -94,7 +113,7 @@ public class CartService {
         return toCartResponse(cart);
     }
 
-    public CartResponse removeItem(Long userId, Long itemId) {
+    public CartResponse removeItem(Long userId, String itemId) {
         Cart cart = loadCart(userId);
 
         boolean removed = cart.getItems().removeIf(item -> item.getId().equals(itemId));
@@ -123,6 +142,18 @@ public class CartService {
         if (selectedItems.isEmpty()) {
             throw new BadRequestException("No items selected for checkout");
         }
+
+        // TODO: [Product-Service Integration] Fetch latest prices for all selected items
+        // Prices may have changed since items were added to cart
+        // Example: Map<Long, BigDecimal> currentPrices = productServiceClient.getPrices(productIds);
+
+        // TODO: [Inventory-Service Integration] Validate stock availability for all selected items
+        // Before checkout, ensure all items are still in stock with requested quantities
+        // Example: inventoryServiceClient.validateBulkAvailability(selectedItems);
+
+        // TODO: [Promotion-Service Integration] Apply applicable promotions and discounts
+        // Fetch and apply vouchers, seller discounts, platform promotions
+        // Example: DiscountResult discounts = promotionServiceClient.calculateDiscounts(selectedItems, userId);
 
         BigDecimal subtotal = selectedItems.stream()
                 .map(item -> item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
