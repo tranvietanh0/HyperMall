@@ -82,8 +82,8 @@ docker-compose -f docker-compose.dev.yml up -d
 | promotion-service | 8088 | ✅ | Vouchers, Flash Sales |
 | review-service | 8089 | ✅ | Reviews, Ratings, Likes |
 | search-service | 8090 | ✅ | Elasticsearch Integration |
-| notification-service | 8091 | ⏳ | Email/SMS/Push |
-| ai-service | 8092 | ⏳ | Chatbot, Recommendations |
+| notification-service | 8091 | ✅ | Email/SMS/Push |
+| ai-service | 8092 | ✅ | Chatbot, Recommendations |
 | media-service | 8093 | ⏳ | File Uploads |
 | seller-service | 8094 | ⏳ | Seller Center |
 | analytics-service | 8095 | ⏳ | Analytics |
@@ -109,12 +109,41 @@ All microservices depend on `common-lib`:
 - **State**: Redux Toolkit slices in `store/slices/`
 - **API**: Services in `services/` use axios, proxied to `localhost:8080/api`
 
+## API Routes (via API Gateway)
+
+All requests go through `localhost:8080/api/*`:
+| Path Pattern | Service |
+|--------------|---------|
+| `/api/auth/**`, `/api/users/**` | user-service |
+| `/api/products/**`, `/api/categories/**`, `/api/brands/**` | product-service |
+| `/api/cart/**` | cart-service |
+| `/api/orders/**` | order-service |
+| `/api/payments/**` | payment-service |
+| `/api/inventory/**` | inventory-service |
+| `/api/shipping/**` | shipping-service |
+| `/api/vouchers/**`, `/api/flash-sales/**` | promotion-service |
+| `/api/reviews/**` | review-service |
+| `/api/search/**` | search-service |
+| `/api/ai/**` | ai-service |
+| `/api/notifications/**` | notification-service |
+
+Seller endpoints use `/api/seller/*` prefix, Admin endpoints use `/api/admin/*` prefix.
+
 ## Key Patterns
 
 - All services expose health checks at `/actuator/health`
 - Service config files in `config-server/src/main/resources/configurations/`
 - MapStruct for DTO mapping, Lombok available in all modules
 - Parent POM (`backend/pom.xml`) manages all dependency versions
+- Services communicate via REST (WebClient) and RabbitMQ for async events
+
+## Environment Variables
+
+Copy `backend/.env.example` for local development. Key variables:
+- `DB_USERNAME`, `DB_PASSWORD` - MySQL credentials
+- `REDIS_HOST`, `REDIS_PORT` - Redis connection
+- `JWT_SECRET` - Base64-encoded JWT signing key (min 256 bits)
+- `OPENAI_API_KEY`, `CLAUDE_API_KEY`, `GEMINI_API_KEY` - AI service keys
 
 ## Database
 
@@ -126,8 +155,11 @@ Each microservice has its own schema (auto-created via `infrastructure/docker/my
 - `hypermall_inventory` (inventory-service)
 - `hypermall_shipping` (shipping-service)
 - `hypermall_promotion` (promotion-service)
+- `hypermall_reviews` (review-service)
+- `hypermall_search` (search-service - Elasticsearch indices)
+- `hypermall_ai` (ai-service)
 
-Note: cart-service uses Redis, not MySQL.
+Note: cart-service uses Redis, not MySQL. search-service uses Elasticsearch.
 
 ## Troubleshooting
 

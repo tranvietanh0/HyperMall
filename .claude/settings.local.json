@@ -44,7 +44,22 @@
       "Bash(find \"C:/Users/tranv/Documents/MyProject/HyperMall/backend/order-service/src\" -name \"*.java\" 2>/dev/null | head -20)",
       "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npm run lint 2>&1 | head -50)",
       "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npx tsc --noEmit 2>&1 | head -50)",
-      "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npm run build 2>&1 | tail -30)"
+      "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npm run build 2>&1 | tail -30)",
+      "Bash(docker ps --format \"table {{.Names}}\\\\t{{.Status}}\\\\t{{.Ports}}\" 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"CREATE DATABASE IF NOT EXISTS hypermall_ai; SHOW DATABASES LIKE 'hypermall%';\" 2>&1)",
+      "Bash(curl -s -X POST http://localhost:8081/api/auth/register \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -d '{\"email\":\"aitest2@test.com\",\"password\":\"Test123!\",\"fullName\":\"AI Tester\"}' 2>&1 -v 2>&1 | tail -20)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"USE hypermall_users; SELECT id, email, full_name FROM users LIMIT 5;\" 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"USE hypermall_users; SELECT email, password FROM users WHERE id=2;\" 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"\nUSE hypermall_users;\nINSERT INTO users \\(email, password, full_name, role, status, email_verified, created_at, updated_at\\) \nVALUES \\('aitest@test.com', '\\\\$2a\\\\$10\\\\$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rskhVPx9bU8e0jVqKC', 'AI Tester', 'BUYER', 'ACTIVE', true, NOW\\(\\), NOW\\(\\)\\)\nON DUPLICATE KEY UPDATE password='\\\\$2a\\\\$10\\\\$N9qo8uLOickgx2ZMRZoMyeIjZRGdjGj/n3.rskhVPx9bU8e0jVqKC';\n\" 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"USE hypermall_users; SELECT id, email, role, status FROM users;\" 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -uroot -proot -e \"\nUSE hypermall_users;\nUPDATE users SET password='\\\\$2a\\\\$10\\\\$EIXlPVss2Rn1VzJRx.1zUeGUVY0RnQWBB5k6oXdS8xvqOqKCXCmPa' WHERE email='aitest@test.com';\n\" 2>&1)",
+      "Bash(netstat -ano | grep 8081 | head -5)",
+      "Bash(taskkill /F /PID 36764 2>&1)",
+      "Bash(kill -9 36764 2>&1 || echo \"Trying taskkill...\" && /c/Windows/System32/taskkill.exe //F //PID 36764 2>&1)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjQsImF1dGhvcml0aWVzIjoiUk9MRV9CVVlFUiIsInN1YiI6ImNoYXR0ZXN0MkB0ZXN0LmNvbSIsImlhdCI6MTc3MzE0MzI1MiwiZXhwIjoxNzczMTQ0MTUyfQ.l2xhvjq2thEyWJWqQz2fytm558kRYORThtfdTYtw4Q_N9Upt_ll6i7yN5EmEKo5nPtunshSVKsPsm8BW4dsW6g\"\n\ncurl -s -X POST http://localhost:8092/api/ai/chat \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Authorization: Bearer $TOKEN\" \\\\\n  -d '{\"message\":\"Xin chao, toi muon tim dien thoai gia re\"}' 2>&1)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjQsImF1dGhvcml0aWVzIjoiUk9MRV9CVVlFUiIsInN1YiI6ImNoYXR0ZXN0MkB0ZXN0LmNvbSIsImlhdCI6MTc3MzE0MzI1MiwiZXhwIjoxNzczMTQ0MTUyfQ.l2xhvjq2thEyWJWqQz2fytm558kRYORThtfdTYtw4Q_N9Upt_ll6i7yN5EmEKo5nPtunshSVKsPsm8BW4dsW6g\"\n\ncurl -s -X POST http://localhost:8092/api/ai/chat \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Authorization: Bearer $TOKEN\" \\\\\n  -d '{\"message\":\"Xin chao, toi muon tim dien thoai gia re\",\"provider\":\"gemini\"}' 2>&1)",
+      "Bash(netstat -ano | grep 8092 | head -2)",
+      "Bash(/c/Windows/System32/taskkill.exe //F //PID 40612 2>&1)"
     ]
   }
 }

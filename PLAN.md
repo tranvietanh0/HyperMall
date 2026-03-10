@@ -89,8 +89,8 @@ HyperMall/
 | 7 | Promotion & Voucher | 1 tuần | P1 | ✅ Done |
 | 8 | Review & Rating | 1 tuần | P1 | ✅ Done |
 | 9 | Search Service | 1 tuần | P1 | ✅ Done |
-| 10 | Notification Service | 1 tuần | P1 | ⏳ Pending |
-| 11 | AI Services | 3 tuần | P2 | ⏳ Pending |
+| 10 | Notification Service | 1 tuần | P1 | ✅ Done |
+| 11 | AI Services | 3 tuần | P2 | ✅ Done |
 | 12 | Seller Center | 2 tuần | P1 | ⏳ Pending |
 | 13 | Media Service | 1 tuần | P1 | ⏳ Pending |
 | 14 | Analytics Service | 1 tuần | P2 | ⏳ Pending |
@@ -979,13 +979,26 @@ npm run dev
 
 ---
 
+#### Phase 10: Notification Service (10/03/2026)
+
+**10.1 Notification Service** ✅
+- `backend/notification-service/` - Port 8091
+- **Entities**: `Notification`, `NotificationTemplate`, `NotificationPreference`, `DeviceToken`
+- **Enums**: `NotificationType`, `NotificationChannel`, `NotificationStatus`
+- **DTOs**: `SendNotificationRequest`, `BulkNotificationRequest`, `NotificationResponse`, `NotificationPreferenceRequest`, `NotificationPreferenceResponse`, `DeviceTokenRequest`, `UnreadCountResponse`
+- **Repository**: `NotificationRepository`, `NotificationTemplateRepository`, `NotificationPreferenceRepository`, `DeviceTokenRepository`
+- **Providers**: `EmailProvider` (SMTP/SendGrid), `SmsProvider` (Twilio/Stringee), `PushProvider` (Firebase FCM)
+- **Service**: `NotificationService` - sendNotification, sendBulkNotification, getUserNotifications, markAsRead, getUnreadCount, updatePreference, registerDeviceToken
+- **Controllers**: `NotificationController`, `AdminNotificationController`
+- **Events**: `NotificationEvent`, `NotificationEventListener` (RabbitMQ consumer)
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `RabbitMQConfig`, `AsyncConfig`
+- **Templates**: Thymeleaf email templates
+- **Features**: Multi-channel (Email, SMS, Push, In-app), User preferences, Device token management, Async processing, Dead letter queue
+
+---
+
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 7: Promotion & Voucher
-- [ ] Phase 8: Review & Rating
-- [ ] Phase 9: Search Service
-- [ ] Phase 10: Notification Service
-- [ ] Phase 11: AI Services
 - [ ] Phase 12: Seller Center
 - [ ] Phase 13: Media Service
 - [ ] Phase 14: Analytics Service
