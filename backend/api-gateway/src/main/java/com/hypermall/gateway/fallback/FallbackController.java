@@ -70,11 +70,6 @@ public class FallbackController {
         return Mono.just(createFallbackResponse("Promotion Service"));
     }
 
-    @GetMapping("/ai-service")
-    public Mono<ResponseEntity<Map<String, Object>>> aiServiceFallback() {
-        return Mono.just(createFallbackResponse("AI Service"));
-    }
-
     @GetMapping("/media-service")
     public Mono<ResponseEntity<Map<String, Object>>> mediaServiceFallback() {
         return Mono.just(createFallbackResponse("Media Service"));

@@ -57,7 +57,6 @@ HyperMall/
 │   ├── review-service/          # Reviews (8089)
 │   ├── search-service/          # Search (8090)
 │   ├── notification-service/    # Notifications (8091)
-│   ├── ai-service/              # AI Features (8092)
 │   ├── media-service/           # Media Upload (8093)
 │   ├── seller-service/          # Seller Center (8094)
 │   └── analytics-service/       # Analytics (8095)

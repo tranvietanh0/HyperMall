@@ -34,7 +34,6 @@
         <module>promotion-service</module>
         <module>review-service</module>
         <module>search-service</module>
-        <module>ai-service</module>
         <module>notification-service</module>
         <module>seller-service</module>
         <!-- TODO: Add these modules when created
