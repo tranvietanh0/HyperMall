@@ -11,6 +11,7 @@ const CartPage = lazy(() => import('@/pages/Cart'));
 const CheckoutPage = lazy(() => import('@/pages/Checkout'));
 const OrderListPage = lazy(() => import('@/pages/Order/OrderListPage'));
 const OrderDetailPage = lazy(() => import('@/pages/Order/OrderDetailPage'));
+const OrderSuccessPage = lazy(() => import('@/pages/Order/OrderSuccessPage'));
 const ProfilePage = lazy(() => import('@/pages/Profile'));
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
@@ -58,6 +59,10 @@ export const routes: RouteObject[] = [
   {
     path: '/orders/:id',
     element: <OrderDetailPage />,
+  },
+  {
+    path: '/order-success/:id',
+    element: <OrderSuccessPage />,
   },
   {
     path: '/profile',

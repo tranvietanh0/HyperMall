@@ -39,7 +39,12 @@
       "Bash(find /c/Users/tranv/Documents/MyProject/HyperMall/backend/user-service/src -name \"*.java\" 2>/dev/null | head -20)",
       "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force\" 2>&1; echo \"Killed old Java processes\")",
       "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force\" 2>&1 && echo \"Stopped all Java processes\")",
-      "Bash(docker exec hypermall-mysql-dev mysql -u root -proot -e \"CREATE DATABASE IF NOT EXISTS hypermall_inventory; CREATE DATABASE IF NOT EXISTS hypermall_shipping; SHOW DATABASES LIKE 'hypermall%';\" 2>&1)"
+      "Bash(docker exec hypermall-mysql-dev mysql -u root -proot -e \"CREATE DATABASE IF NOT EXISTS hypermall_inventory; CREATE DATABASE IF NOT EXISTS hypermall_shipping; SHOW DATABASES LIKE 'hypermall%';\" 2>&1)",
+      "Bash(find /c/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web/src -name \"*.tsx\" -o -name \"*.ts\" 2>/dev/null | head -40)",
+      "Bash(find \"C:/Users/tranv/Documents/MyProject/HyperMall/backend/order-service/src\" -name \"*.java\" 2>/dev/null | head -20)",
+      "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npm run lint 2>&1 | head -50)",
+      "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npx tsc --noEmit 2>&1 | head -50)",
+      "Bash(cd \"C:/Users/tranv/Documents/MyProject/HyperMall/frontend/hypermall-web\" && npm run build 2>&1 | tail -30)"
     ]
   }
 }

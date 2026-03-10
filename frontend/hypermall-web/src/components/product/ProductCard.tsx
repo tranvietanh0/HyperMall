@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCartIcon } from '@heroicons/react/24/outline'
-import type { Product } from '@types'
+import type { Product } from '@/types'
 import { formatCurrency, calculateDiscount } from '@utils/format'
 import StarRating from './StarRating'
 import { useCart } from '@hooks/useCart'

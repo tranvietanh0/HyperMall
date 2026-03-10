@@ -81,15 +81,23 @@ export interface Order {
   paidAt?: string;
 }
 
+export interface CreateOrderItemRequest {
+  productId: number;
+  variantId?: number;
+  productName: string;
+  variantName?: string;
+  thumbnail: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export interface CreateOrderRequest {
-  addressId: number;
+  sellerId: number;
   paymentMethod: PaymentMethod;
-  shippingMethod: string;
+  shippingAddress: ShippingAddress;
+  items: CreateOrderItemRequest[];
   note?: string;
   voucherCode?: string;
-  items: {
-    cartItemId: number;
-  }[];
 }
 
 export interface CheckoutPreview {

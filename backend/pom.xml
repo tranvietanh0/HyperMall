@@ -27,10 +27,10 @@
         <module>user-service</module>
         <module>product-service</module>
         <module>cart-service</module>
+        <module>order-service</module>
         <module>inventory-service</module>
         <module>shipping-service</module>
         <!-- TODO: Add these modules when created
-        <module>order-service</module>
         <module>payment-service</module>
         <module>notification-service</module>
         <module>search-service</module>

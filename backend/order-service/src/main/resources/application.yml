@@ -57,7 +57,7 @@ management:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:hypermall-secret-key-for-jwt-token-generation-minimum-256-bits-required}
+    secret: ${JWT_SECRET:aHlwZXJtYWxsLXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQ=}
   order:
     payment-timeout-minutes: 30
     auto-cancel-after-hours: 24
