@@ -33,11 +33,9 @@
         <module>shipping-service</module>
         <module>promotion-service</module>
         <module>review-service</module>
+        <module>search-service</module>
         <!-- TODO: Add these modules when created
         <module>notification-service</module>
-        <module>search-service</module>
-        <module>review-service</module>
-        <module>promotion-service</module>
         <module>ai-service</module>
         <module>media-service</module>
         -->

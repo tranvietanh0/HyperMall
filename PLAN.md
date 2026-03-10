@@ -88,7 +88,7 @@ HyperMall/
 | 6 | Inventory & Shipping | 2 tuần | P1 | ✅ Done |
 | 7 | Promotion & Voucher | 1 tuần | P1 | ✅ Done |
 | 8 | Review & Rating | 1 tuần | P1 | ✅ Done |
-| 9 | Search Service | 1 tuần | P1 | ⏳ Pending |
+| 9 | Search Service | 1 tuần | P1 | ✅ Done |
 | 10 | Notification Service | 1 tuần | P1 | ⏳ Pending |
 | 11 | AI Services | 3 tuần | P2 | ⏳ Pending |
 | 12 | Seller Center | 2 tuần | P1 | ⏳ Pending |

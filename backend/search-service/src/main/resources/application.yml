@@ -1,0 +1,51 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: search-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 3
+  elasticsearch:
+    uris: ${ELASTICSEARCH_URI:http://localhost:9200}
+    username: ${ELASTICSEARCH_USERNAME:}
+    password: ${ELASTICSEARCH_PASSWORD:}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:aHlwZXJtYWxsLXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQ=}
+
+logging:
+  level:
+    com.hypermall: DEBUG
+    org.springframework.data.elasticsearch: DEBUG

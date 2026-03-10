@@ -81,7 +81,7 @@ docker-compose -f docker-compose.dev.yml up -d
 | shipping-service | 8087 | ✅ | GHN, GHTK, ViettelPost |
 | promotion-service | 8088 | ✅ | Vouchers, Flash Sales |
 | review-service | 8089 | ✅ | Reviews, Ratings, Likes |
-| search-service | 8090 | ⏳ | Elasticsearch Integration |
+| search-service | 8090 | ✅ | Elasticsearch Integration |
 | notification-service | 8091 | ⏳ | Email/SMS/Push |
 | ai-service | 8092 | ⏳ | Chatbot, Recommendations |
 | media-service | 8093 | ⏳ | File Uploads |
