@@ -91,7 +91,7 @@ HyperMall/
 | 9 | Search Service | 1 tuần | P1 | ✅ Done |
 | 10 | Notification Service | 1 tuần | P1 | ✅ Done |
 | 11 | AI Services | 3 tuần | P2 | ✅ Done |
-| 12 | Seller Center | 2 tuần | P1 | ⏳ Pending |
+| 12 | Seller Center | 2 tuần | P1 | 🔄 In Progress |
 | 13 | Media Service | 1 tuần | P1 | ⏳ Pending |
 | 14 | Analytics Service | 1 tuần | P2 | ⏳ Pending |
 | 15 | Admin Dashboard | 1 tuần | P1 | ⏳ Pending |
@@ -953,6 +953,22 @@ npm run dev
 
 ### In Progress 🔄
 - [ ] Phase 3: Frontend implementation (Services, Redux, Hooks, Components, Pages)
+- [ ] Phase 12: Seller Center (seller-service bootstrap, profile APIs, admin approval APIs)
+
+---
+
+#### Phase 12: Seller Center (11/03/2026)
+
+**12.1 Seller Service (Backend)** 🔄
+- `backend/seller-service/` - Port 8094
+- Added base module and Spring Boot application (`SellerServiceApplication`)
+- **Entity/Enums**: `Seller`, `BusinessType`, `SellerStatus`
+- **DTOs**: `CreateSellerRequest`, `UpdateSellerRequest`, `SellerResponse`
+- **Repository/Mapper**: `SellerRepository`, `SellerMapper`
+- **Service**: `SellerService` - register/get/update seller profile, filter by status, update status
+- **Controllers**: `SellerController`, `AdminSellerController`
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+- Added `seller-service` module to `backend/pom.xml`
 
 ---
 
@@ -999,7 +1015,6 @@ npm run dev
 
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 12: Seller Center
 - [ ] Phase 13: Media Service
 - [ ] Phase 14: Analytics Service
 - [ ] Phase 15: Admin Dashboard
