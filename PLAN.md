@@ -956,9 +956,31 @@ npm run dev
 
 ---
 
+#### Phase 6: Inventory & Shipping (10/03/2026)
+
+**6.1 Inventory Service** ✅
+- `backend/inventory-service/` - Port 8086
+- **Entities**: `Inventory`, `StockMovement`, `MovementType` enum
+- **DTOs**: `CreateInventoryRequest`, `UpdateStockRequest`, `ReserveStockRequest`, `InventoryResponse`, `StockMovementResponse`, `StockCheckResponse`
+- **Repository**: `InventoryRepository`, `StockMovementRepository` (with pessimistic locking for reserve)
+- **Service**: `InventoryService` - createInventory, updateStock, reserveStock, releaseStock, confirmStock, checkStock, getMovements
+- **Controller**: `InventoryController` - full CRUD, stock management, low stock alerts, out of stock alerts
+- **Features**: Stock tracking, reservation system, movement history, low stock threshold alerts
+
+**6.2 Shipping Service** ✅
+- `backend/shipping-service/` - Port 8087
+- **Entities**: `Shipment`, `TrackingEvent`, `ShipmentStatus`, `ShippingProvider` enums
+- **DTOs**: `CalculateShippingRequest`, `CreateShipmentRequest`, `ShippingOptionResponse`, `ShipmentResponse`, `TrackingResponse`
+- **Repository**: `ShipmentRepository`, `TrackingEventRepository`
+- **Service**: `ShippingService` - calculateShipping, createShipment, trackShipment, updateStatus
+- **Controller**: `ShippingController` - calculate fees, create/track shipments
+- **Providers**: GHN, GHTK, ViettelPost (mock implementation, ready for real API integration)
+- **Features**: Multi-provider support, fee calculation, tracking events, COD support
+
+---
+
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 6: Inventory & Shipping
 - [ ] Phase 7: Promotion & Voucher
 - [ ] Phase 8: Review & Rating
 - [ ] Phase 9: Search Service

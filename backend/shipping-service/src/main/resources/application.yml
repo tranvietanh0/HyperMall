@@ -1,0 +1,72 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: shipping-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      fail-fast: false
+      retry:
+        max-attempts: 3
+  datasource:
+    url: jdbc:mysql://localhost:3306/hypermall_shipping?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:eureka123@localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:aHlwZXJtYWxsLXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQ=}
+
+# Shipping Provider Configurations (use environment variables in production)
+shipping:
+  ghn:
+    api-url: ${GHN_API_URL:https://dev-online-gateway.ghn.vn/shiip/public-api}
+    token: ${GHN_TOKEN:}
+    shop-id: ${GHN_SHOP_ID:}
+  ghtk:
+    api-url: ${GHTK_API_URL:https://services.giaohangtietkiem.vn}
+    token: ${GHTK_TOKEN:}
+  viettel-post:
+    api-url: ${VTP_API_URL:https://partner.viettelpost.vn/v2}
+    token: ${VTP_TOKEN:}
+
+logging:
+  level:
+    com.hypermall: DEBUG
