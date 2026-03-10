@@ -78,24 +78,24 @@ HyperMall/
 
 ### Tổng quan Timeline
 
-| Phase | Nội dung | Thời gian | Priority |
-|-------|----------|-----------|----------|
-| 1 | Foundation & Infrastructure | 2 tuần | P0 |
-| 2 | User & Authentication | 2 tuần | P0 |
-| 3 | Product & Category | 3 tuần | P0 |
-| 4 | Cart & Checkout | 2 tuần | P0 |
-| 5 | Payment Integration | 1 tuần | P0 |
-| 6 | Inventory & Shipping | 2 tuần | P1 |
-| 7 | Promotion & Voucher | 1 tuần | P1 |
-| 8 | Review & Rating | 1 tuần | P1 |
-| 9 | Search Service | 1 tuần | P1 |
-| 10 | Notification Service | 1 tuần | P1 |
-| 11 | AI Services | 3 tuần | P2 |
-| 12 | Seller Center | 2 tuần | P1 |
-| 13 | Media Service | 1 tuần | P1 |
-| 14 | Analytics Service | 1 tuần | P2 |
-| 15 | Admin Dashboard | 1 tuần | P1 |
-| 16 | Testing & DevOps | 2 tuần | P1 |
+| Phase | Nội dung | Thời gian | Priority | Status |
+|-------|----------|-----------|----------|--------|
+| 1 | Foundation & Infrastructure | 2 tuần | P0 | ✅ Done |
+| 2 | User & Authentication | 2 tuần | P0 | ✅ Done |
+| 3 | Product & Category | 3 tuần | P0 | ✅ Done |
+| 4 | Cart & Checkout | 2 tuần | P0 | ✅ Done |
+| 5 | Payment Integration | 1 tuần | P0 | ✅ Done |
+| 6 | Inventory & Shipping | 2 tuần | P1 | ✅ Done |
+| 7 | Promotion & Voucher | 1 tuần | P1 | ✅ Done |
+| 8 | Review & Rating | 1 tuần | P1 | ✅ Done |
+| 9 | Search Service | 1 tuần | P1 | ⏳ Pending |
+| 10 | Notification Service | 1 tuần | P1 | ⏳ Pending |
+| 11 | AI Services | 3 tuần | P2 | ⏳ Pending |
+| 12 | Seller Center | 2 tuần | P1 | ⏳ Pending |
+| 13 | Media Service | 1 tuần | P1 | ⏳ Pending |
+| 14 | Analytics Service | 1 tuần | P2 | ⏳ Pending |
+| 15 | Admin Dashboard | 1 tuần | P1 | ⏳ Pending |
+| 16 | Testing & DevOps | 2 tuần | P1 | ⏳ Pending |
 
 **Tổng thời gian: ~26 tuần (6 tháng)**
 
@@ -180,7 +180,7 @@ frontend/hypermall-web/
 
 ---
 
-## PHASE 2: User & Authentication (Tuần 3-4)
+## PHASE 2: User & Authentication ✅ COMPLETED
 
 ### 2.1 User Service
 
@@ -243,7 +243,7 @@ Address {
 
 ---
 
-## PHASE 3: Product & Category (Tuần 5-7)
+## PHASE 3: Product & Category ✅ COMPLETED
 
 ### 3.1 Product Service
 
@@ -333,7 +333,7 @@ Brand {
 
 ---
 
-## PHASE 4: Cart & Checkout (Tuần 8-9)
+## PHASE 4: Cart & Checkout ✅ COMPLETED
 
 ### 4.1 Cart Service
 
@@ -407,7 +407,7 @@ OrderStatus: PENDING_PAYMENT, PAID, CONFIRMED, PROCESSING,
 
 ---
 
-## PHASE 5: Payment Integration (Tuần 10)
+## PHASE 5: Payment Integration ✅ COMPLETED
 
 ### 5.1 Payment Service
 
@@ -445,7 +445,7 @@ Payment {
 
 ---
 
-## PHASE 6: Inventory & Shipping (Tuần 11-12)
+## PHASE 6: Inventory & Shipping ✅ COMPLETED
 
 ### 6.1 Inventory Service
 
@@ -490,7 +490,7 @@ StockMovement {
 
 ---
 
-## PHASE 7: Promotion & Voucher (Tuần 13)
+## PHASE 7: Promotion & Voucher ✅ COMPLETED
 
 ### 7.1 Promotion Service
 
@@ -526,7 +526,7 @@ FlashSale {
 
 ---
 
-## PHASE 8: Review & Rating (Tuần 14)
+## PHASE 8: Review & Rating ✅ COMPLETED
 
 ### 8.1 Review Service
 

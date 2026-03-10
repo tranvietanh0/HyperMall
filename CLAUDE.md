@@ -74,13 +74,13 @@ docker-compose -f docker-compose.dev.yml up -d
 | api-gateway | 8080 | ✅ | Routes, JWT auth, rate limiting |
 | user-service | 8081 | ✅ | Auth, User CRUD, Address |
 | product-service | 8082 | ✅ | Product, Category, Brand |
-| cart-service | 8083 | ⏳ | Shopping Cart |
-| order-service | 8084 | ⏳ | Orders |
-| payment-service | 8085 | ⏳ | Payment Integration |
-| inventory-service | 8086 | ⏳ | Stock Management |
-| shipping-service | 8087 | ⏳ | Shipping |
-| promotion-service | 8088 | ⏳ | Vouchers & Flash Sales |
-| review-service | 8089 | ⏳ | Reviews & Ratings |
+| cart-service | 8083 | ✅ | Shopping Cart (Redis) |
+| order-service | 8084 | ✅ | Orders, Order Items |
+| payment-service | 8085 | ✅ | VNPay, MoMo, ZaloPay, COD |
+| inventory-service | 8086 | ✅ | Stock, Reservation, Movement |
+| shipping-service | 8087 | ✅ | GHN, GHTK, ViettelPost |
+| promotion-service | 8088 | ✅ | Vouchers, Flash Sales |
+| review-service | 8089 | ✅ | Reviews, Ratings, Likes |
 | search-service | 8090 | ⏳ | Elasticsearch Integration |
 | notification-service | 8091 | ⏳ | Email/SMS/Push |
 | ai-service | 8092 | ⏳ | Chatbot, Recommendations |
@@ -121,7 +121,13 @@ All microservices depend on `common-lib`:
 Each microservice has its own schema (auto-created via `infrastructure/docker/mysql/init.sql`):
 - `hypermall_users` (user-service)
 - `hypermall_products` (product-service)
-- `hypermall_cart`, `hypermall_orders` (future services)
+- `hypermall_order` (order-service)
+- `hypermall_payment` (payment-service)
+- `hypermall_inventory` (inventory-service)
+- `hypermall_shipping` (shipping-service)
+- `hypermall_promotion` (promotion-service)
+
+Note: cart-service uses Redis, not MySQL.
 
 ## Troubleshooting
 
