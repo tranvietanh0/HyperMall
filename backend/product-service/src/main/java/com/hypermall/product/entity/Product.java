@@ -71,7 +71,7 @@ public class Product {
 
     @Column(name = "avg_rating", precision = 3, scale = 2)
     @Builder.Default
-    private Double avgRating = 0.0;
+    private BigDecimal avgRating = BigDecimal.ZERO;
 
     @Column(name = "total_reviews", nullable = false)
     @Builder.Default

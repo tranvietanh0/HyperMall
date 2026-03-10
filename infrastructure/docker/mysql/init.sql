@@ -1,6 +1,6 @@
 -- Create databases for each microservice
-CREATE DATABASE IF NOT EXISTS hypermall_user;
-CREATE DATABASE IF NOT EXISTS hypermall_product;
+CREATE DATABASE IF NOT EXISTS hypermall_users;
+CREATE DATABASE IF NOT EXISTS hypermall_products;
 CREATE DATABASE IF NOT EXISTS hypermall_order;
 CREATE DATABASE IF NOT EXISTS hypermall_payment;
 CREATE DATABASE IF NOT EXISTS hypermall_inventory;
@@ -12,8 +12,8 @@ CREATE DATABASE IF NOT EXISTS hypermall_media;
 CREATE DATABASE IF NOT EXISTS hypermall_analytics;
 
 -- Grant permissions
-GRANT ALL PRIVILEGES ON hypermall_user.* TO 'root'@'%';
-GRANT ALL PRIVILEGES ON hypermall_product.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON hypermall_users.* TO 'root'@'%';
+GRANT ALL PRIVILEGES ON hypermall_products.* TO 'root'@'%';
 GRANT ALL PRIVILEGES ON hypermall_order.* TO 'root'@'%';
 GRANT ALL PRIVILEGES ON hypermall_payment.* TO 'root'@'%';
 GRANT ALL PRIVILEGES ON hypermall_inventory.* TO 'root'@'%';

@@ -24,7 +24,21 @@
       "Bash(npm install)",
       "Bash(npm run dev)",
       "Bash(mvn compile:*)",
-      "Bash(find /c/Users/tranv/Documents/MyProject/HyperMall/backend/payment-service -name \"*.sql\" -o -name \"*.ddl\" 2>/dev/null | head -10)"
+      "Bash(find /c/Users/tranv/Documents/MyProject/HyperMall/backend/payment-service -name \"*.sql\" -o -name \"*.ddl\" 2>/dev/null | head -10)",
+      "Bash(netstat -ano | findstr \":3306\" 2>&1 || echo \"Port 3306 is free\")",
+      "Bash(netstat -ano | findstr \":6379\" 2>&1)",
+      "Bash(tasklist /FI \"PID eq 5560\" 2>&1)",
+      "Bash(wmic process where processid=5560 get name,commandline 2>&1 | head -5)",
+      "Bash(powershell -Command \"Get-Process -Id 5560 | Select-Object ProcessName, Path\" 2>&1)",
+      "Bash(docker stop ptitdate-mysql ptitdate-redis 2>/dev/null && docker rm ptitdate-mysql ptitdate-redis 2>/dev/null && echo \"Done! Stopped ptitdate containers\")",
+      "Bash(net stop mysql 2>&1 || net stop mysql80 2>&1 || echo \"Try manual: Open Services.msc > Find MySQL > Stop\")",
+      "Bash(sleep 15 && docker exec hypermall-mysql-dev mysqladmin ping -h localhost -u root -proot 2>&1)",
+      "Bash(docker exec hypermall-mysql-dev mysql -u root -proot -e \"SHOW DATABASES;\" 2>&1)",
+      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Select-Object Id, ProcessName\" 2>&1 || echo \"No Java processes\")",
+      "Bash(netstat -ano | findstr \":8081 :8082 :8083\" 2>&1 || echo \"Still not listening\")",
+      "Bash(find /c/Users/tranv/Documents/MyProject/HyperMall/backend/user-service/src -name \"*.java\" 2>/dev/null | head -20)",
+      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force\" 2>&1; echo \"Killed old Java processes\")",
+      "Bash(powershell -Command \"Get-Process java -ErrorAction SilentlyContinue | Stop-Process -Force\" 2>&1 && echo \"Stopped all Java processes\")"
     ]
   }
 }
