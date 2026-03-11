@@ -16,7 +16,8 @@ describe('format utilities', () => {
     it('should format number as VND currency', () => {
       const result = formatCurrency(1000000);
       expect(result).toContain('1.000.000');
-      expect(result).toContain('VND') || expect(result).toContain('₫');
+      // VND can be displayed as 'VND' or '₫' depending on locale
+      expect(result.includes('VND') || result.includes('₫')).toBe(true);
     });
 
     it('should handle zero', () => {
@@ -98,8 +99,8 @@ describe('format utilities', () => {
     });
 
     it('should return months ago', () => {
-      const date = new Date('2026-01-11T12:00:00');
-      expect(formatRelativeTime(date)).toBe('2 tháng trước');
+      const date = new Date('2025-12-11T12:00:00');
+      expect(formatRelativeTime(date)).toBe('3 tháng trước');
     });
 
     it('should return years ago', () => {
