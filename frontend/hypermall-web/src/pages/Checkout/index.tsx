@@ -558,7 +558,8 @@ export default function CheckoutPage() {
                     alt={item.productName}
                     className="w-14 h-14 object-cover rounded border flex-shrink-0"
                     onError={(e) => {
-                      ;(e.target as HTMLImageElement).src = 'https://placehold.co/56x56?text=?'
+                      const target = e.target as HTMLImageElement
+                      target.src = 'https://placehold.co/56x56?text=?'
                     }}
                   />
                   <div className="flex-1 min-w-0">

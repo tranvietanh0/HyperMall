@@ -135,8 +135,8 @@ export default function OrderSuccessPage() {
                     alt={item.productName}
                     className="w-16 h-16 object-cover rounded-lg border"
                     onError={(e) => {
-                      ;(e.target as HTMLImageElement).src =
-                        'https://placehold.co/64x64?text=?'
+                      const target = e.target as HTMLImageElement
+                      target.src = 'https://placehold.co/64x64?text=?'
                     }}
                   />
                 </div>
