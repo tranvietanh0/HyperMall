@@ -94,7 +94,7 @@ HyperMall/
 | 13 | Media Service | 1 tuần | P1 | ✅ Done |
 | 14 | Analytics Service | 1 tuần | P2 | ✅ Done |
 | 15 | Admin Dashboard | 1 tuần | P1 | ✅ Done |
-| 16 | Testing & DevOps | 2 tuần | P1 | ⏳ Pending |
+| 16 | Testing & DevOps | 2 tuần | P1 | ✅ Done |
 
 **Tổng thời gian: ~26 tuần (6 tháng)**
 
@@ -1082,7 +1082,44 @@ npm run dev
 
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 16: Testing & DevOps
+
+---
+
+#### Phase 16: Testing & DevOps (11/03/2026) ✅
+
+**16.1 Testing** ✅
+- **Frontend Unit Tests** (Vitest):
+  - `src/utils/format.test.ts` - Format utilities tests (currency, date, file size, etc.)
+  - `src/utils/validation.test.ts` - Validation schema tests (Yup schemas, email, phone)
+  - `src/hooks/useDebounce.test.ts` - Hook tests
+  - `src/test/setup.ts` - Test setup with mocks (localStorage, matchMedia, IntersectionObserver)
+  - `vitest.config.ts` - Vitest configuration with coverage
+- **Backend Unit Tests** (JUnit 5):
+  - `user-service/src/test/java/com/hypermall/user/service/AuthServiceTest.java` - AuthService tests
+  - `user-service/src/test/java/com/hypermall/user/controller/AuthControllerTest.java` - Controller tests
+  - `user-service/src/test/resources/application-test.yml` - Test configuration with H2
+
+**16.2 CI/CD** ✅
+- `.github/workflows/ci.yml` - GitHub Actions workflow:
+  - Frontend: lint, test with coverage, build
+  - Backend: test with MySQL/Redis services, build
+  - Docker build (on main branch)
+  - Artifact upload
+
+**16.3 Docker** ✅
+- `infrastructure/docker/docker-compose.prod.yml` - Production docker-compose with health checks
+- `backend/user-service/Dockerfile` - Multi-stage build for backend services
+- `frontend/hypermall-web/Dockerfile` - Multi-stage build with nginx
+- `frontend/hypermall-web/nginx.conf` - Nginx configuration with gzip, caching, SPA fallback
+
+**16.4 Monitoring** ✅
+- `infrastructure/docker/docker-compose.monitoring.yml` - Full monitoring stack
+- **Prometheus**: `monitoring/prometheus.yml` - Metrics collection from all services
+- **Grafana**: Provisioned dashboards, datasources
+  - `monitoring/grafana/dashboards/spring-boot-overview.json` - JVM, requests, errors dashboard
+- **AlertManager**: `monitoring/alertmanager.yml` - Alert routing and notifications
+- **ELK Stack**: Elasticsearch, Logstash, Kibana
+  - `monitoring/logstash/logstash.conf` - Log parsing and indexing
 
 ---
 

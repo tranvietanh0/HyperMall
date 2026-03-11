@@ -68,25 +68,25 @@ docker-compose -f docker-compose.dev.yml up -d
 ## Architecture
 
 ### Backend Microservices (Ports)
-| Service | Port | Status | Description |
-|---------|------|--------|-------------|
-| service-registry | 8761 | ✅ | Eureka Server (eureka/eureka123) |
-| config-server | 8888 | ✅ | Spring Cloud Config (config/config123) |
-| api-gateway | 8080 | ✅ | Routes, JWT auth, rate limiting |
-| user-service | 8081 | ✅ | Auth, User CRUD, Address |
-| product-service | 8082 | ✅ | Product, Category, Brand |
-| cart-service | 8083 | ✅ | Shopping Cart (Redis) |
-| order-service | 8084 | ✅ | Orders, Order Items |
-| payment-service | 8085 | ✅ | VNPay, MoMo, ZaloPay, COD |
-| inventory-service | 8086 | ✅ | Stock, Reservation, Movement |
-| shipping-service | 8087 | ✅ | GHN, GHTK, ViettelPost |
-| promotion-service | 8088 | ✅ | Vouchers, Flash Sales |
-| review-service | 8089 | ✅ | Reviews, Ratings, Likes |
-| search-service | 8090 | ✅ | Elasticsearch Integration |
-| notification-service | 8091 | ✅ | Email/SMS/Push |
-| media-service | 8093 | ✅ | File Uploads |
-| seller-service | 8094 | ✅ | Seller Center |
-| analytics-service | 8095 | ✅ | Analytics |
+| Service | Port | Description |
+|---------|------|-------------|
+| service-registry | 8761 | Eureka Server (eureka/eureka123) |
+| config-server | 8888 | Spring Cloud Config (config/config123) |
+| api-gateway | 8080 | Routes, JWT auth, rate limiting, circuit breaker |
+| user-service | 8081 | Auth, User CRUD, Address |
+| product-service | 8082 | Product, Category, Brand |
+| cart-service | 8083 | Shopping Cart (Redis) |
+| order-service | 8084 | Orders, Order Items |
+| payment-service | 8085 | VNPay, MoMo, ZaloPay, COD |
+| inventory-service | 8086 | Stock, Reservation, Movement |
+| shipping-service | 8087 | GHN, GHTK, ViettelPost |
+| promotion-service | 8088 | Vouchers, Flash Sales |
+| review-service | 8089 | Reviews, Ratings, Likes |
+| search-service | 8090 | Elasticsearch Integration |
+| notification-service | 8091 | Email/SMS/Push |
+| media-service | 8093 | File Uploads |
+| seller-service | 8094 | Seller Center |
+| analytics-service | 8095 | Analytics |
 
 ### Key URLs
 - **Frontend**: http://localhost:3000
@@ -106,12 +106,13 @@ All microservices depend on `common-lib`:
 
 ### Frontend Structure (frontend/hypermall-web/src/)
 - **Path aliases**: `@` (src root), `@components`, `@pages`, `@hooks`, `@services`, `@store`, `@types`, `@utils`, `@config`
-- **State**: Redux Toolkit slices in `store/slices/`
+- **State**: Redux Toolkit slices in `store/slices/`, zustand also available
 - **API**: Services in `services/` use axios, proxied to `localhost:8080/api`
+- **Forms**: Formik + Yup for validation
 
 ## API Routes (via API Gateway)
 
-All requests go through `localhost:8080/api/*`:
+Routes are auto-discovered via Eureka service discovery. All requests go through `localhost:8080/api/*`:
 | Path Pattern | Service |
 |--------------|---------|
 | `/api/auth/**`, `/api/users/**` | user-service |
@@ -135,6 +136,7 @@ Seller endpoints use `/api/seller/*` prefix, Admin endpoints use `/api/admin/*` 
 - MapStruct for DTO mapping, Lombok available in all modules
 - Parent POM (`backend/pom.xml`) manages all dependency versions
 - Services communicate via REST (WebClient) and RabbitMQ for async events
+- Resilience4j for circuit breakers, rate limiting, and retries in api-gateway
 
 ## Environment Variables
 
