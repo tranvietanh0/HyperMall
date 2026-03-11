@@ -21,8 +21,9 @@ HyperMall is an e-commerce platform (Shopee/Lazada clone) using microservices ar
 npm run dev           # Start dev server (port 3000)
 npm run build         # Build: tsc && vite build
 npm run lint          # ESLint with TypeScript rules
-npm run test          # Run all Vitest tests
+npm run test          # Run Vitest in watch mode
 npm run test:coverage # Run tests with coverage
+npx vitest run        # Run all tests once (CI mode)
 
 # Run single test file
 npx vitest run src/path/to/file.test.ts
@@ -83,9 +84,9 @@ docker-compose -f docker-compose.dev.yml up -d
 | review-service | 8089 | ✅ | Reviews, Ratings, Likes |
 | search-service | 8090 | ✅ | Elasticsearch Integration |
 | notification-service | 8091 | ✅ | Email/SMS/Push |
-| media-service | 8093 | ⏳ | File Uploads |
-| seller-service | 8094 | ⏳ | Seller Center |
-| analytics-service | 8095 | ⏳ | Analytics |
+| media-service | 8093 | ✅ | File Uploads |
+| seller-service | 8094 | ✅ | Seller Center |
+| analytics-service | 8095 | ✅ | Analytics |
 
 ### Key URLs
 - **Frontend**: http://localhost:3000
@@ -104,7 +105,7 @@ All microservices depend on `common-lib`:
 - **Config**: `JacksonConfig`, `AsyncConfig`, `RedisConfig`
 
 ### Frontend Structure (frontend/hypermall-web/src/)
-- **Path aliases**: `@components`, `@pages`, `@hooks`, `@services`, `@store`, `@types`, `@utils`, `@config`
+- **Path aliases**: `@` (src root), `@components`, `@pages`, `@hooks`, `@services`, `@store`, `@types`, `@utils`, `@config`
 - **State**: Redux Toolkit slices in `store/slices/`
 - **API**: Services in `services/` use axios, proxied to `localhost:8080/api`
 

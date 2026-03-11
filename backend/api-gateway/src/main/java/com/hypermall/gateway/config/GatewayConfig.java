@@ -99,6 +99,12 @@ public class GatewayConfig {
                         .filters(f -> f.filter(authenticationFilter))
                         .uri("lb://seller-service"))
 
+                // Analytics Service Routes
+                .route("analytics-service", r -> r
+                        .path("/api/analytics/**", "/api/admin/analytics/**")
+                        .filters(f -> f.filter(authenticationFilter))
+                        .uri("lb://analytics-service"))
+
                 .build();
     }
 }

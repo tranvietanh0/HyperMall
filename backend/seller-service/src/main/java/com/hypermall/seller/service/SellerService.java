@@ -5,6 +5,7 @@ import com.hypermall.common.exception.ResourceNotFoundException;
 import com.hypermall.common.util.StringUtil;
 import com.hypermall.seller.dto.request.CreateSellerRequest;
 import com.hypermall.seller.dto.request.UpdateSellerRequest;
+import com.hypermall.seller.dto.response.SellerDashboardResponse;
 import com.hypermall.seller.dto.response.SellerResponse;
 import com.hypermall.seller.entity.Seller;
 import com.hypermall.seller.entity.SellerStatus;
@@ -13,6 +14,8 @@ import com.hypermall.seller.repository.SellerRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +70,24 @@ public class SellerService {
     }
 
     @Transactional(readOnly = true)
+    public SellerDashboardResponse getMyDashboard(Long userId) {
+        Seller seller = sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for current user"));
+
+        return SellerDashboardResponse.builder()
+                .sellerId(seller.getId())
+                .shopName(seller.getShopName())
+                .shopSlug(seller.getShopSlug())
+                .status(seller.getStatus())
+                .rating(seller.getRating())
+                .totalProducts(seller.getTotalProducts())
+                .totalFollowers(seller.getTotalFollowers())
+                .joinedAt(seller.getCreatedAt())
+                .lastUpdatedAt(seller.getUpdatedAt())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public SellerResponse getSellerById(Long id) {
         Seller seller = sellerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + id));
@@ -104,6 +125,13 @@ public class SellerService {
     @Transactional(readOnly = true)
     public List<SellerResponse> getSellersByStatus(SellerStatus status) {
         return sellerMapper.toSellerResponseList(sellerRepository.findAllByStatusOrderByCreatedAtDesc(status));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SellerResponse> searchSellers(SellerStatus status, String keyword, Pageable pageable) {
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+        return sellerRepository.searchSellers(status, normalizedKeyword, pageable)
+                .map(sellerMapper::toSellerResponse);
     }
 
     @Transactional

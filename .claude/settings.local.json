@@ -59,7 +59,12 @@
       "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjQsImF1dGhvcml0aWVzIjoiUk9MRV9CVVlFUiIsInN1YiI6ImNoYXR0ZXN0MkB0ZXN0LmNvbSIsImlhdCI6MTc3MzE0MzI1MiwiZXhwIjoxNzczMTQ0MTUyfQ.l2xhvjq2thEyWJWqQz2fytm558kRYORThtfdTYtw4Q_N9Upt_ll6i7yN5EmEKo5nPtunshSVKsPsm8BW4dsW6g\"\n\ncurl -s -X POST http://localhost:8092/api/ai/chat \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Authorization: Bearer $TOKEN\" \\\\\n  -d '{\"message\":\"Xin chao, toi muon tim dien thoai gia re\"}' 2>&1)",
       "Bash(TOKEN=\"eyJhbGciOiJIUzUxMiJ9.eyJ1c2VySWQiOjQsImF1dGhvcml0aWVzIjoiUk9MRV9CVVlFUiIsInN1YiI6ImNoYXR0ZXN0MkB0ZXN0LmNvbSIsImlhdCI6MTc3MzE0MzI1MiwiZXhwIjoxNzczMTQ0MTUyfQ.l2xhvjq2thEyWJWqQz2fytm558kRYORThtfdTYtw4Q_N9Upt_ll6i7yN5EmEKo5nPtunshSVKsPsm8BW4dsW6g\"\n\ncurl -s -X POST http://localhost:8092/api/ai/chat \\\\\n  -H \"Content-Type: application/json\" \\\\\n  -H \"Authorization: Bearer $TOKEN\" \\\\\n  -d '{\"message\":\"Xin chao, toi muon tim dien thoai gia re\",\"provider\":\"gemini\"}' 2>&1)",
       "Bash(netstat -ano | grep 8092 | head -2)",
-      "Bash(/c/Windows/System32/taskkill.exe //F //PID 40612 2>&1)"
+      "Bash(/c/Windows/System32/taskkill.exe //F //PID 40612 2>&1)",
+      "Bash(cd /c/Projects/MyProject/HyperMall/backend && mvn install -pl common-lib -q 2>&1 | head -30)",
+      "Bash(mvn install:*)",
+      "Bash(cd /c/Projects/MyProject/HyperMall/frontend/hypermall-web && npm run build 2>&1 | tail -30)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

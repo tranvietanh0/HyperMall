@@ -30,9 +30,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/sellers/slug/**").permitAll()
+                        .requestMatchers("/api/sellers/me", "/api/sellers/me/dashboard").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/sellers", "/api/sellers/*", "/api/sellers/slug/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/sellers/register").authenticated()
-                        .requestMatchers("/api/sellers/me").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

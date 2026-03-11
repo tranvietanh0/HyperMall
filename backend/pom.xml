@@ -36,9 +36,8 @@
         <module>search-service</module>
         <module>notification-service</module>
         <module>seller-service</module>
-        <!-- TODO: Add these modules when created
         <module>media-service</module>
-        -->
+        <module>analytics-service</module>
     </modules>
 
     <properties>

@@ -2,7 +2,7 @@
 
 ## Tổng Quan Dự Án
 
-**HyperMall** là hệ thống thương mại điện tử quy mô lớn với đầy đủ chức năng như Shopee/Lazada/Tiki, sử dụng kiến trúc Microservices, tích hợp AI (Chatbot, Recommendation, Image Search).
+**HyperMall** là hệ thống thương mại điện tử quy mô lớn với đầy đủ chức năng như Shopee/Lazada/Tiki, sử dụng kiến trúc Microservices.
 
 ---
 
@@ -89,11 +89,11 @@ HyperMall/
 | 8 | Review & Rating | 1 tuần | P1 | ✅ Done |
 | 9 | Search Service | 1 tuần | P1 | ✅ Done |
 | 10 | Notification Service | 1 tuần | P1 | ✅ Done |
-| 11 | AI Services | 3 tuần | P2 | ✅ Done |
-| 12 | Seller Center | 2 tuần | P1 | 🔄 In Progress |
-| 13 | Media Service | 1 tuần | P1 | ⏳ Pending |
-| 14 | Analytics Service | 1 tuần | P2 | ⏳ Pending |
-| 15 | Admin Dashboard | 1 tuần | P1 | ⏳ Pending |
+| 11 | AI Services | 3 tuần | P2 | 🚫 Removed |
+| 12 | Seller Center | 2 tuần | P1 | ✅ Done |
+| 13 | Media Service | 1 tuần | P1 | ✅ Done |
+| 14 | Analytics Service | 1 tuần | P2 | ✅ Done |
+| 15 | Admin Dashboard | 1 tuần | P1 | ✅ Done |
 | 16 | Testing & DevOps | 2 tuần | P1 | ⏳ Pending |
 
 **Tổng thời gian: ~26 tuần (6 tháng)**
@@ -610,23 +610,11 @@ ProductDocument {
 
 ---
 
-## PHASE 11: AI Services (Tuần 17-19)
+## PHASE 11: AI Services (Tuần 17-19) - REMOVED
 
-### 11.1 AI Chatbot
-- Intent Detection
-- Context Management
-- Response Generation
-- Providers: OpenAI, Claude, Gemini
-
-### 11.2 Product Recommendation
-- Collaborative Filtering
-- Content-Based Filtering
-- User Behavior Analysis
-
-### 11.3 Image Search
-- Image Embedding
-- Vector Store
-- Similar Product Search
+- Module `backend/ai-service` da duoc loai khoi repository.
+- Maven parent, API Gateway routes/fallback, env vars, va tai lieu lien quan da duoc don dep.
+- Khong tiep tuc scope AI trong ke hoach hien tai.
 
 ---
 
@@ -727,8 +715,6 @@ Seller {
 | Search | Algolia | 10K records |
 | Queue | CloudAMQP | Little Lemur |
 | Storage | Cloudinary | 25GB |
-| AI | OpenAI/Claude | Pay-as-you-go |
-
 ---
 
 ## Quick Start
@@ -803,7 +789,7 @@ npm run dev
 - `backend/config-server/` - Port 8888
 - `ConfigServerApplication.java`
 - `SecurityConfig.java`
-- Configurations: `application.yml`, `user-service.yml`, `product-service.yml`, `cart-service.yml`, `order-service.yml`, `payment-service.yml`, `api-gateway.yml`
+- Configurations: `application.yml`, `user-service.yml`, `product-service.yml`, `cart-service.yml`, `order-service.yml`, `payment-service.yml`, `api-gateway.yml`, `seller-service.yml`
 
 **1.4 API Gateway** ✅
 - `backend/api-gateway/` - Port 8080
@@ -952,22 +938,104 @@ npm run dev
 
 ### In Progress 🔄
 - [ ] Phase 3: Frontend implementation (Services, Redux, Hooks, Components, Pages)
-- [ ] Phase 12: Seller Center (seller-service bootstrap, profile APIs, admin approval APIs)
 
 ---
 
-#### Phase 12: Seller Center (11/03/2026)
+#### Phase 12: Seller Center (11/03/2026) ✅
 
-**12.1 Seller Service (Backend)** 🔄
+**12.1 Seller Service (Backend)** ✅
 - `backend/seller-service/` - Port 8094
 - Added base module and Spring Boot application (`SellerServiceApplication`)
-- **Entity/Enums**: `Seller`, `BusinessType`, `SellerStatus`
-- **DTOs**: `CreateSellerRequest`, `UpdateSellerRequest`, `SellerResponse`
-- **Repository/Mapper**: `SellerRepository`, `SellerMapper`
-- **Service**: `SellerService` - register/get/update seller profile, filter by status, update status
+- **Entity/Enums**: `Seller`, `SellerFollower`, `BusinessType`, `SellerStatus`
+- **DTOs**: `CreateSellerRequest`, `UpdateSellerRequest`, `SellerResponse`, `SellerDashboardResponse`, `FollowResponse`
+- **Repository/Mapper**: `SellerRepository`, `SellerFollowerRepository`, `SellerMapper`
+- **Service**: `SellerService` - register/get/update seller profile, seller dashboard summary, public/admin filter-search by status or keyword, update status
+- **Service**: `SellerFollowerService` - follow/unfollow seller, check following status, get follower/following lists
 - **Controllers**: `SellerController`, `AdminSellerController`
 - **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
 - Added `seller-service` module to `backend/pom.xml`
+- Added central config file `backend/config-server/src/main/resources/configurations/seller-service.yml`
+- **Endpoints**:
+  - `POST /api/sellers/register` - Register as seller
+  - `GET /api/sellers/me` - Get current seller profile
+  - `PUT /api/sellers/me` - Update seller profile
+  - `GET /api/sellers/me/dashboard` - Get seller dashboard summary
+  - `GET /api/sellers` - Public seller listing
+  - `GET /api/sellers/{id}` - Get seller by ID
+  - `GET /api/sellers/slug/{slug}` - Get seller by shop slug
+  - `POST /api/sellers/{id}/follow` - Follow a seller
+  - `DELETE /api/sellers/{id}/follow` - Unfollow a seller
+  - `GET /api/sellers/{id}/following` - Check if following
+  - `GET /api/sellers/me/following` - Get list of followed sellers
+  - `GET /api/admin/sellers/search` - Admin seller search
+  - `PUT /api/admin/sellers/{id}/status` - Update seller status
+
+---
+
+#### Phase 13: Media Service (11/03/2026) ✅
+
+**13.1 Media Service (Backend)** ✅
+- `backend/media-service/` - Port 8093
+- Added base module and Spring Boot application (`MediaServiceApplication`)
+- **Entity/Enums**: `Media`, `MediaType`, `StorageProvider`
+- **DTOs**: `MediaResponse`, `UploadResponse`
+- **Repository**: `MediaRepository`
+- **Storage**: `StorageService` interface, `LocalStorageService` implementation
+- **Mapper**: `MediaMapper`
+- **Service**: `MediaService` - uploadFiles, uploadSingleFile, getMediaById, getUserMedia, getMediaByReference, deleteMedia, loadFile
+- **Controller**: `MediaController`
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+- **Features**:
+  - Image upload with automatic thumbnail generation (Thumbnailator)
+  - Video upload support (mp4, webm)
+  - Document upload support (pdf, doc, docx)
+  - File validation (size, type)
+  - Local storage (with S3 ready for integration)
+  - Reference-based media lookup (for products, reviews, etc.)
+- **Endpoints**:
+  - `POST /api/media/upload` - Upload multiple files
+  - `POST /api/media/upload/single` - Upload single file
+  - `GET /api/media/{id}` - Get media by ID
+  - `GET /api/media/my` - Get current user's media
+  - `GET /api/media/reference/{type}/{id}` - Get media by reference
+  - `DELETE /api/media/{id}` - Delete media
+  - `GET /api/media/files/**` - Serve files (public)
+
+---
+
+#### Phase 14: Analytics Service (11/03/2026) ✅
+
+**14.1 Analytics Service (Backend)** ✅
+- `backend/analytics-service/` - Port 8095
+- Added base module and Spring Boot application (`AnalyticsServiceApplication`)
+- **Entity/Enums**: `AnalyticsEvent`, `DailyStats`, `EventType`
+- **DTOs**: `TrackEventRequest`, `DashboardStatsResponse`, `DailyStatsItem`, `TopProductItem`, `TopCategoryItem`
+- **Repository**: `AnalyticsEventRepository`, `DailyStatsRepository`
+- **Service**: `AnalyticsService` - trackEvent, getDashboardStats, getTopSearchQueries
+- **Controller**: `AnalyticsController`
+- **Config**: `SecurityConfig`, `OpenApiConfig`, `application.yml`
+- **Features**:
+  - Event tracking (page views, product views, add to cart, checkout, search, etc.)
+  - Dashboard statistics with daily aggregation
+  - Seller-specific analytics
+  - Top products and categories by views
+  - Trending search queries
+  - Conversion rate and average order value calculation
+  - Device type detection
+  - IP address tracking
+- **Endpoints**:
+  - `POST /api/analytics/track` - Track an event (public)
+  - `GET /api/analytics/dashboard` - Get dashboard stats
+  - `GET /api/analytics/seller/dashboard` - Get seller dashboard stats
+  - `GET /api/analytics/search/trending` - Get trending search queries
+
+#### Scope Update (11/03/2026)
+
+**11.1 AI Services** 🚫
+- Removed `backend/ai-service` from the repository scope
+- Removed `ai-service` from `backend/pom.xml`
+- Removed AI route/fallback from API Gateway
+- Removed AI env keys and plan references
 
 ---
 
@@ -1014,10 +1082,35 @@ npm run dev
 
 ### Pending ⏳
 - [ ] Phase 4: Frontend (Cart UI, Checkout flow)
-- [ ] Phase 13: Media Service
-- [ ] Phase 14: Analytics Service
-- [ ] Phase 15: Admin Dashboard
 - [ ] Phase 16: Testing & DevOps
+
+---
+
+#### Phase 15: Admin Dashboard (11/03/2026) ✅
+
+**15.1 Admin Layout & Navigation** ✅
+- `frontend/hypermall-web/src/components/admin/AdminLayout.tsx`
+- Responsive sidebar with mobile support
+- Navigation: Dashboard, Users, Products, Orders, Sellers, Categories, Analytics, Settings
+- Logout functionality
+
+**15.2 Admin Pages** ✅
+- **Dashboard** (`/admin`) - Overview stats, recent orders, charts
+- **Users** (`/admin/users`) - User management with search, filter by status, role badges
+- **Products** (`/admin/products`) - Product moderation, approve/reject pending products
+- **Orders** (`/admin/orders`) - Order management, status updates
+- **Sellers** (`/admin/sellers`) - Seller approval, stats summary, suspend/activate
+- **Categories** (`/admin/categories`) - Category tree management, add/edit/toggle status
+- **Analytics** (`/admin/analytics`) - Revenue charts, top products, conversion metrics
+- **Settings** (`/admin/settings`) - Site settings, feature toggles, maintenance mode
+
+**15.3 Features** ✅
+- TailwindCSS styling with responsive design
+- Mock data (ready for API integration)
+- Search and filter functionality
+- Status badges with color coding
+- Action buttons (view, edit, delete, approve, reject)
+- Statistics cards with trend indicators
 
 ---
 

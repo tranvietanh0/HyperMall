@@ -1,0 +1,13 @@
+server:
+  port: ${SELLER_SERVICE_PORT:8094}
+
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/hypermall_seller?useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckp3dFRva2VuR2VuZXJhdGlvbjEyMzQ1Njc4OTAxMjM0NTY3ODkw}

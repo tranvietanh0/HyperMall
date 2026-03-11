@@ -1,6 +1,7 @@
 package com.hypermall.seller.controller;
 
 import com.hypermall.common.dto.ApiResponse;
+import com.hypermall.common.dto.PageResponse;
 import com.hypermall.seller.dto.response.SellerResponse;
 import com.hypermall.seller.entity.SellerStatus;
 import com.hypermall.seller.service.SellerService;
@@ -8,6 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +37,16 @@ public class AdminSellerController {
             @RequestParam(defaultValue = "PENDING") SellerStatus status) {
         List<SellerResponse> response = sellerService.getSellersByStatus(status);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search sellers with filters")
+    public ResponseEntity<ApiResponse<PageResponse<SellerResponse>>> searchSellers(
+            @RequestParam(required = false) SellerStatus status,
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        Page<SellerResponse> response = sellerService.searchSellers(status, keyword, pageable);
+        return ResponseEntity.ok(ApiResponse.success(PageResponse.of(response)));
     }
 
     @PutMapping("/{id}/status")
