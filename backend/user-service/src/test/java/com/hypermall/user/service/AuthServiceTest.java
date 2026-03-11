@@ -322,13 +322,13 @@ class AuthServiceTest {
     }
 
     private UserResponse createUserResponse() {
-        UserResponse response = new UserResponse();
-        response.setId(1L);
-        response.setEmail("test@example.com");
-        response.setFullName("Test User");
-        response.setPhone("0987654321");
-        response.setRole("BUYER");
-        response.setStatus("ACTIVE");
-        return response;
+        return UserResponse.builder()
+                .id(1L)
+                .email("test@example.com")
+                .fullName("Test User")
+                .phone("0987654321")
+                .role(UserRole.BUYER)
+                .status(UserStatus.ACTIVE)
+                .build();
     }
 }

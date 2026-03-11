@@ -2,6 +2,8 @@ package com.hypermall.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hypermall.user.dto.*;
+import com.hypermall.user.entity.UserRole;
+import com.hypermall.user.entity.UserStatus;
 import com.hypermall.user.service.AuthService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -205,12 +207,13 @@ class AuthControllerTest {
     }
 
     private AuthResponse createAuthResponse() {
-        UserResponse userResponse = new UserResponse();
-        userResponse.setId(1L);
-        userResponse.setEmail("test@example.com");
-        userResponse.setFullName("Test User");
-        userResponse.setRole("BUYER");
-        userResponse.setStatus("ACTIVE");
+        UserResponse userResponse = UserResponse.builder()
+                .id(1L)
+                .email("test@example.com")
+                .fullName("Test User")
+                .role(UserRole.BUYER)
+                .status(UserStatus.ACTIVE)
+                .build();
 
         return AuthResponse.of("accessToken", "refreshToken", 86400L, userResponse);
     }
