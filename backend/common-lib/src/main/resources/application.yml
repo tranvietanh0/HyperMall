@@ -3,7 +3,7 @@
 
 app:
   jwt:
-    secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckp3dFRva2VuR2VuZXJhdGlvbjEyMzQ1Njc4OTAxMjM0NTY3ODkw}
+    secret: ${JWT_SECRET}
     access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900000}     # 15 minutes
     refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000} # 7 days
 

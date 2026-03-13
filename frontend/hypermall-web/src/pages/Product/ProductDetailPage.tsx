@@ -5,6 +5,7 @@ import { useAppDispatch, useAppSelector } from '@store/hooks'
 import { fetchProductById } from '@store/slices/productSlice'
 import { useCart } from '@hooks/useCart'
 import { formatCurrency, calculateDiscount } from '@utils/format'
+import { sanitizeHtml } from '@utils/sanitize'
 import Loading from '@components/common/Loading'
 import StarRating from '@components/product/StarRating'
 
@@ -153,7 +154,7 @@ export default function ProductDetailPage() {
         {product.description && (
           <div className="border-t p-6">
             <h2 className="font-semibold text-lg mb-4">Mô tả sản phẩm</h2>
-            <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: product.description }} />
+            <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
           </div>
         )}
       </div>

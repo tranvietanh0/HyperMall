@@ -35,7 +35,7 @@ spring:
 # JWT Configuration
 app:
   jwt:
-    secret: ${JWT_SECRET:aHlwZXJtYWxsLXNlY3JldC1rZXktZm9yLWp3dC10b2tlbi1nZW5lcmF0aW9uLW1pbmltdW0tMjU2LWJpdHMtcmVxdWlyZWQ=}
+    secret: ${JWT_SECRET}
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173}
 

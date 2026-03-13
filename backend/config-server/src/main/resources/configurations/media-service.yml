@@ -10,7 +10,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckp3dFRva2VuR2VuZXJhdGlvbjEyMzQ1Njc4OTAxMjM0NTY3ODkw}
+    secret: ${JWT_SECRET}
 
 media:
   storage:

@@ -48,7 +48,7 @@ management:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:hypermall-secret-key-for-jwt-token-generation-minimum-256-bits-required}
+    secret: ${JWT_SECRET}
   payment:
     vnpay:
       tmn-code: ${VNPAY_TMN_CODE:}
