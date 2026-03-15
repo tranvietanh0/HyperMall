@@ -59,6 +59,13 @@ docker-compose -f docker-compose.dev.yml up -d
 cd backend
 mvn clean install -DskipTests
 
+# Dev profile with local fallback credentials
+set SPRING_PROFILES_ACTIVE=dev
+set CONFIG_USERNAME=config
+set CONFIG_PASSWORD=config123
+set EUREKA_USERNAME=eureka
+set EUREKA_PASSWORD=eureka123
+
 # Start services in order (separate terminals)
 cd service-registry && mvn spring-boot:run     # Port 8761
 cd config-server && mvn spring-boot:run         # Port 8888

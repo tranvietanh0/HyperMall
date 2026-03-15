@@ -6,7 +6,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
@@ -28,17 +28,16 @@ spring:
             allowCredentials: true
             maxAge: 3600
 
-# Rate limiting
-resilience4j:
-  ratelimiter:
-    instances:
-      default:
-        limitForPeriod: 100
-        limitRefreshPeriod: 1s
-        timeoutDuration: 0
+app:
+  rate-limit:
+    replenish-rate: 100
+    burst-capacity: 200
+    requested-tokens: 1
+    trust-forwarded-for: false
+    max-trusted-index: 1
 
 # Logging
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
     reactor.netty: INFO

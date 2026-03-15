@@ -1,0 +1,26 @@
+server:
+  port: ${SHIPPING_SERVICE_PORT:8087}
+
+spring:
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/hypermall_shipping?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+shipping:
+  ghn:
+    api-url: ${GHN_API_URL:https://dev-online-gateway.ghn.vn/shiip/public-api}
+    token: ${GHN_TOKEN:}
+    shop-id: ${GHN_SHOP_ID:}
+  ghtk:
+    api-url: ${GHTK_API_URL:https://services.giaohangtietkiem.vn}
+    token: ${GHTK_TOKEN:}
+  viettel-post:
+    api-url: ${VTP_API_URL:https://partner.viettelpost.vn/v2}
+    token: ${VTP_TOKEN:}

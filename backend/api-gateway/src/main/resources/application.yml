@@ -5,12 +5,14 @@ spring:
   application:
     name: api-gateway
   config:
-    import: optional:configserver:http://${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8888}
+    import: configserver:${CONFIG_SERVER_URI:http://${CONFIG_SERVER_USERNAME}:${CONFIG_SERVER_PASSWORD}@${CONFIG_SERVER_HOST:localhost}:${CONFIG_SERVER_PORT:8888}}
   cloud:
+    config:
+      fail-fast: true
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
           lower-case-service-id: true
       default-filters:
         - name: CircuitBreaker
@@ -43,7 +45,7 @@ app:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_URI:http://eureka:eureka123@localhost:8761/eureka/}
+      defaultZone: ${EUREKA_URI:http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.uuid}
@@ -76,16 +78,14 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,gateway
+        include: health,info
   endpoint:
     health:
-      show-details: always
-    gateway:
-      enabled: true
+      show-details: when_authorized
 
 # Logging
 logging:
   level:
-    org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway: INFO
     reactor.netty: INFO
-    io.github.resilience4j: DEBUG
+    io.github.resilience4j: INFO

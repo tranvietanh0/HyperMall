@@ -6,8 +6,8 @@ spring:
     name: service-registry
   security:
     user:
-      name: ${EUREKA_USERNAME:eureka}
-      password: ${EUREKA_PASSWORD:eureka123}
+      name: ${EUREKA_USERNAME}
+      password: ${EUREKA_PASSWORD}
 
 eureka:
   instance:
@@ -32,10 +32,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
 
 logging:
   level:
