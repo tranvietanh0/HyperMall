@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline'
 import { useAppDispatch, useAppSelector } from '@store/hooks'
 import { fetchProducts, fetchCategories, setFilters, clearFilters } from '@store/slices/productSlice'
@@ -9,23 +9,31 @@ import { SORT_OPTIONS } from '@config/constants'
 import { useDebounce } from '@hooks/useDebounce'
 
 const PRICE_RANGES = [
-  { label: 'Tất cả', min: undefined as number | undefined, max: undefined as number | undefined },
-  { label: 'Dưới 100.000đ', min: 0, max: 100000 },
-  { label: '100k - 500k', min: 100000, max: 500000 },
-  { label: '500k - 1 triệu', min: 500000, max: 1000000 },
-  { label: 'Trên 1 triệu', min: 1000000, max: undefined as number | undefined },
+  { label: 'All', min: undefined as number | undefined, max: undefined as number | undefined },
+  { label: 'Under 100,000 VND', min: 0, max: 100000 },
+  { label: '100k - 500k VND', min: 100000, max: 500000 },
+  { label: '500k - 1M VND', min: 500000, max: 1000000 },
+  { label: 'Above 1M VND', min: 1000000, max: undefined as number | undefined },
 ]
 
 export default function ProductListPage() {
   const dispatch = useAppDispatch()
+  const { categoryId: routeCategoryId } = useParams<{ categoryId?: string }>()
   const [searchParams, setSearchParams] = useSearchParams()
   const { products, categories, pagination, filters, isLoading } = useAppSelector((s) => s.product)
   const [showFilter, setShowFilter] = useState(false)
-  const [keyword, setKeyword] = useState(searchParams.get('keyword') ?? '')
+  const initialKeyword = searchParams.get('keyword') ?? searchParams.get('q') ?? ''
+  const [keyword, setKeyword] = useState(initialKeyword)
   const debouncedKeyword = useDebounce(keyword, 400)
-  const categoryId = searchParams.get('categoryId') ? Number(searchParams.get('categoryId')) : undefined
+  const categoryIdParam = searchParams.get('categoryId') ?? routeCategoryId
+  const categoryId = categoryIdParam ? Number(categoryIdParam) : undefined
+  const searchKeyword = searchParams.get('keyword') ?? searchParams.get('q') ?? ''
 
   useEffect(() => { dispatch(fetchCategories()) }, [dispatch])
+
+  useEffect(() => {
+    setKeyword(searchKeyword)
+  }, [searchKeyword])
 
   useEffect(() => {
     dispatch(setFilters({ keyword: debouncedKeyword || undefined, categoryId, page: 0 }))
@@ -38,6 +46,10 @@ export default function ProductListPage() {
   const handleCategory = (id?: number) => {
     const params = new URLSearchParams(searchParams)
     if (id) params.set('categoryId', String(id)); else params.delete('categoryId')
+    if (params.has('q') && !params.has('keyword')) {
+      params.set('keyword', params.get('q') || '')
+      params.delete('q')
+    }
     setSearchParams(params)
   }
 
@@ -58,12 +70,12 @@ export default function ProductListPage() {
         {/* Sidebar - Desktop */}
         <aside className="hidden lg:block w-52 flex-shrink-0 space-y-6">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Danh mục</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Categories</h3>
             <ul className="space-y-1 text-sm">
               <li>
                 <button onClick={() => handleCategory(undefined)}
                   className={`w-full text-left px-2 py-1 rounded hover:text-primary-600 ${!categoryId ? 'text-primary-600 font-medium' : 'text-gray-700'}`}>
-                  Tất cả
+                  All
                 </button>
               </li>
               {categories.map((cat) => (
@@ -77,7 +89,7 @@ export default function ProductListPage() {
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Khoảng giá</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Price range</h3>
             <ul className="space-y-1 text-sm">
               {PRICE_RANGES.map((r) => (
                 <li key={r.label}>
@@ -90,20 +102,20 @@ export default function ProductListPage() {
             </ul>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-3">Đánh giá</h3>
+            <h3 className="font-semibold text-gray-900 mb-3">Rating</h3>
             <ul className="space-y-1 text-sm">
               {[5, 4, 3].map((r) => (
                 <li key={r}>
                   <button onClick={() => dispatch(setFilters({ minRating: r, page: 0 }))}
                     className={`w-full text-left px-2 py-1 rounded hover:text-primary-600 ${filters.minRating === r ? 'text-primary-600 font-medium' : 'text-gray-700'}`}>
-                    {r}⭐ trở lên
+                    {r}⭐ & up
                   </button>
                 </li>
               ))}
             </ul>
           </div>
           {(filters.keyword || filters.minPrice != null || filters.maxPrice != null || filters.minRating || categoryId) && (
-            <button onClick={handleClear} className="text-sm text-red-500 hover:underline">Xóa bộ lọc</button>
+            <button onClick={handleClear} className="text-sm text-red-500 hover:underline">Clear filters</button>
           )}
         </aside>
 
@@ -111,12 +123,12 @@ export default function ProductListPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
             <input type="text" value={keyword} onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tìm kiếm sản phẩm..." className="input flex-1 min-w-0 max-w-sm" />
+              placeholder="Search products..." className="input flex-1 min-w-0 max-w-sm" />
             <button onClick={() => setShowFilter(!showFilter)} className="lg:hidden btn btn-outline flex items-center gap-1 text-sm">
-              <AdjustmentsHorizontalIcon className="w-4 h-4" />Lọc
+              <AdjustmentsHorizontalIcon className="w-4 h-4" />Filter
             </button>
             <div className="flex items-center gap-2 text-sm ml-auto">
-              <span className="text-gray-500 hidden sm:inline">Sắp xếp:</span>
+              <span className="text-gray-500 hidden sm:inline">Sort by:</span>
               <select value={filters.sortBy ?? 'newest'}
                 onChange={(e) => dispatch(setFilters({ sortBy: e.target.value, page: 0 }))}
                 className="border rounded-md px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary-500">
@@ -128,28 +140,28 @@ export default function ProductListPage() {
           {showFilter && (
             <div className="lg:hidden bg-gray-50 rounded-lg p-4 mb-4 grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="font-medium mb-2">Khoảng giá</p>
+                <p className="font-medium mb-2">Price range</p>
                 {PRICE_RANGES.map((r) => (
                   <button key={r.label} onClick={() => dispatch(setFilters({ minPrice: r.min, maxPrice: r.max, page: 0 }))} className="block text-left py-1 text-gray-700 hover:text-primary-600">{r.label}</button>
                 ))}
               </div>
               <div>
-                <p className="font-medium mb-2">Đánh giá</p>
-                {[5, 4, 3].map((r) => <button key={r} onClick={() => dispatch(setFilters({ minRating: r, page: 0 }))} className="block text-left py-1 text-gray-700 hover:text-primary-600">{r}⭐ trở lên</button>)}
+                <p className="font-medium mb-2">Rating</p>
+                {[5, 4, 3].map((r) => <button key={r} onClick={() => dispatch(setFilters({ minRating: r, page: 0 }))} className="block text-left py-1 text-gray-700 hover:text-primary-600">{r}⭐ & up</button>)}
               </div>
             </div>
           )}
 
           <p className="text-sm text-gray-500 mb-4">
-            {isLoading ? 'Đang tải...' : `${pagination.totalElements.toLocaleString()} sản phẩm`}
+            {isLoading ? 'Loading...' : `${pagination.totalElements.toLocaleString()} products`}
           </p>
 
           {isLoading ? (
             <div className="flex justify-center py-20"><Loading size="lg" /></div>
           ) : products.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
-              <p className="text-lg">Không tìm thấy sản phẩm nào</p>
-              <button onClick={handleClear} className="mt-3 text-primary-600 hover:underline text-sm">Xóa bộ lọc</button>
+              <p className="text-lg">No products found</p>
+              <button onClick={handleClear} className="mt-3 text-primary-600 hover:underline text-sm">Clear filters</button>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3">

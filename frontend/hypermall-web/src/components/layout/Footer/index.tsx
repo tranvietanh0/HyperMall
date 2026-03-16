@@ -1,81 +1,100 @@
 import { Link } from 'react-router-dom';
+import useScrollReveal from '@hooks/useScrollReveal';
+
+const customerServiceLinks = [
+  { label: 'Help Centre', to: '/profile' },
+  { label: 'How to Buy', to: '/products' },
+  { label: 'Returns & Refunds', to: '/orders' },
+  { label: 'Contact Us', to: '/profile' },
+];
+
+const aboutLinks = [
+  { label: 'About HyperMall', to: '/products' },
+  { label: 'Careers', to: '/register' },
+  { label: 'Privacy Policy', to: '/profile' },
+  { label: 'Terms & Conditions', to: '/products' },
+];
+
+const payment = ['Visa', 'Mastercard', 'VNPay', 'MoMo', 'ZaloPay', 'COD'];
 
 export default function Footer() {
+  const revealRef = useScrollReveal<HTMLElement>();
+
   return (
-    <footer className="bg-gray-100 border-t">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Customer Service */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Chăm sóc khách hàng</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link to="/help" className="hover:text-primary-600">Trung tâm trợ giúp</Link></li>
-              <li><Link to="/guide" className="hover:text-primary-600">Hướng dẫn mua hàng</Link></li>
-              <li><Link to="/shipping" className="hover:text-primary-600">Vận chuyển</Link></li>
-              <li><Link to="/returns" className="hover:text-primary-600">Trả hàng & Hoàn tiền</Link></li>
-              <li><Link to="/contact" className="hover:text-primary-600">Liên hệ</Link></li>
+    <footer ref={revealRef} className="border-t border-secondary-100 bg-secondary-50">
+      <div className="container py-12 md:py-16">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
+          <div className="lg:col-span-1" data-reveal="up" data-reveal-delay="1">
+            <Link to="/" className="mb-6 block text-2xl font-black tracking-tighter text-primary-900 transition-colors duration-300 hover:text-accent-600">HYPERMALL</Link>
+            <p className="text-sm leading-relaxed text-secondary-500">
+              The next generation of e-commerce. Premium quality, global reach, and a seamless shopping experience for everyone.
+            </p>
+          </div>
+
+          <div data-reveal="up" data-reveal-delay="2">
+            <h3 className="mb-6 text-[10px] font-bold uppercase tracking-widest text-primary-900">Customer Support</h3>
+            <ul className="space-y-4 text-sm font-medium text-secondary-500">
+              {customerServiceLinks.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="link-underline transition hover:text-primary-900">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* About HyperMall */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Về HyperMall</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li><Link to="/about" className="hover:text-primary-600">Giới thiệu</Link></li>
-              <li><Link to="/careers" className="hover:text-primary-600">Tuyển dụng</Link></li>
-              <li><Link to="/terms" className="hover:text-primary-600">Điều khoản</Link></li>
-              <li><Link to="/privacy" className="hover:text-primary-600">Chính sách bảo mật</Link></li>
-              <li><Link to="/seller/register" className="hover:text-primary-600">Bán hàng cùng HyperMall</Link></li>
+          <div data-reveal="up" data-reveal-delay="3">
+            <h3 className="mb-6 text-[10px] font-bold uppercase tracking-widest text-primary-900">Our Company</h3>
+            <ul className="space-y-4 text-sm font-medium text-secondary-500">
+              {aboutLinks.map((item) => (
+                <li key={item.label}>
+                  <Link to={item.to} className="link-underline transition hover:text-primary-900">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link to="/register" className="link-underline transition hover:text-accent-600">
+                  Become a Seller
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Payment */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Thanh toán</h3>
+          <div data-reveal="up" data-reveal-delay="4">
+            <h3 className="mb-6 text-[10px] font-bold uppercase tracking-widest text-primary-900">Secure Payments</h3>
             <div className="flex flex-wrap gap-2">
-              <div className="bg-white border rounded px-3 py-1 text-sm">VNPay</div>
-              <div className="bg-white border rounded px-3 py-1 text-sm">MoMo</div>
-              <div className="bg-white border rounded px-3 py-1 text-sm">ZaloPay</div>
-              <div className="bg-white border rounded px-3 py-1 text-sm">COD</div>
-            </div>
-
-            <h3 className="font-semibold text-gray-900 mb-4 mt-6">Đơn vị vận chuyển</h3>
-            <div className="flex flex-wrap gap-2">
-              <div className="bg-white border rounded px-3 py-1 text-sm">GHN</div>
-              <div className="bg-white border rounded px-3 py-1 text-sm">GHTK</div>
-              <div className="bg-white border rounded px-3 py-1 text-sm">ViettelPost</div>
+              {payment.map((item) => (
+                <div key={item} className="flex h-10 w-16 items-center justify-center rounded-lg border border-secondary-200 bg-white text-[10px] font-bold text-primary-900 shadow-sm transition-all duration-300 hover:border-primary-300 hover:shadow-md hover:scale-105 hover:-translate-y-0.5">
+                  {item}
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* Social & App */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Kết nối với chúng tôi</h3>
-            <div className="flex gap-3 mb-6">
-              <a href="#" className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                f
-              </a>
-              <a href="#" className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white">
-                IG
-              </a>
-              <a href="#" className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white">
-                YT
-              </a>
-            </div>
-
-            <h3 className="font-semibold text-gray-900 mb-4">Tải ứng dụng</h3>
-            <div className="flex flex-col gap-2">
-              <a href="#" className="flex items-center gap-2 bg-black text-white px-3 py-2 rounded-lg text-sm">
-                <span>App Store</span>
-              </a>
-              <a href="#" className="flex items-center gap-2 bg-black text-white px-3 py-2 rounded-lg text-sm">
-                <span>Google Play</span>
-              </a>
+          <div data-reveal="up" data-reveal-delay="5">
+            <h3 className="mb-6 text-[10px] font-bold uppercase tracking-widest text-primary-900">Experience App</h3>
+            <div className="grid gap-3">
+              <Link to="/products" className="flex items-center justify-center rounded-xl bg-primary-900 px-6 py-3 text-xs font-bold text-white transition-all duration-300 hover:bg-primary-800 hover:shadow-lg hover:shadow-primary-900/20 hover:-translate-y-0.5 active:scale-[0.97]">
+                App Store
+              </Link>
+              <Link to="/products" className="flex items-center justify-center rounded-xl bg-white px-6 py-3 text-xs font-bold text-primary-900 shadow-sm ring-1 ring-secondary-200 transition-all duration-300 hover:bg-secondary-50 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.97]">
+                Google Play
+              </Link>
             </div>
           </div>
         </div>
 
-        <div className="border-t mt-8 pt-8 text-center text-sm text-gray-500">
-          <p>&copy; 2024 HyperMall. Tất cả quyền được bảo lưu.</p>
+        <div className="mt-16 border-t border-secondary-200 pt-8 flex flex-col items-center justify-between gap-4 md:flex-row" data-reveal="fade">
+          <p className="text-xs font-medium text-secondary-400">
+            © 2026 HyperMall Platform. All rights reserved.
+          </p>
+          <div className="flex items-center gap-6 text-xs font-medium text-secondary-400">
+            <Link to="/profile" className="link-underline hover:text-primary-900">Privacy Policy</Link>
+            <Link to="/products" className="link-underline hover:text-primary-900">Terms of Service</Link>
+            <Link to="/profile" className="link-underline hover:text-primary-900">Cookie Settings</Link>
+          </div>
         </div>
       </div>
     </footer>

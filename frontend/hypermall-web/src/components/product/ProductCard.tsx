@@ -21,22 +21,24 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Link to={`/products/${product.id}`} className="group block">
-      <div className="bg-white rounded-lg border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all duration-200">
+      <div className="bg-white rounded-lg border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-gray-200 hover:-translate-y-1">
         <div className="relative aspect-square overflow-hidden bg-gray-50">
           <img
             src={product.thumbnail}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover transition-transform duration-500 ease-spring group-hover:scale-110"
             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/300x300?text=No+Image' }}
           />
+          {/* Hover overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           {discount > 0 && (
-            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded">
+            <span className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded animate-pulse-glow">
               -{discount}%
             </span>
           )}
           <button
             onClick={onAddToCart}
-            className="absolute bottom-2 right-2 bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-primary-50"
+            className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-lg translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-spring hover:bg-primary-50 hover:scale-110 active:scale-95"
             title="Thêm vào giỏ"
           >
             <ShoppingCartIcon className="w-4 h-4 text-primary-600" />
@@ -44,9 +46,9 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         <div className="p-3 space-y-1.5">
-          <p className="text-sm text-gray-700 line-clamp-2 min-h-[2.5rem]">{product.name}</p>
+          <p className="text-sm text-gray-700 line-clamp-2 min-h-[2.5rem] transition-colors duration-200 group-hover:text-primary-900">{product.name}</p>
           <div className="flex items-baseline gap-2 flex-wrap">
-            <span className="text-base font-semibold text-primary-600">{formatCurrency(displayPrice)}</span>
+            <span className="text-base font-semibold text-primary-600 transition-colors duration-200 group-hover:text-accent-600">{formatCurrency(displayPrice)}</span>
             {discount > 0 && (
               <span className="text-xs text-gray-400 line-through">{formatCurrency(product.basePrice)}</span>
             )}

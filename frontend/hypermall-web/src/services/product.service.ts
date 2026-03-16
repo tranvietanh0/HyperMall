@@ -17,8 +17,8 @@ export const productService = {
     if (filter.keyword) params.append('keyword', filter.keyword);
     if (filter.categoryId) params.append('categoryId', filter.categoryId.toString());
     if (filter.brandIds?.length) params.append('brandIds', filter.brandIds.join(','));
-    if (filter.minPrice) params.append('minPrice', filter.minPrice.toString());
-    if (filter.maxPrice) params.append('maxPrice', filter.maxPrice.toString());
+    if (filter.minPrice !== undefined) params.append('minPrice', filter.minPrice.toString());
+    if (filter.maxPrice !== undefined) params.append('maxPrice', filter.maxPrice.toString());
     if (filter.minRating) params.append('minRating', filter.minRating.toString());
     if (filter.sortBy) params.append('sortBy', filter.sortBy);
     if (filter.page !== undefined) params.append('page', filter.page.toString());
