@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom';
 import {
   HomeIcon,
   UsersIcon,
@@ -14,6 +14,7 @@ import {
   ArrowLeftOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import { useAuth } from '@hooks/useAuth';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin', icon: HomeIcon },
@@ -28,11 +29,10 @@ const navigation = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -82,6 +82,15 @@ export default function AdminLayout() {
             </NavLink>
           ))}
         </nav>
+        <div className="p-4 border-t border-gray-700">
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white"
+          >
+            <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3" />
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Desktop sidebar */}

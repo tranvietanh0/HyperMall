@@ -44,7 +44,7 @@ export const cartService = {
   },
 
   getCheckoutPreview: async (
-    itemIds: number[],
+    itemIds: string[],
     voucherCode?: string
   ): Promise<CheckoutPreview> => {
     const response = await api.post<ApiResponse<CheckoutPreview>>(

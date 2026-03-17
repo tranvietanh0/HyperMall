@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authService } from '@/services/auth.service';
 import type { User, LoginRequest, RegisterRequest } from '@/types';
+import { getErrorMessage } from '@/utils';
 
 interface AuthState {
   user: User | null;
@@ -23,8 +24,7 @@ export const login = createAsyncThunk(
       const response = await authService.login(credentials);
       return response.user;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Login failed');
+      return rejectWithValue(getErrorMessage(error, 'Login failed'));
     }
   }
 );
@@ -33,11 +33,10 @@ export const register = createAsyncThunk(
   'auth/register',
   async (data: RegisterRequest, { rejectWithValue }) => {
     try {
-      const user = await authService.register(data);
-      return user;
+      const response = await authService.register(data);
+      return response.user;
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Registration failed');
+      return rejectWithValue(getErrorMessage(error, 'Registration failed'));
     }
   }
 );
@@ -79,8 +78,10 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
       })
       .addCase(register.rejected, (state, action) => {
         state.isLoading = false;

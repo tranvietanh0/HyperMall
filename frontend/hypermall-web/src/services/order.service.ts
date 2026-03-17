@@ -1,13 +1,21 @@
 import { api } from './api.service';
 import { API_ENDPOINTS } from '@/config/api.config';
+import { userService } from './user.service';
 import type {
   ApiResponse,
   PageResponse,
   Order,
+  OrderSummary,
   CreateOrderRequest,
-  OrderTracking,
   ShippingMethod,
 } from '@/types';
+
+type ShippingOption = {
+  providerName: string;
+  serviceName: string;
+  shippingFee: number;
+  estimatedDays: number;
+};
 
 export const orderService = {
   createOrder: async (data: CreateOrderRequest): Promise<Order> => {
@@ -18,13 +26,13 @@ export const orderService = {
     return response.data;
   },
 
-  getOrders: async (page = 0, size = 10, status?: string): Promise<PageResponse<Order>> => {
+  getOrders: async (page = 0, size = 10, status?: string): Promise<PageResponse<OrderSummary>> => {
     const params = new URLSearchParams();
     params.append('page', page.toString());
     params.append('size', size.toString());
     if (status) params.append('status', status);
 
-    const response = await api.get<ApiResponse<PageResponse<Order>>>(
+    const response = await api.get<ApiResponse<PageResponse<OrderSummary>>>(
       `${API_ENDPOINTS.ORDERS.LIST}?${params.toString()}`
     );
     return response.data;
@@ -45,27 +53,32 @@ export const orderService = {
     return response.data;
   },
 
-  getOrderTracking: async (orderNumber: string): Promise<OrderTracking> => {
-    const response = await api.get<ApiResponse<OrderTracking>>(
+  getOrderTracking: async (orderNumber: string): Promise<Order> => {
+    const response = await api.get<ApiResponse<Order>>(
       API_ENDPOINTS.ORDERS.TRACKING(orderNumber)
     );
     return response.data;
   },
 
   getShippingMethods: async (addressId: number): Promise<ShippingMethod[]> => {
-    const response = await api.get<ApiResponse<ShippingMethod[]>>(
-      `${API_ENDPOINTS.SHIPPING.METHODS}?addressId=${addressId}`
+    const address = await userService.getAddressById(addressId);
+    const response = await api.post<ApiResponse<ShippingOption[]>>(
+      API_ENDPOINTS.SHIPPING.CALCULATE,
+      {
+        fromProvince: 'Ho Chi Minh City',
+        fromDistrict: 'District 1',
+        toProvince: address.province,
+        toDistrict: address.district,
+        toWard: address.ward,
+        weight: 500,
+      }
     );
-    return response.data;
-  },
-
-  calculateShipping: async (
-    addressId: number,
-    items: { productId: number; quantity: number }[]
-  ): Promise<{ fee: number; estimatedDays: string }> => {
-    const response = await api.post<
-      ApiResponse<{ fee: number; estimatedDays: string }>
-    >(API_ENDPOINTS.SHIPPING.CALCULATE, { addressId, items });
-    return response.data;
+    return response.data.map((method) => ({
+      id: `${method.providerName}-${method.serviceName}`,
+      name: method.providerName,
+      description: method.serviceName,
+      estimatedDays: String(method.estimatedDays),
+      fee: method.shippingFee,
+    }));
   },
 };

@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 import type { RouteObject } from 'react-router-dom';
 import AdminLayout from '@/components/admin/AdminLayout';
+import ProtectedRoute from './ProtectedRoute';
 
 // Lazy load admin pages
 const AdminDashboard = lazy(() => import('@/pages/Admin/Dashboard'));
@@ -15,7 +16,7 @@ const AdminSettings = lazy(() => import('@/pages/Admin/Settings'));
 
 export const adminRoutes: RouteObject = {
   path: '/admin',
-  element: <AdminLayout />,
+  element: <ProtectedRoute requiredRole="ADMIN"><AdminLayout /></ProtectedRoute>,
   children: [
     {
       index: true,

@@ -6,6 +6,7 @@ import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '@config/constants'
 import { formatCurrency } from '@utils/format'
 import Loading from '@components/common/Loading'
 import toast from 'react-hot-toast'
+import { getErrorMessage } from '@/utils'
 import type { Order, OrderStatus } from '@/types'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -20,7 +21,7 @@ const STATUS_COLORS: Record<string, string> = {
   RETURNED: 'text-orange-600 bg-orange-50 border-orange-200',
 }
 
-const ORDER_STEPS: OrderStatus[] = ['PENDING_PAYMENT', 'CONFIRMED', 'PROCESSING', 'SHIPPING', 'DELIVERED', 'COMPLETED']
+const ORDER_STEPS: OrderStatus[] = ['PENDING_PAYMENT', 'PAID', 'CONFIRMED', 'PROCESSING', 'SHIPPING', 'DELIVERED', 'COMPLETED']
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -48,8 +49,8 @@ export default function OrderDetailPage() {
       setOrder(updated)
       setShowCancelModal(false)
       toast.success('Đã hủy đơn hàng')
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Không thể hủy đơn hàng')
+    } catch (error: unknown) {
+      toast.error(getErrorMessage(error, 'Không thể hủy đơn hàng'))
     } finally {
       setIsCancelling(false)
     }
@@ -135,11 +136,11 @@ export default function OrderDetailPage() {
                     <div className="flex justify-between text-sm mt-1.5">
                       <span className="text-gray-500">x{item.quantity}</span>
                       <div className="text-right">
-                        <span className="font-semibold text-primary-600">{formatCurrency(item.subtotal)}</span>
-                        <span className="text-xs text-gray-400 ml-1">({formatCurrency(item.price)}/cái)</span>
-                      </div>
-                    </div>
-                  </div>
+                         <span className="font-semibold text-primary-600">{formatCurrency(item.totalPrice)}</span>
+                         <span className="text-xs text-gray-400 ml-1">({formatCurrency(item.unitPrice)}/cái)</span>
+                       </div>
+                     </div>
+                   </div>
                 </div>
               ))}
             </div>

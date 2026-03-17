@@ -25,7 +25,7 @@ export const useAuth = () => {
     async (data: RegisterRequest) => {
       const result = await dispatch(register(data));
       if (register.fulfilled.match(result)) {
-        navigate('/login');
+        navigate('/');
         return true;
       }
       return false;

@@ -10,10 +10,10 @@ export type OrderStatus =
   | 'RETURNED';
 
 export type PaymentMethod = 'VNPAY' | 'MOMO' | 'ZALOPAY' | 'BANK_TRANSFER' | 'COD';
-export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'REFUNDED';
+export type PaymentStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED' | 'PARTIALLY_REFUNDED';
 
 export interface CartItem {
-  id: number;
+  id: string;
   productId: number;
   variantId?: number;
   sellerId: number;
@@ -37,19 +37,24 @@ export interface Cart {
 export interface AddToCartRequest {
   productId: number;
   variantId?: number;
+  sellerId: number;
   quantity: number;
+  productName?: string;
+  variantName?: string;
+  thumbnail?: string;
+  price?: number;
 }
 
 export interface OrderItem {
-  id: number;
+  id: number | string;
   productId: number;
   variantId?: number;
   productName: string;
   variantName?: string;
   thumbnail: string;
-  price: number;
+  unitPrice: number;
   quantity: number;
-  subtotal: number;
+  totalPrice: number;
 }
 
 export interface ShippingAddress {
@@ -66,7 +71,6 @@ export interface Order {
   orderNumber: string;
   userId: number;
   sellerId: number;
-  sellerName: string;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
@@ -78,7 +82,33 @@ export interface Order {
   note?: string;
   items: OrderItem[];
   createdAt: string;
+  updatedAt?: string;
   paidAt?: string;
+  confirmedAt?: string;
+  shippedAt?: string;
+  deliveredAt?: string;
+  cancelledAt?: string;
+  cancelReason?: string;
+  voucherCode?: string;
+}
+
+export interface OrderSummary {
+  id: number;
+  orderNumber: string;
+  userId: number;
+  sellerId: number;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  subtotal: number;
+  shippingFee: number;
+  discount: number;
+  total: number;
+  note?: string;
+  voucherCode?: string;
+  totalItems: number;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface CreateOrderItemRequest {
@@ -96,6 +126,8 @@ export interface CreateOrderRequest {
   paymentMethod: PaymentMethod;
   shippingAddress: ShippingAddress;
   items: CreateOrderItemRequest[];
+  shippingFee?: number;
+  discount?: number;
   note?: string;
   voucherCode?: string;
 }
@@ -120,15 +152,3 @@ export interface ShippingMethod {
   fee: number;
 }
 
-export interface OrderTracking {
-  orderNumber: string;
-  status: OrderStatus;
-  trackingNumber?: string;
-  carrier?: string;
-  estimatedDelivery?: string;
-  history: {
-    status: OrderStatus;
-    note?: string;
-    createdAt: string;
-  }[];
-}

@@ -1,5 +1,6 @@
 import { lazy } from 'react';
 import type { RouteObject } from 'react-router-dom';
+import ProtectedRoute from './ProtectedRoute';
 
 // Lazy load pages
 const HomePage = lazy(() => import('@/pages/Home'));
@@ -50,23 +51,23 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/checkout',
-    element: <CheckoutPage />,
+    element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
   },
   {
     path: '/orders',
-    element: <OrderListPage />,
+    element: <ProtectedRoute><OrderListPage /></ProtectedRoute>,
   },
   {
     path: '/orders/:id',
-    element: <OrderDetailPage />,
+    element: <ProtectedRoute><OrderDetailPage /></ProtectedRoute>,
   },
   {
     path: '/order-success/:id',
-    element: <OrderSuccessPage />,
+    element: <ProtectedRoute><OrderSuccessPage /></ProtectedRoute>,
   },
   {
     path: '/profile',
-    element: <ProfilePage />,
+    element: <ProtectedRoute><ProfilePage /></ProtectedRoute>,
   },
   {
     path: '*',

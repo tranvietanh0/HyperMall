@@ -30,6 +30,7 @@
       "@services/*": ["src/services/*"],
       "@store/*": ["src/store/*"],
       "@types/*": ["src/types/*"],
+      "@utils": ["src/utils/index.ts"],
       "@utils/*": ["src/utils/*"],
       "@config/*": ["src/config/*"]
     }

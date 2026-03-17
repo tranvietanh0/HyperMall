@@ -40,7 +40,12 @@ export default function ProductDetailPage() {
     addToCart({
       productId: product.id,
       variantId: selectedVariant ?? undefined,
+      sellerId: product.sellerId,
       quantity,
+      productName: product.name,
+      variantName: activeVariant?.name,
+      thumbnail: activeVariant?.image ?? product.thumbnail,
+      price: displayPrice,
     })
   }
 

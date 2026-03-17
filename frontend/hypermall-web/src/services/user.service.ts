@@ -23,19 +23,26 @@ export const userService = {
     return response.data;
   },
 
+  updateAvatar: async (avatarUrl: string): Promise<User> => {
+    const response = await api.post<ApiResponse<User>>(
+      API_ENDPOINTS.USERS.UPLOAD_AVATAR,
+      undefined,
+      { params: { avatarUrl } }
+    );
+    return response.data;
+  },
+
   changePassword: async (data: ChangePasswordRequest): Promise<void> => {
     await api.put(API_ENDPOINTS.USERS.CHANGE_PASSWORD, data);
   },
 
-  uploadAvatar: async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const response = await api.post<ApiResponse<{ url: string }>>(
+  uploadAvatar: async (avatarUrl: string): Promise<User> => {
+    const response = await api.post<ApiResponse<User>>(
       API_ENDPOINTS.USERS.UPLOAD_AVATAR,
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
+      undefined,
+      { params: { avatarUrl } }
     );
-    return response.data.url;
+    return response.data;
   },
 
   // Address management

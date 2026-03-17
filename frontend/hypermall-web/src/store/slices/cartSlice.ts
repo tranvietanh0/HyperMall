@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { cartService } from '@/services/cart.service';
 import type { Cart, CartItem, AddToCartRequest } from '@/types';
+import { getErrorMessage } from '@/utils';
 
 interface CartState {
   cart: Cart | null;
@@ -18,8 +19,7 @@ export const fetchCart = createAsyncThunk('cart/fetch', async (_, { rejectWithVa
   try {
     return await cartService.getCart();
   } catch (error: unknown) {
-    const err = error as { response?: { data?: { message?: string } } };
-    return rejectWithValue(err.response?.data?.message || 'Failed to fetch cart');
+    return rejectWithValue(getErrorMessage(error, 'Failed to fetch cart'));
   }
 });
 
@@ -29,8 +29,7 @@ export const addToCart = createAsyncThunk(
     try {
       return await cartService.addItem(data);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to add item');
+      return rejectWithValue(getErrorMessage(error, 'Failed to add item'));
     }
   }
 );
@@ -41,8 +40,7 @@ export const updateCartItem = createAsyncThunk(
     try {
       return await cartService.updateItem(itemId, quantity);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to update item');
+      return rejectWithValue(getErrorMessage(error, 'Failed to update item'));
     }
   }
 );
@@ -53,8 +51,7 @@ export const removeCartItem = createAsyncThunk(
     try {
       return await cartService.removeItem(itemId);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to remove item');
+      return rejectWithValue(getErrorMessage(error, 'Failed to remove item'));
     }
   }
 );
@@ -63,8 +60,7 @@ export const clearCart = createAsyncThunk('cart/clear', async (_, { rejectWithVa
   try {
     await cartService.clearCart();
   } catch (error: unknown) {
-    const err = error as { response?: { data?: { message?: string } } };
-    return rejectWithValue(err.response?.data?.message || 'Failed to clear cart');
+    return rejectWithValue(getErrorMessage(error, 'Failed to clear cart'));
   }
 });
 
@@ -75,7 +71,7 @@ const cartSlice = createSlice({
     setCart: (state, action: PayloadAction<Cart>) => {
       state.cart = action.payload;
     },
-    updateItemLocally: (state, action: PayloadAction<{ itemId: number; changes: Partial<CartItem> }>) => {
+    updateItemLocally: (state, action: PayloadAction<{ itemId: string; changes: Partial<CartItem> }>) => {
       if (state.cart) {
         const item = state.cart.items.find((i) => i.id === action.payload.itemId);
         if (item) {

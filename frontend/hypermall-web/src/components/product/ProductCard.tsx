@@ -16,7 +16,14 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   const onAddToCart = (e: React.MouseEvent) => {
     e.preventDefault()
-    addToCart({ productId: product.id, quantity: 1 })
+    addToCart({
+      productId: product.id,
+      sellerId: product.sellerId,
+      quantity: 1,
+      productName: product.name,
+      thumbnail: product.thumbnail,
+      price: displayPrice,
+    })
   }
 
   return (

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { productService } from '@/services/product.service';
 import type { Product, ProductDetail, Category, ProductFilter, PageResponse } from '@/types';
+import { getErrorMessage } from '@/utils';
 
 interface ProductState {
   products: Product[];
@@ -40,8 +41,7 @@ export const fetchProducts = createAsyncThunk(
     try {
       return await productService.getProducts(filter);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch products');
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch products'));
     }
   }
 );
@@ -52,8 +52,7 @@ export const fetchProductById = createAsyncThunk(
     try {
       return await productService.getProductById(id);
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch product');
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch product'));
     }
   }
 );
@@ -64,8 +63,7 @@ export const fetchCategories = createAsyncThunk(
     try {
       return await productService.getCategoryTree();
     } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch categories');
+      return rejectWithValue(getErrorMessage(error, 'Failed to fetch categories'));
     }
   }
 );

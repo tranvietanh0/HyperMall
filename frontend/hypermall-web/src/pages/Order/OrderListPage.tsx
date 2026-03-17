@@ -5,7 +5,7 @@ import { orderService } from '@services/order.service'
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from '@config/constants'
 import { formatCurrency } from '@utils/format'
 import Loading from '@components/common/Loading'
-import type { Order, OrderStatus } from '@/types'
+import type { OrderStatus, OrderSummary } from '@/types'
 
 const STATUS_TABS: { value: string; label: string }[] = [
   { value: '', label: 'Tất cả' },
@@ -30,7 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrderListPage() {
   const [activeTab, setActiveTab] = useState('')
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<OrderSummary[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
@@ -104,10 +104,8 @@ export default function OrderListPage() {
   )
 }
 
-function OrderCard({ order }: { order: Order }) {
+function OrderCard({ order }: { order: OrderSummary }) {
   const statusColor = STATUS_COLORS[order.status] ?? 'text-gray-600 bg-gray-50'
-  const previewItems = order.items.slice(0, 3)
-  const remaining = order.items.length - 3
 
   return (
     <div className="bg-white rounded-xl border overflow-hidden">
@@ -123,25 +121,13 @@ function OrderCard({ order }: { order: Order }) {
         </span>
       </div>
 
-      {/* Items */}
-      <div className="px-5 py-4 divide-y">
-        {previewItems.map((item) => (
-          <div key={item.id} className="flex gap-3 py-2.5 first:pt-0 last:pb-0">
-            <img src={item.thumbnail} alt={item.productName}
-              className="w-14 h-14 object-cover rounded border flex-shrink-0"
-              onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/56x56?text=?' }} />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium line-clamp-1">{item.productName}</p>
-              {item.variantName && <p className="text-xs text-gray-500">{item.variantName}</p>}
-              <div className="flex justify-between text-sm mt-1">
-                <span className="text-gray-500">x{item.quantity}</span>
-                <span className="font-medium">{formatCurrency(item.price)}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-        {remaining > 0 && (
-          <p className="text-xs text-gray-400 pt-2">+{remaining} sản phẩm khác</p>
+      <div className="px-5 py-4">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-500">Số lượng sản phẩm</span>
+          <span className="font-medium">{order.totalItems}</span>
+        </div>
+        {order.note && (
+          <p className="text-sm text-gray-500 mt-2 line-clamp-2">Ghi chú: {order.note}</p>
         )}
       </div>
 
