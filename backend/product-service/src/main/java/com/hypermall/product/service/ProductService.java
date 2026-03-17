@@ -3,7 +3,9 @@ package com.hypermall.product.service;
 import com.hypermall.common.exception.BadRequestException;
 import com.hypermall.common.exception.ForbiddenException;
 import com.hypermall.common.exception.ResourceNotFoundException;
+import com.hypermall.product.dto.request.ProductImageRequest;
 import com.hypermall.product.dto.request.ProductRequest;
+import com.hypermall.product.dto.request.ProductVariantRequest;
 import com.hypermall.product.dto.response.ProductDetailResponse;
 import com.hypermall.product.dto.response.ProductResponse;
 import com.hypermall.product.entity.*;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,33 +61,21 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductById(Long id) {
-        Product product = productRepository.findWithDetailsById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
-
-        if (product.getStatus() != ProductStatus.ACTIVE) {
-            throw new ResourceNotFoundException("Product not found with id: " + id);
-        }
+        Product product = findActiveProductById(id);
 
         return productMapper.toProductDetailResponse(product);
     }
 
     @Transactional(readOnly = true)
     public ProductDetailResponse getProductBySlug(String slug) {
-        Product product = productRepository.findWithDetailsBySlug(slug)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
-
-        if (product.getStatus() != ProductStatus.ACTIVE) {
-            throw new ResourceNotFoundException("Product not found with slug: " + slug);
-        }
+        Product product = findActiveProductBySlug(slug);
 
         return productMapper.toProductDetailResponse(product);
     }
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
-        // Validate category exists
-        categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+        findCategoryById(categoryId);
 
         Page<Product> products = productRepository.findByCategoryIdAndStatus(
                 categoryId,
@@ -110,26 +101,11 @@ public class ProductService {
 
     @Transactional
     public ProductDetailResponse createProduct(Long sellerId, ProductRequest request) {
-        // Validate slug uniqueness
-        if (productRepository.existsBySlug(request.getSlug())) {
-            throw new BadRequestException("Product with slug '" + request.getSlug() + "' already exists");
-        }
+        validateCreateSlug(request.getSlug());
 
-        // Validate category exists
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
-
-        // Validate brand exists if provided
-        Brand brand = null;
-        if (request.getBrandId() != null) {
-            brand = brandRepository.findById(request.getBrandId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Brand not found with id: " + request.getBrandId()));
-        }
-
-        // Validate sale price is less than base price
-        if (request.getSalePrice() != null && request.getSalePrice().compareTo(request.getBasePrice()) >= 0) {
-            throw new BadRequestException("Sale price must be less than base price");
-        }
+        Category category = findCategoryById(request.getCategoryId());
+        Brand brand = findBrandByIdIfPresent(request.getBrandId());
+        validateSalePrice(request.getBasePrice(), request.getSalePrice());
 
         Product product = Product.builder()
                 .sellerId(sellerId)
@@ -148,34 +124,11 @@ public class ProductService {
                 .variants(new ArrayList<>())
                 .build();
 
-        // Add product images
-        if (request.getImages() != null && !request.getImages().isEmpty()) {
-            request.getImages().forEach(imageRequest -> {
-                ProductImage image = ProductImage.builder()
-                        .url(imageRequest.getUrl())
-                        .sortOrder(imageRequest.getSortOrder() != null ? imageRequest.getSortOrder() : 0)
-                        .isMain(imageRequest.getIsMain() != null ? imageRequest.getIsMain() : false)
-                        .build();
-                product.addImage(image);
-            });
-        }
+        addImagesIfPresent(product, request.getImages());
 
-        // Add product variants
         if (request.getVariants() != null && !request.getVariants().isEmpty()) {
             product.setHasVariants(true);
-            request.getVariants().forEach(variantRequest -> {
-                ProductVariant variant = ProductVariant.builder()
-                        .sku(variantRequest.getSku())
-                        .name(variantRequest.getName())
-                        .price(variantRequest.getPrice())
-                        .salePrice(variantRequest.getSalePrice())
-                        .image(variantRequest.getImage())
-                        .attributes(variantRequest.getAttributes())
-                        .stock(variantRequest.getStock() != null ? variantRequest.getStock() : 0)
-                        .isActive(variantRequest.getIsActive() != null ? variantRequest.getIsActive() : true)
-                        .build();
-                product.addVariant(variant);
-            });
+            addVariants(product, request.getVariants());
         }
 
         Product savedProduct = productRepository.save(product);
@@ -189,32 +142,12 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        // Verify seller owns this product
-        if (!product.getSellerId().equals(sellerId)) {
-            throw new ForbiddenException("You don't have permission to update this product");
-        }
+        validateSellerOwnership(product, sellerId, "update");
+        validateUpdateSlug(product, request.getSlug(), productId);
 
-        // Validate slug uniqueness (excluding current product)
-        if (!product.getSlug().equals(request.getSlug()) &&
-                productRepository.existsBySlugAndIdNot(request.getSlug(), productId)) {
-            throw new BadRequestException("Product with slug '" + request.getSlug() + "' already exists");
-        }
-
-        // Validate category exists
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + request.getCategoryId()));
-
-        // Validate brand exists if provided
-        Brand brand = null;
-        if (request.getBrandId() != null) {
-            brand = brandRepository.findById(request.getBrandId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Brand not found with id: " + request.getBrandId()));
-        }
-
-        // Validate sale price is less than base price
-        if (request.getSalePrice() != null && request.getSalePrice().compareTo(request.getBasePrice()) >= 0) {
-            throw new BadRequestException("Sale price must be less than base price");
-        }
+        Category category = findCategoryById(request.getCategoryId());
+        Brand brand = findBrandByIdIfPresent(request.getBrandId());
+        validateSalePrice(request.getBasePrice(), request.getSalePrice());
 
         product.setCategory(category);
         product.setBrand(brand);
@@ -230,36 +163,14 @@ public class ProductService {
             product.setStatus(request.getStatus());
         }
 
-        // Update images
         if (request.getImages() != null) {
-            product.getImages().clear();
-            request.getImages().forEach(imageRequest -> {
-                ProductImage image = ProductImage.builder()
-                        .url(imageRequest.getUrl())
-                        .sortOrder(imageRequest.getSortOrder() != null ? imageRequest.getSortOrder() : 0)
-                        .isMain(imageRequest.getIsMain() != null ? imageRequest.getIsMain() : false)
-                        .build();
-                product.addImage(image);
-            });
+            replaceImages(product, request.getImages());
         }
 
-        // Update variants
         if (request.getVariants() != null) {
-            product.getVariants().clear();
+            clearVariants(product);
             product.setHasVariants(!request.getVariants().isEmpty());
-            request.getVariants().forEach(variantRequest -> {
-                ProductVariant variant = ProductVariant.builder()
-                        .sku(variantRequest.getSku())
-                        .name(variantRequest.getName())
-                        .price(variantRequest.getPrice())
-                        .salePrice(variantRequest.getSalePrice())
-                        .image(variantRequest.getImage())
-                        .attributes(variantRequest.getAttributes())
-                        .stock(variantRequest.getStock() != null ? variantRequest.getStock() : 0)
-                        .isActive(variantRequest.getIsActive() != null ? variantRequest.getIsActive() : true)
-                        .build();
-                product.addVariant(variant);
-            });
+            addVariants(product, request.getVariants());
         } else if (request.getHasVariants() != null) {
             product.setHasVariants(request.getHasVariants());
         }
@@ -275,15 +186,108 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        // Verify seller owns this product
-        if (!product.getSellerId().equals(sellerId)) {
-            throw new ForbiddenException("You don't have permission to delete this product");
-        }
+        validateSellerOwnership(product, sellerId, "delete");
 
         // Soft delete - set status to DELETED and record deletion time
         product.setStatus(ProductStatus.DELETED);
         product.setDeletedAt(java.time.LocalDateTime.now());
         productRepository.save(product);
         log.info("Product soft deleted: {} (ID: {}) by seller {}", product.getName(), product.getId(), sellerId);
+    }
+
+    private Product findActiveProductById(Long id) {
+        Product product = productRepository.findWithDetailsById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Product not found with id: " + id);
+        }
+        return product;
+    }
+
+    private Product findActiveProductBySlug(String slug) {
+        Product product = productRepository.findWithDetailsBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
+        if (product.getStatus() != ProductStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Product not found with slug: " + slug);
+        }
+        return product;
+    }
+
+    private Category findCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
+    }
+
+    private Brand findBrandByIdIfPresent(Long brandId) {
+        if (brandId == null) {
+            return null;
+        }
+        return brandRepository.findById(brandId)
+                .orElseThrow(() -> new ResourceNotFoundException("Brand not found with id: " + brandId));
+    }
+
+    private void validateCreateSlug(String slug) {
+        if (productRepository.existsBySlug(slug)) {
+            throw new BadRequestException("Product with slug '" + slug + "' already exists");
+        }
+    }
+
+    private void validateUpdateSlug(Product product, String slug, Long productId) {
+        if (!product.getSlug().equals(slug) && productRepository.existsBySlugAndIdNot(slug, productId)) {
+            throw new BadRequestException("Product with slug '" + slug + "' already exists");
+        }
+    }
+
+    private void validateSalePrice(BigDecimal basePrice, BigDecimal salePrice) {
+        if (salePrice != null && salePrice.compareTo(basePrice) >= 0) {
+            throw new BadRequestException("Sale price must be less than base price");
+        }
+    }
+
+    private void validateSellerOwnership(Product product, Long sellerId, String action) {
+        if (!product.getSellerId().equals(sellerId)) {
+            throw new ForbiddenException("You don't have permission to " + action + " this product");
+        }
+    }
+
+    private void addImagesIfPresent(Product product, List<ProductImageRequest> imageRequests) {
+        if (imageRequests == null || imageRequests.isEmpty()) {
+            return;
+        }
+        imageRequests.forEach(imageRequest -> product.addImage(toProductImage(imageRequest)));
+    }
+
+    private void replaceImages(Product product, List<ProductImageRequest> imageRequests) {
+        product.getImages().clear();
+        addImagesIfPresent(product, imageRequests);
+    }
+
+    private void clearVariants(Product product) {
+        product.getVariants().clear();
+    }
+
+    private void addVariants(Product product, List<ProductVariantRequest> variantRequests) {
+        variantRequests.forEach(variantRequest -> product.addVariant(toProductVariant(variantRequest)));
+    }
+
+    private ProductImage toProductImage(ProductImageRequest imageRequest) {
+        return ProductImage.builder()
+                .url(imageRequest.getUrl())
+                .sortOrder(imageRequest.getSortOrder() != null ? imageRequest.getSortOrder() : 0)
+                .isMain(imageRequest.getIsMain() != null ? imageRequest.getIsMain() : false)
+                .build();
+    }
+
+    private ProductVariant toProductVariant(ProductVariantRequest variantRequest) {
+        return ProductVariant.builder()
+                .sku(variantRequest.getSku())
+                .name(variantRequest.getName())
+                .price(variantRequest.getPrice())
+                .salePrice(variantRequest.getSalePrice())
+                .image(variantRequest.getImage())
+                .attributes(variantRequest.getAttributes())
+                .stock(variantRequest.getStock() != null ? variantRequest.getStock() : 0)
+                .isActive(variantRequest.getIsActive() != null ? variantRequest.getIsActive() : true)
+                .build();
     }
 }

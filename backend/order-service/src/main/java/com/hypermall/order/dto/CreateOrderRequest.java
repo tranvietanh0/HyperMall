@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -25,6 +26,8 @@ public class CreateOrderRequest {
     @Valid
     private List<OrderItemRequest> items;
 
+    private BigDecimal shippingFee;
+    private BigDecimal discount;
     private String note;
     private String voucherCode;
 }

@@ -43,21 +43,9 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new BadRequestException("Email already exists");
-        }
+        validateRegisterRequest(request);
 
-        if (request.getPhone() != null && userRepository.existsByPhone(request.getPhone())) {
-            throw new BadRequestException("Phone number already exists");
-        }
-
-        User user = User.builder()
-                .email(request.getEmail().toLowerCase())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .fullName(request.getFullName())
-                .phone(request.getPhone())
-                .verificationToken(UUID.randomUUID().toString())
-                .build();
+        User user = buildUserFromRegisterRequest(request);
 
         user = userRepository.save(user);
         log.info("New user registered: {}", user.getEmail());
@@ -67,16 +55,10 @@ public class AuthService {
 
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail().toLowerCase())
-                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+        User user = findUserByEmailOrThrowUnauthorized(request.getEmail());
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new UnauthorizedException("Invalid email or password");
-        }
-
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new UnauthorizedException("Account is not active");
-        }
+        validatePassword(request.getPassword(), user.getPassword());
+        validateUserIsActive(user);
 
         log.info("User logged in: {}", user.getEmail());
         return generateAuthResponse(user);
@@ -85,17 +67,10 @@ public class AuthService {
     public AuthResponse refreshToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
 
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new UnauthorizedException("Invalid refresh token");
-        }
+        validateRefreshToken(refreshToken);
 
-        Long userId = jwtTokenProvider.extractUserId(refreshToken);
-        String userIdStr = userId != null ? userId.toString() : jwtTokenProvider.extractUsername(refreshToken);
-        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + userIdStr);
-
-        if (storedToken == null || !storedToken.equals(refreshToken)) {
-            throw new UnauthorizedException("Refresh token not found or expired");
-        }
+        String userIdStr = extractUserIdString(refreshToken);
+        validateStoredRefreshToken(userIdStr, refreshToken);
 
         User user = userRepository.findById(Long.parseLong(userIdStr))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -150,10 +125,7 @@ public class AuthService {
         User user = userRepository.findByResetPasswordToken(request.getToken())
                 .orElseThrow(() -> new BadRequestException("Invalid or expired reset token"));
 
-        if (user.getResetPasswordExpires() == null ||
-                user.getResetPasswordExpires().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Reset token has expired");
-        }
+        validateResetTokenNotExpired(user);
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         user.setResetPasswordToken(null);
@@ -202,5 +174,67 @@ public class AuthService {
 
     public boolean isTokenBlacklisted(String token) {
         return Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+    }
+
+    private void validateRegisterRequest(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
+
+        if (request.getPhone() != null && userRepository.existsByPhone(request.getPhone())) {
+            throw new BadRequestException("Phone number already exists");
+        }
+    }
+
+    private User buildUserFromRegisterRequest(RegisterRequest request) {
+        return User.builder()
+                .email(request.getEmail().toLowerCase())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .fullName(request.getFullName())
+                .phone(request.getPhone())
+                .verificationToken(UUID.randomUUID().toString())
+                .build();
+    }
+
+    private User findUserByEmailOrThrowUnauthorized(String email) {
+        return userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+    }
+
+    private void validatePassword(String rawPassword, String encodedPassword) {
+        if (!passwordEncoder.matches(rawPassword, encodedPassword)) {
+            throw new UnauthorizedException("Invalid email or password");
+        }
+    }
+
+    private void validateUserIsActive(User user) {
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new UnauthorizedException("Account is not active");
+        }
+    }
+
+    private void validateRefreshToken(String refreshToken) {
+        if (!jwtTokenProvider.validateToken(refreshToken)) {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+    }
+
+    private String extractUserIdString(String refreshToken) {
+        Long userId = jwtTokenProvider.extractUserId(refreshToken);
+        return userId != null ? userId.toString() : jwtTokenProvider.extractUsername(refreshToken);
+    }
+
+    private void validateStoredRefreshToken(String userIdStr, String refreshToken) {
+        String storedToken = redisTemplate.opsForValue().get(REFRESH_TOKEN_PREFIX + userIdStr);
+        if (storedToken == null || !storedToken.equals(refreshToken)) {
+            throw new UnauthorizedException("Refresh token not found or expired");
+        }
+    }
+
+    private void validateResetTokenNotExpired(User user) {
+        if (user.getResetPasswordExpires() == null ||
+                user.getResetPasswordExpires().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Reset token has expired");
+        }
     }
 }

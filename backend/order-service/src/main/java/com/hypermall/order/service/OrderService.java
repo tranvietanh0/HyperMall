@@ -30,6 +30,11 @@ import java.util.UUID;
 public class OrderService {
 
     private static final int MAX_ORDER_NUMBER_RETRIES = 5;
+    private static final List<OrderStatus> CANCELLABLE_STATUSES = List.of(
+            OrderStatus.PENDING_PAYMENT,
+            OrderStatus.PAID,
+            OrderStatus.CONFIRMED
+    );
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
@@ -42,57 +47,20 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse createOrder(Long userId, CreateOrderRequest request) {
-        // Calculate totals
-        BigDecimal subtotal = request.getItems().stream()
-                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal subtotal = calculateSubtotal(request);
 
-        BigDecimal shippingFee = BigDecimal.valueOf(defaultShippingFee); // configurable, real impl would call shipping service
-        BigDecimal discount = BigDecimal.ZERO; // real impl would apply voucher
+        BigDecimal shippingFee = resolveShippingFee(request);
+        BigDecimal discount = resolveDiscount(request, subtotal.add(shippingFee));
         BigDecimal total = subtotal.add(shippingFee).subtract(discount);
 
-        ShippingAddressRequest addrReq = request.getShippingAddress();
-        ShippingAddress shippingAddress = ShippingAddress.builder()
-                .fullName(addrReq.getFullName())
-                .phone(addrReq.getPhone())
-                .province(addrReq.getProvince())
-                .district(addrReq.getDistrict())
-                .ward(addrReq.getWard())
-                .addressDetail(addrReq.getAddressDetail())
-                .build();
-
-        Order order = Order.builder()
-                .userId(userId)
-                .sellerId(request.getSellerId())
-                .paymentMethod(request.getPaymentMethod())
-                .subtotal(subtotal)
-                .shippingFee(shippingFee)
-                .discount(discount)
-                .total(total)
-                .shippingAddress(shippingAddress)
-                .note(request.getNote())
-                .voucherCode(request.getVoucherCode())
-                .items(new ArrayList<>())
-                .build();
-
-        // Add order items
-        request.getItems().forEach(itemReq -> {
-            OrderItem item = OrderItem.builder()
-                    .productId(itemReq.getProductId())
-                    .variantId(itemReq.getVariantId())
-                    .productName(itemReq.getProductName())
-                    .variantName(itemReq.getVariantName())
-                    .thumbnail(itemReq.getThumbnail())
-                    .quantity(itemReq.getQuantity())
-                    .unitPrice(itemReq.getUnitPrice())
-                    .totalPrice(itemReq.getUnitPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())))
-                    .build();
-            order.addItem(item);
-        });
+        ShippingAddress shippingAddress = buildShippingAddress(request.getShippingAddress());
+        Order order = buildOrder(userId, request, subtotal, shippingFee, discount, total, shippingAddress);
+        addOrderItems(order, request);
 
         // COD orders go directly to CONFIRMED status
         if (request.getPaymentMethod() == PaymentMethod.COD) {
-            order.setStatus(OrderStatus.PENDING_PAYMENT);
+            order.setStatus(OrderStatus.CONFIRMED);
+            order.setConfirmedAt(LocalDateTime.now());
         }
 
         // Save order with retry logic for order number generation to handle race conditions
@@ -134,12 +102,8 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public OrderDetailResponse getOrderById(Long userId, Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-
-        if (!order.getUserId().equals(userId)) {
-            throw new ForbiddenException("You don't have permission to view this order");
-        }
+        Order order = findOrderById(orderId);
+        validateUserOwnsOrder(order, userId, "view");
 
         return orderMapper.toOrderDetailResponse(order);
     }
@@ -153,26 +117,14 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse cancelOrder(Long userId, Long orderId, CancelOrderRequest request) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        Order order = findOrderById(orderId);
+        validateUserOwnsOrder(order, userId, "cancel");
 
-        if (!order.getUserId().equals(userId)) {
-            throw new ForbiddenException("You don't have permission to cancel this order");
-        }
-
-        List<OrderStatus> cancellableStatuses = List.of(
-                OrderStatus.PENDING_PAYMENT,
-                OrderStatus.PAID,
-                OrderStatus.CONFIRMED
-        );
-
-        if (!cancellableStatuses.contains(order.getStatus())) {
+        if (!CANCELLABLE_STATUSES.contains(order.getStatus())) {
             throw new BadRequestException("Order cannot be cancelled in status: " + order.getStatus());
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setCancelReason(request.getReason());
-        order.setCancelledAt(LocalDateTime.now());
+        markOrderCancelled(order, request.getReason());
 
         Order saved = orderRepository.save(order);
         log.info("Order cancelled: {} (ID: {}) by user {}", saved.getOrderNumber(), saved.getId(), userId);
@@ -191,12 +143,8 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse updateOrderStatus(Long sellerId, Long orderId, OrderStatus newStatus) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-
-        if (!order.getSellerId().equals(sellerId)) {
-            throw new ForbiddenException("You don't have permission to update this order");
-        }
+        Order order = findOrderById(orderId);
+        validateSellerOwnsOrder(order, sellerId, "update");
 
         validateStatusTransition(order.getStatus(), newStatus);
 
@@ -207,6 +155,115 @@ public class OrderService {
         log.info("Order status updated: {} -> {} for order {}", order.getStatus(), newStatus, saved.getOrderNumber());
 
         return orderMapper.toOrderDetailResponse(saved);
+    }
+
+    private BigDecimal calculateSubtotal(CreateOrderRequest request) {
+        return request.getItems().stream()
+                .map(item -> item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal resolveShippingFee(CreateOrderRequest request) {
+        if (request.getShippingFee() == null) {
+            return BigDecimal.valueOf(defaultShippingFee);
+        }
+
+        if (request.getShippingFee().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("Shipping fee cannot be negative");
+        }
+
+        return request.getShippingFee();
+    }
+
+    private BigDecimal resolveDiscount(CreateOrderRequest request, BigDecimal maxDiscount) {
+        if (request.getDiscount() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        if (request.getDiscount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BadRequestException("Discount cannot be negative");
+        }
+
+        if (request.getDiscount().compareTo(maxDiscount) > 0) {
+            throw new BadRequestException("Discount exceeds order total");
+        }
+
+        return request.getDiscount();
+    }
+
+    private ShippingAddress buildShippingAddress(ShippingAddressRequest addrReq) {
+        return ShippingAddress.builder()
+                .fullName(addrReq.getFullName())
+                .phone(addrReq.getPhone())
+                .province(addrReq.getProvince())
+                .district(addrReq.getDistrict())
+                .ward(addrReq.getWard())
+                .addressDetail(addrReq.getAddressDetail())
+                .build();
+    }
+
+    private Order buildOrder(
+            Long userId,
+            CreateOrderRequest request,
+            BigDecimal subtotal,
+            BigDecimal shippingFee,
+            BigDecimal discount,
+            BigDecimal total,
+            ShippingAddress shippingAddress
+    ) {
+        return Order.builder()
+                .userId(userId)
+                .sellerId(request.getSellerId())
+                .paymentMethod(request.getPaymentMethod())
+                .subtotal(subtotal)
+                .shippingFee(shippingFee)
+                .discount(discount)
+                .total(total)
+                .shippingAddress(shippingAddress)
+                .note(request.getNote())
+                .voucherCode(request.getVoucherCode())
+                .items(new ArrayList<>())
+                .build();
+    }
+
+    private void addOrderItems(Order order, CreateOrderRequest request) {
+        request.getItems().forEach(itemReq -> order.addItem(toOrderItem(itemReq)));
+    }
+
+    private OrderItem toOrderItem(OrderItemRequest itemReq) {
+        return OrderItem.builder()
+                .productId(itemReq.getProductId())
+                .variantId(itemReq.getVariantId())
+                .productName(itemReq.getProductName())
+                .variantName(itemReq.getVariantName())
+                .thumbnail(itemReq.getThumbnail())
+                .quantity(itemReq.getQuantity())
+                .unitPrice(itemReq.getUnitPrice())
+                .totalPrice(itemReq.getUnitPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())))
+                .build();
+    }
+
+    private Order findOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+    }
+
+    private void validateUserOwnsOrder(Order order, Long userId, String action) {
+        if (!order.getUserId().equals(userId)) {
+            throw new ForbiddenException("You don't have permission to " + action + " this order");
+        }
+    }
+
+    private void validateSellerOwnsOrder(Order order, Long sellerId, String action) {
+        if (!order.getSellerId().equals(sellerId)) {
+            throw new ForbiddenException("You don't have permission to " + action + " this order");
+        }
+    }
+
+    private void markOrderCancelled(Order order, String reason) {
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setCancelReason(reason);
+        order.setCancelledAt(LocalDateTime.now());
     }
 
     private void validateStatusTransition(OrderStatus current, OrderStatus next) {
