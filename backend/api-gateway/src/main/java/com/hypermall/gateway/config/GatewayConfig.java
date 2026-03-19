@@ -5,6 +5,7 @@ import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.cloud.gateway.filter.ratelimit.RedisRateLimiter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.gateway.route.RouteLocator;
+import org.springframework.cloud.gateway.route.builder.GatewayFilterSpec;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -119,7 +120,7 @@ public class GatewayConfig {
                 .build();
     }
 
-    private RouteLocatorBuilder.Builder.FilterSpec applyProtectedFilters(RouteLocatorBuilder.Builder.FilterSpec filterSpec) {
+    private GatewayFilterSpec applyProtectedFilters(GatewayFilterSpec filterSpec) {
         return filterSpec.requestRateLimiter(config -> config
                 .setRateLimiter(redisRateLimiter)
                 .setKeyResolver(userKeyResolver));
