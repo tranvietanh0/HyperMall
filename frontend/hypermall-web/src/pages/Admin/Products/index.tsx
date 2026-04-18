@@ -30,10 +30,10 @@ export default function AdminProducts() {
   useEffect(() => {
     setTimeout(() => {
       setProducts([
-        { id: 1, name: 'iPhone 15 Pro Max', thumbnail: '/placeholder.jpg', category: 'Dien thoai', seller: 'Apple Store', price: 34990000, stock: 50, status: 'ACTIVE', createdAt: '2026-03-01' },
+        { id: 1, name: 'iPhone 15 Pro Max', thumbnail: '/placeholder.jpg', category: 'Phones', seller: 'Apple Store', price: 34990000, stock: 50, status: 'ACTIVE', createdAt: '2026-03-01' },
         { id: 2, name: 'MacBook Pro 14"', thumbnail: '/placeholder.jpg', category: 'Laptop', seller: 'Apple Store', price: 49990000, stock: 20, status: 'ACTIVE', createdAt: '2026-03-02' },
-        { id: 3, name: 'Samsung Galaxy S24', thumbnail: '/placeholder.jpg', category: 'Dien thoai', seller: 'Samsung Vietnam', price: 25990000, stock: 0, status: 'INACTIVE', createdAt: '2026-03-03' },
-        { id: 4, name: 'AirPods Pro 2', thumbnail: '/placeholder.jpg', category: 'Phu kien', seller: 'Apple Store', price: 6990000, stock: 100, status: 'PENDING', createdAt: '2026-03-04' },
+        { id: 3, name: 'Samsung Galaxy S24', thumbnail: '/placeholder.jpg', category: 'Phones', seller: 'Samsung Vietnam', price: 25990000, stock: 0, status: 'INACTIVE', createdAt: '2026-03-03' },
+        { id: 4, name: 'AirPods Pro 2', thumbnail: '/placeholder.jpg', category: 'Accessories', seller: 'Apple Store', price: 6990000, stock: 100, status: 'PENDING', createdAt: '2026-03-04' },
         { id: 5, name: 'Dell XPS 15', thumbnail: '/placeholder.jpg', category: 'Laptop', seller: 'Dell Official', price: 42990000, stock: 15, status: 'ACTIVE', createdAt: '2026-03-05' },
       ]);
       setLoading(false);
@@ -56,7 +56,7 @@ export default function AdminProducts() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
   };
 
   const filteredProducts = products.filter((product) => {

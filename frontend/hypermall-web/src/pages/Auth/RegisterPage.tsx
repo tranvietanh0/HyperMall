@@ -37,7 +37,7 @@ export default function RegisterPage() {
           <Link to="/" className="text-3xl font-bold text-primary-600">
             HyperMall
           </Link>
-          <h1 className="text-xl font-semibold text-gray-900 mt-4">Đăng ký tài khoản</h1>
+          <h1 className="text-xl font-semibold text-gray-900 mt-4">Create account</h1>
         </div>
 
         {error && (
@@ -48,8 +48,8 @@ export default function RegisterPage() {
 
         <form onSubmit={formik.handleSubmit} className="space-y-4">
           <Input
-            label="Họ và tên"
-            placeholder="Nguyễn Văn A"
+            label="Full name"
+            placeholder="Alex Johnson"
             {...formik.getFieldProps('fullName')}
             error={formik.touched.fullName && formik.errors.fullName ? formik.errors.fullName : undefined}
           />
@@ -63,16 +63,16 @@ export default function RegisterPage() {
           />
 
           <Input
-            label="Số điện thoại (không bắt buộc)"
+            label="Phone number (optional)"
             placeholder="0901234567"
             {...formik.getFieldProps('phone')}
             error={formik.touched.phone && formik.errors.phone ? formik.errors.phone : undefined}
           />
 
           <Input
-            label="Mật khẩu"
+            label="Password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Tạo mật khẩu"
+            placeholder="Create a password"
             {...formik.getFieldProps('password')}
             error={formik.touched.password && formik.errors.password ? formik.errors.password : undefined}
             rightIcon={
@@ -91,33 +91,33 @@ export default function RegisterPage() {
           />
 
           <Input
-            label="Xác nhận mật khẩu"
+            label="Confirm password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Nhập lại mật khẩu"
+            placeholder="Re-enter your password"
             {...formik.getFieldProps('confirmPassword')}
             error={formik.touched.confirmPassword && formik.errors.confirmPassword ? formik.errors.confirmPassword : undefined}
           />
 
           <Button type="submit" fullWidth isLoading={isLoading}>
-            Đăng ký
+            Sign up
           </Button>
         </form>
 
         <p className="mt-4 text-center text-xs text-gray-500">
-          Bằng việc đăng ký, bạn đã đồng ý với{' '}
+          By creating an account, you agree to the{' '}
           <Link to="/terms" className="text-primary-600 hover:underline">
-            Điều khoản sử dụng
+            Terms of Service
           </Link>{' '}
-          và{' '}
+          and{' '}
           <Link to="/privacy" className="text-primary-600 hover:underline">
-            Chính sách bảo mật
+            Privacy Policy
           </Link>
         </p>
 
         <p className="mt-8 text-center text-sm text-gray-600">
-          Đã có tài khoản?{' '}
+          Already have an account?{' '}
           <Link to="/login" className="text-primary-600 font-semibold hover:underline">
-            Đăng nhập
+            Sign in
           </Link>
         </p>
       </div>

@@ -8,12 +8,12 @@ import Loading from '@components/common/Loading'
 import type { OrderStatus, OrderSummary } from '@/types'
 
 const STATUS_TABS: { value: string; label: string }[] = [
-  { value: '', label: 'Tất cả' },
-  { value: 'PENDING_PAYMENT', label: 'Chờ TT' },
-  { value: 'CONFIRMED', label: 'Đã xác nhận' },
-  { value: 'SHIPPING', label: 'Đang giao' },
-  { value: 'COMPLETED', label: 'Hoàn thành' },
-  { value: 'CANCELLED', label: 'Đã hủy' },
+  { value: '', label: 'All' },
+  { value: 'PENDING_PAYMENT', label: 'Pending' },
+  { value: 'CONFIRMED', label: 'Confirmed' },
+  { value: 'SHIPPING', label: 'Shipping' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
 ]
 
 const STATUS_COLORS: Record<string, string> = {
@@ -52,7 +52,7 @@ export default function OrderListPage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Đơn hàng của tôi</h1>
+      <h1 className="text-2xl font-bold mb-6">My orders</h1>
 
       {/* Tabs */}
       <div className="bg-white rounded-xl border mb-4 overflow-x-auto">
@@ -78,7 +78,7 @@ export default function OrderListPage() {
       ) : orders.length === 0 ? (
         <div className="bg-white rounded-xl border p-16 text-center text-gray-400">
           <ShoppingBagIcon className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          <p className="text-lg">Không có đơn hàng nào</p>
+          <p className="text-lg">No orders found</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -123,21 +123,21 @@ function OrderCard({ order }: { order: OrderSummary }) {
 
       <div className="px-5 py-4">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Số lượng sản phẩm</span>
+          <span className="text-gray-500">Items</span>
           <span className="font-medium">{order.totalItems}</span>
         </div>
         {order.note && (
-          <p className="text-sm text-gray-500 mt-2 line-clamp-2">Ghi chú: {order.note}</p>
+          <p className="text-sm text-gray-500 mt-2 line-clamp-2">Note: {order.note}</p>
         )}
       </div>
 
       {/* Footer */}
       <div className="flex items-center justify-between px-5 py-3 border-t bg-gray-50">
         <div className="text-sm text-gray-500">
-          Tổng: <span className="font-bold text-primary-600 text-base">{formatCurrency(order.total)}</span>
+          Total: <span className="font-bold text-primary-600 text-base">{formatCurrency(order.total)}</span>
         </div>
         <Link to={`/orders/${order.id}`} className="btn btn-outline text-sm py-1.5 px-4">
-          Xem chi tiết
+          View details
         </Link>
       </div>
     </div>

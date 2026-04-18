@@ -35,29 +35,29 @@ describe('validation utilities', () => {
 
     it('should reject password shorter than 8 characters', async () => {
       await expect(passwordSchema.validate('Pass1@')).rejects.toThrow(
-        'ít nhất 8 ký tự'
+        'at least 8 characters'
       );
     });
 
     it('should reject password without lowercase', async () => {
       await expect(passwordSchema.validate('PASSWORD1@')).rejects.toThrow(
-        'chữ thường'
+        'lowercase'
       );
     });
 
     it('should reject password without uppercase', async () => {
       await expect(passwordSchema.validate('password1@')).rejects.toThrow(
-        'chữ hoa'
+        'uppercase'
       );
     });
 
     it('should reject password without number', async () => {
-      await expect(passwordSchema.validate('Password@')).rejects.toThrow('số');
+      await expect(passwordSchema.validate('Password@')).rejects.toThrow('number');
     });
 
     it('should reject password without special character', async () => {
       await expect(passwordSchema.validate('Password1')).rejects.toThrow(
-        'ký tự đặc biệt'
+        'special character'
       );
     });
   });
@@ -117,13 +117,13 @@ describe('validation utilities', () => {
 
     it('should reject mismatched passwords', async () => {
       const data = { ...validData, confirmPassword: 'Different1@' };
-      await expect(registerSchema.validate(data)).rejects.toThrow('không khớp');
+      await expect(registerSchema.validate(data)).rejects.toThrow('does not match');
     });
 
     it('should reject short full name', async () => {
       const data = { ...validData, fullName: 'A' };
       await expect(registerSchema.validate(data)).rejects.toThrow(
-        'ít nhất 2 ký tự'
+        'at least 2 characters'
       );
     });
 

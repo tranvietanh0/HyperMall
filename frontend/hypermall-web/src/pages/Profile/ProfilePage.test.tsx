@@ -82,13 +82,13 @@ describe('ProfilePage', () => {
 
     render(<ProfilePage />);
 
-    fireEvent.change(screen.getByLabelText('Họ và tên'), {
+    fireEvent.change(screen.getByLabelText('Full name'), {
       target: { value: 'Buyer Updated' },
     });
-    fireEvent.change(screen.getByLabelText('Số điện thoại'), {
+    fireEvent.change(screen.getByLabelText('Phone number'), {
       target: { value: '0911222333' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Lưu thay đổi' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
 
     await waitFor(() => {
       expect(mockUpdateProfile).toHaveBeenCalledWith({

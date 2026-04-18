@@ -67,6 +67,10 @@ app:
       endpoint: ${ZALOPAY_ENDPOINT:https://sb-openapi.zalopay.vn/v2}
       callback-url: ${ZALOPAY_CALLBACK_URL:http://localhost:8085/api/payments/zalopay/callback}
       redirect-url: ${ZALOPAY_REDIRECT_URL:http://localhost:3000/payment/zalopay/callback}
+    currency:
+      display-currency: ${PAYMENT_DISPLAY_CURRENCY:USD}
+      settlement-currency: ${PAYMENT_SETTLEMENT_CURRENCY:VND}
+      usd-to-vnd-rate: ${PAYMENT_USD_TO_VND_RATE:25000}
     http:
       timeout: ${PAYMENT_HTTP_TIMEOUT:10000}
 

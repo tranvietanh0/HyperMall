@@ -64,7 +64,7 @@ export default function AdminOrders() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN').format(price) + ' VND';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(price);
   };
 
   const filteredOrders = orders.filter((order) => {

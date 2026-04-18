@@ -14,16 +14,16 @@ export default function CartPage() {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <ShoppingBagIcon className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700 mb-2">Giỏ hàng trống</h2>
-        <p className="text-gray-500 mb-6">Hãy thêm sản phẩm vào giỏ hàng của bạn</p>
-        <Link to="/products" className="btn btn-primary px-8">Tiếp tục mua sắm</Link>
+        <h2 className="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h2>
+        <p className="text-gray-500 mb-6">Add products to your cart to get started.</p>
+        <Link to="/products" className="btn btn-primary px-8">Continue shopping</Link>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Giỏ hàng ({totalItems} sản phẩm)</h1>
+      <h1 className="text-2xl font-bold mb-6">Cart ({totalItems} items)</h1>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Items */}
         <div className="lg:col-span-2 space-y-3">
@@ -32,10 +32,10 @@ export default function CartPage() {
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" checked={selectedItems.length === cart.items.length}
                 onChange={() => {}} className="rounded" readOnly />
-              <span>Tất cả ({cart.items.length} sản phẩm)</span>
+              <span>All ({cart.items.length} items)</span>
             </label>
             <button onClick={clearCart} className="text-gray-400 hover:text-red-500 flex items-center gap-1">
-              <TrashIcon className="w-4 h-4" /> Xóa tất cả
+              <TrashIcon className="w-4 h-4" /> Remove all
             </button>
           </div>
 
@@ -69,7 +69,7 @@ export default function CartPage() {
                 </div>
 
                 <p className="text-xs text-gray-400 mt-1">
-                  Thành tiền: <span className="font-medium text-gray-700">{formatCurrency(item.price * item.quantity)}</span>
+                  Item total: <span className="font-medium text-gray-700">{formatCurrency(item.price * item.quantity)}</span>
                 </p>
               </div>
             </div>
@@ -79,30 +79,30 @@ export default function CartPage() {
         {/* Summary */}
         <div>
           <div className="bg-white rounded-lg p-5 border sticky top-24 space-y-4">
-            <h2 className="font-semibold text-lg">Tóm tắt đơn hàng</h2>
+            <h2 className="font-semibold text-lg">Order summary</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">Tạm tính ({selectedItems.length} sản phẩm)</span>
+                <span className="text-gray-600">Subtotal ({selectedItems.length} items)</span>
                 <span>{formatCurrency(selectedTotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Phí vận chuyển</span>
-                <span className="text-green-600">Tính khi đặt hàng</span>
+                <span className="text-gray-600">Shipping</span>
+                <span className="text-green-600">Calculated at checkout</span>
               </div>
             </div>
             <hr />
             <div className="flex justify-between font-bold text-lg">
-              <span>Tổng cộng</span>
+              <span>Total</span>
               <span className="text-primary-600">{formatCurrency(selectedTotal)}</span>
             </div>
             <button
               onClick={() => navigate('/checkout')}
               disabled={selectedItems.length === 0}
               className="btn btn-primary w-full disabled:opacity-50">
-              Thanh toán ({selectedItems.length})
+              Checkout ({selectedItems.length})
             </button>
             <Link to="/products" className="block text-center text-sm text-primary-600 hover:underline">
-              Tiếp tục mua sắm
+              Continue shopping
             </Link>
           </div>
         </div>

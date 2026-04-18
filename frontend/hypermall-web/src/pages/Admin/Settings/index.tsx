@@ -23,7 +23,7 @@ export default function AdminSettings() {
     contactEmail: 'support@hypermall.vn',
     contactPhone: '1900 1234',
     address: '123 Nguyen Hue, District 1, HCMC',
-    currency: 'VND',
+    currency: 'USD',
     timezone: 'Asia/Ho_Chi_Minh',
     enableRegistration: true,
     enableGuestCheckout: true,
@@ -108,7 +108,6 @@ export default function AdminSettings() {
               onChange={(e) => handleChange('currency', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="VND">VND - Vietnamese Dong</option>
               <option value="USD">USD - US Dollar</option>
             </select>
           </div>

@@ -149,7 +149,7 @@ export default function AdminDashboard() {
                     {order.customer}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {order.total} VND
+                    ${order.total}
                   </td>
                   <td className="px-6 py-4">
                     <span

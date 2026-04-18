@@ -1,4 +1,4 @@
-import { type ComponentType, type SVGProps } from 'react';
+import { useEffect, useMemo, useState, type ComponentType, type SVGProps } from 'react';
 import {
   ArrowRightIcon,
   BoltIcon,
@@ -10,6 +10,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import useScrollReveal from '@hooks/useScrollReveal';
+import { flashSaleService } from '@/services/flash-sale.service';
+import { productService } from '@/services/product.service';
+import { formatCurrency } from '@utils/format';
+import type { FlashSale, FlashSaleProduct, Product } from '@/types';
 
 type IconComponent = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -24,11 +28,7 @@ interface ProductCardItem {
   name: string;
   price: string;
   sold: string;
-  imageClassName: string;
-}
-
-interface FlashSaleItem extends ProductCardItem {
-  originalPrice: string;
+  imageUrl?: string;
 }
 
 const categoryItems: CategoryItem[] = [
@@ -44,21 +44,12 @@ const categoryItems: CategoryItem[] = [
   { id: 10, name: 'Luxury', icon: SparklesIcon },
 ];
 
-const flashSaleItems: FlashSaleItem[] = [
-  { id: 1, name: 'Wireless Earbuds Pro', price: '$39.90', originalPrice: '$79.90', sold: '84%', imageClassName: 'bg-slate-100' },
-  { id: 2, name: 'Skincare Recovery Serum', price: '$14.50', originalPrice: '$28.00', sold: '63%', imageClassName: 'bg-slate-50' },
-  { id: 3, name: 'Mechanical Keyboard 87 Keys', price: '$58.00', originalPrice: '$95.00', sold: '76%', imageClassName: 'bg-slate-100' },
-  { id: 4, name: 'Portable Blender 450ml', price: '$19.90', originalPrice: '$32.00', sold: '49%', imageClassName: 'bg-slate-50' },
-  { id: 5, name: 'Smartwatch AMOLED', price: '$69.90', originalPrice: '$109.00', sold: '67%', imageClassName: 'bg-slate-100' },
-  { id: 6, name: 'Desk Lamp Touch Pro', price: '$22.90', originalPrice: '$36.90', sold: '71%', imageClassName: 'bg-slate-50' },
-];
-
-const dailyDiscoveryItems: ProductCardItem[] = Array.from({ length: 12 }, (_, index) => ({
+const fallbackDailyDiscoveryItems: ProductCardItem[] = Array.from({ length: 12 }, (_, index) => ({
   id: index + 1,
   name: `Premium Lifestyle Product ${index + 1}`,
   price: `$${(24 + index * 5).toFixed(2)}`,
   sold: `${0.8 + index / 5}k sold`,
-  imageClassName: index % 2 === 0 ? 'bg-slate-100' : 'bg-slate-50',
+  imageUrl: `https://placehold.co/600x600?text=Product+${index + 1}`,
 }));
 
 function SectionHeading({ title, description, actionLabel, actionTo }: { title: string; description: string; actionLabel?: string; actionTo?: string }) {
@@ -98,29 +89,39 @@ function CategoryTile({ item, index }: { item: CategoryItem; index: number }) {
   );
 }
 
-function FlashSaleCard({ item, index }: { item: FlashSaleItem; index: number }) {
+function FlashSaleCard({ item, index }: { item: FlashSaleProduct; index: number }) {
+  const soldPercent = item.stockLimit > 0
+    ? Math.min(100, Math.max(0, Math.round((item.soldCount / item.stockLimit) * 100)))
+    : 0;
+
   return (
     <Link
-      to={`/products/${item.id}`}
+      to={`/products/${item.productId}`}
       className="group block"
       data-reveal="up"
       data-reveal-delay={String(index + 1)}
     >
-      <div className={`relative aspect-[3/4] overflow-hidden rounded-3xl ${item.imageClassName} transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl`}>
-        <div className="absolute right-3 top-3 rounded-xl bg-primary-900 px-3 py-1.5 text-[10px] font-black text-white shimmer-badge">-50%</div>
+      <div className="relative aspect-[3/4] overflow-hidden rounded-3xl bg-slate-100 transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-xl">
+        <img
+          src={item.productImage || 'https://placehold.co/600x800?text=Flash+Sale'}
+          alt={item.productName}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x800?text=Flash+Sale'; }}
+        />
+        <div className="absolute right-3 top-3 rounded-xl bg-primary-900 px-3 py-1.5 text-[10px] font-black text-white shimmer-badge">-{item.discountPercent}%</div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/10 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
         <div className="absolute inset-x-4 bottom-4">
           <div className="overflow-hidden rounded-full bg-white/20 backdrop-blur-md">
-            <div className="h-1.5 bg-white transition-all duration-700 group-hover:bg-accent-400" style={{ width: item.sold }} />
+            <div className="h-1.5 bg-white transition-all duration-700 group-hover:bg-accent-400" style={{ width: `${soldPercent}%` }} />
           </div>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-white/80">{item.sold} Sold</p>
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-white/80">{soldPercent}% Sold</p>
         </div>
       </div>
       <div className="mt-4 px-2">
-        <h3 className="truncate text-sm font-bold text-primary-900 transition-colors duration-300 group-hover:text-accent-600">{item.name}</h3>
+        <h3 className="truncate text-sm font-bold text-primary-900 transition-colors duration-300 group-hover:text-accent-600">{item.productName}</h3>
         <div className="mt-2 flex items-baseline gap-2">
-          <span className="text-lg font-black text-primary-900">{item.price}</span>
-          <span className="text-xs font-medium text-secondary-400 line-through">{item.originalPrice}</span>
+          <span className="text-lg font-black text-primary-900">{formatCurrency(item.flashSalePrice)}</span>
+          <span className="text-xs font-medium text-secondary-400 line-through">{formatCurrency(item.originalPrice)}</span>
         </div>
       </div>
     </Link>
@@ -135,8 +136,15 @@ function DiscoveryCard({ item, index }: { item: ProductCardItem; index: number }
       data-reveal="up"
       data-reveal-delay={String(index + 1)}
     >
-      <div className={`aspect-square overflow-hidden rounded-[32px] ${item.imageClassName} transition-all duration-500 group-hover:-translate-y-2 group-hover:rounded-2xl group-hover:shadow-2xl`}>
-        <div className="h-full w-full transition-transform duration-700 ease-spring group-hover:scale-110" />
+      <div className="aspect-square overflow-hidden rounded-[32px] bg-slate-100 transition-all duration-500 group-hover:-translate-y-2 group-hover:rounded-2xl group-hover:shadow-2xl">
+        <img
+          src={item.imageUrl || 'https://placehold.co/600x600?text=Daily+Discovery'}
+          alt={item.name}
+          className="h-full w-full object-cover transition-transform duration-700 ease-spring group-hover:scale-110"
+          onError={(event) => {
+            event.currentTarget.src = 'https://placehold.co/600x600?text=Daily+Discovery';
+          }}
+        />
       </div>
       <div className="mt-6 px-1">
         <div className="mb-2 flex items-center gap-2">
@@ -162,7 +170,102 @@ function CountdownUnit({ value, label }: { value: string; label: string }) {
 }
 
 export default function HomePage() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
+  const [flashSale, setFlashSale] = useState<FlashSale | null>(null);
+  const [dailyDiscoveryItems, setDailyDiscoveryItems] = useState<ProductCardItem[]>(fallbackDailyDiscoveryItems);
+  const [springCollectionProducts, setSpringCollectionProducts] = useState<Product[]>([]);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const revealRef = useScrollReveal<HTMLDivElement>({
+    deps: [flashSale?.products?.length ?? 0, dailyDiscoveryItems.length, springCollectionProducts.length],
+  });
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadDiscoveryProducts = async () => {
+      try {
+        const page = await productService.getProducts({ page: 0, size: 12, sortBy: 'newest' });
+        if (!mounted) return;
+
+        const products = page.content ?? [];
+        if (!products.length) return;
+
+        setDailyDiscoveryItems(
+          products.map((product) => ({
+            id: product.id,
+            name: product.name,
+            price: formatCurrency(product.salePrice ?? product.basePrice),
+            sold: `${product.totalSold.toLocaleString('en-US')} sold`,
+            imageUrl: product.thumbnail,
+          }))
+        );
+        setSpringCollectionProducts(products.slice(0, 4));
+      } catch {
+        if (!mounted) return;
+        setDailyDiscoveryItems(fallbackDailyDiscoveryItems);
+        setSpringCollectionProducts([]);
+      }
+    };
+
+    const loadFlashSale = async () => {
+      try {
+        const currentFlashSale = await flashSaleService.getCurrentFlashSale();
+        if (!mounted) return;
+        setFlashSale(currentFlashSale);
+        setRemainingSeconds(currentFlashSale?.remainingSeconds ?? 0);
+      } catch {
+        if (!mounted) return;
+        setFlashSale(null);
+        setRemainingSeconds(0);
+      }
+    };
+
+    void loadDiscoveryProducts();
+    void loadFlashSale();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (remainingSeconds <= 0) return;
+
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((current) => (current > 0 ? current - 1 : 0));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, [remainingSeconds]);
+
+  const countdown = useMemo(() => {
+    const hours = Math.floor(remainingSeconds / 3600);
+    const minutes = Math.floor((remainingSeconds % 3600) / 60);
+    const seconds = remainingSeconds % 60;
+
+    return {
+      hours: String(hours).padStart(2, '0'),
+      minutes: String(minutes).padStart(2, '0'),
+      seconds: String(seconds).padStart(2, '0'),
+    };
+  }, [remainingSeconds]);
+
+  const springCollectionTiles = useMemo(() => {
+    if (springCollectionProducts.length >= 4) {
+      return springCollectionProducts.slice(0, 4).map((product) => ({
+        id: product.id,
+        imageUrl: product.thumbnail,
+        name: product.name,
+      }));
+    }
+
+    return Array.from({ length: 4 }, (_, index) => ({
+      id: index + 1,
+      imageUrl: `https://placehold.co/800x1000?text=Collection+${index + 1}`,
+      name: `Collection ${index + 1}`,
+    }));
+  }, [springCollectionProducts]);
 
   return (
     <div ref={revealRef} className="space-y-12 pb-16 md:space-y-20 md:pb-24">
@@ -195,18 +298,46 @@ export default function HomePage() {
             <div className="hidden grid-cols-2 gap-4 md:grid animate-fade-up" style={{ animationDelay: '120ms' }}>
               <div className="space-y-4 pt-12">
                 <div className="aspect-[4/5] rounded-3xl bg-white/10 p-6 backdrop-blur-xl ring-1 ring-white/20 animate-float transition-all duration-500 hover:bg-white/15 hover:ring-white/30">
-                  <div className="h-full w-full rounded-2xl bg-white/5" />
+                  <img
+                    src={springCollectionTiles[0]?.imageUrl}
+                    alt={springCollectionTiles[0]?.name || 'Collection item'}
+                    className="h-full w-full rounded-2xl object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = 'https://placehold.co/800x1000?text=Collection+1';
+                    }}
+                  />
                 </div>
                 <div className="aspect-square rounded-3xl bg-accent-600/20 p-6 backdrop-blur-xl ring-1 ring-accent-400/30 animate-float-delayed transition-all duration-500 hover:bg-accent-600/30">
-                  <div className="h-full w-full rounded-2xl bg-accent-600/10" />
+                  <img
+                    src={springCollectionTiles[1]?.imageUrl}
+                    alt={springCollectionTiles[1]?.name || 'Collection item'}
+                    className="h-full w-full rounded-2xl object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = 'https://placehold.co/800x800?text=Collection+2';
+                    }}
+                  />
                 </div>
               </div>
               <div className="space-y-4">
                 <div className="aspect-square rounded-3xl bg-white/10 p-6 backdrop-blur-xl ring-1 ring-white/20 animate-float-delayed transition-all duration-500 hover:bg-white/15 hover:ring-white/30">
-                  <div className="h-full w-full rounded-2xl bg-white/5" />
+                  <img
+                    src={springCollectionTiles[2]?.imageUrl}
+                    alt={springCollectionTiles[2]?.name || 'Collection item'}
+                    className="h-full w-full rounded-2xl object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = 'https://placehold.co/800x800?text=Collection+3';
+                    }}
+                  />
                 </div>
                 <div className="aspect-[4/5] rounded-3xl bg-secondary-400/10 p-6 backdrop-blur-xl ring-1 ring-secondary-400/20 animate-float transition-all duration-500 hover:bg-secondary-400/15">
-                  <div className="h-full w-full rounded-2xl bg-white/5" />
+                  <img
+                    src={springCollectionTiles[3]?.imageUrl}
+                    alt={springCollectionTiles[3]?.name || 'Collection item'}
+                    className="h-full w-full rounded-2xl object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = 'https://placehold.co/800x1000?text=Collection+4';
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -238,13 +369,15 @@ export default function HomePage() {
                 <BoltIcon className="h-8 w-8 text-accent-600 animate-pulse-glow rounded-full" />
                 <h2 className="text-3xl font-black tracking-tighter text-primary-900 uppercase">Flash Sale</h2>
               </div>
-              <p className="mt-2 text-sm font-medium text-secondary-500">Limited time offers. Ending soon.</p>
+              <p className="mt-2 text-sm font-medium text-secondary-500">
+                {flashSale?.description || 'Limited time offers. Ending soon.'}
+              </p>
             </div>
             <div className="flex items-center gap-8" data-reveal="right">
               <div className="flex gap-4">
-                <CountdownUnit value="08" label="Hrs" />
-                <CountdownUnit value="32" label="Min" />
-                <CountdownUnit value="15" label="Sec" />
+                <CountdownUnit value={countdown.hours} label="Hrs" />
+                <CountdownUnit value={countdown.minutes} label="Min" />
+                <CountdownUnit value={countdown.seconds} label="Sec" />
               </div>
               <Link to="/search?q=flash-sale" className="btn-secondary rounded-xl py-3 text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:shadow-md">
                 View All
@@ -253,10 +386,14 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-6">
-            {flashSaleItems.map((item, index) => (
+            {(flashSale?.products ?? []).map((item, index) => (
               <FlashSaleCard key={item.id} item={item} index={index} />
             ))}
           </div>
+
+          {!flashSale?.products?.length ? (
+            <p className="mt-6 text-sm font-medium text-secondary-500">There is no active flash sale right now.</p>
+          ) : null}
         </div>
       </section>
 

@@ -36,14 +36,14 @@ export default function ProfileAddressForm({
       type: existingAddress?.type ?? 'HOME',
     },
     validationSchema: Yup.object({
-      fullName: Yup.string().required('Vui lòng nhập họ tên'),
+      fullName: Yup.string().required('Please enter the full name'),
       phone: Yup.string()
-        .matches(/^(0|\+84)[3-9]\d{8}$/, 'Số điện thoại không hợp lệ')
-        .required('Vui lòng nhập SĐT'),
-      province: Yup.string().required('Vui lòng nhập tỉnh/thành phố'),
-      district: Yup.string().required('Vui lòng nhập quận/huyện'),
-      ward: Yup.string().required('Vui lòng nhập phường/xã'),
-      addressDetail: Yup.string().required('Vui lòng nhập địa chỉ chi tiết'),
+        .matches(/^(0|\+84)[3-9]\d{8}$/, 'Invalid phone number')
+        .required('Please enter a phone number'),
+      province: Yup.string().required('Please enter a province or city'),
+      district: Yup.string().required('Please enter a district'),
+      ward: Yup.string().required('Please enter a ward'),
+      addressDetail: Yup.string().required('Please enter the street address'),
     }),
     onSubmit: async (values) => {
       setIsSubmitting(true)
@@ -53,10 +53,10 @@ export default function ProfileAddressForm({
         } else {
           await userService.createAddress(values)
         }
-        toast.success(addressId ? 'Đã cập nhật địa chỉ' : 'Đã thêm địa chỉ mới')
+        toast.success(addressId ? 'Address updated successfully' : 'Address added successfully')
         onSaved()
       } catch (error: unknown) {
-        toast.error(getErrorMessage(error, 'Không thể lưu địa chỉ'))
+        toast.error(getErrorMessage(error, 'Unable to save the address'))
       } finally {
         setIsSubmitting(false)
       }
@@ -65,43 +65,43 @@ export default function ProfileAddressForm({
 
   return (
     <div className="bg-white rounded-xl border p-6">
-      <h3 className="font-semibold text-lg mb-4">{addressId ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới'}</h3>
+      <h3 className="font-semibold text-lg mb-4">{addressId ? 'Edit address' : 'Add new address'}</h3>
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input
-            label="Họ và tên"
+            label="Full name"
             {...formik.getFieldProps('fullName')}
             error={formik.touched.fullName ? formik.errors.fullName : undefined}
           />
           <Input
-            label="Số điện thoại"
+            label="Phone number"
             {...formik.getFieldProps('phone')}
             error={formik.touched.phone ? formik.errors.phone : undefined}
           />
           <Input
-            label="Tỉnh/Thành phố"
+            label="Province / City"
             {...formik.getFieldProps('province')}
             error={formik.touched.province ? formik.errors.province : undefined}
           />
           <Input
-            label="Quận/Huyện"
+            label="District"
             {...formik.getFieldProps('district')}
             error={formik.touched.district ? formik.errors.district : undefined}
           />
           <Input
-            label="Phường/Xã"
+            label="Ward"
             {...formik.getFieldProps('ward')}
             error={formik.touched.ward ? formik.errors.ward : undefined}
           />
           <Input
-            label="Địa chỉ chi tiết"
+            label="Street address"
             {...formik.getFieldProps('addressDetail')}
             error={formik.touched.addressDetail ? formik.errors.addressDetail : undefined}
           />
         </div>
 
         <div className="flex items-center gap-4 text-sm">
-          <span className="font-medium text-gray-700">Loại địa chỉ:</span>
+          <span className="font-medium text-gray-700">Address type:</span>
           {(['HOME', 'OFFICE'] as const).map((type) => (
             <label key={type} className="flex items-center gap-1.5 cursor-pointer">
               <input
@@ -111,7 +111,7 @@ export default function ProfileAddressForm({
                 checked={formik.values.type === type}
                 onChange={() => formik.setFieldValue('type', type)}
               />
-              {type === 'HOME' ? 'Nhà riêng' : 'Văn phòng'}
+              {type === 'HOME' ? 'Home' : 'Office'}
             </label>
           ))}
         </div>
@@ -123,15 +123,15 @@ export default function ProfileAddressForm({
             checked={formik.values.isDefault}
             className="rounded"
           />
-          Đặt làm địa chỉ mặc định
+          Set as default shipping address
         </label>
 
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={onClose} className="btn btn-outline px-6">
-            Hủy
+            Cancel
           </button>
           <button type="submit" disabled={isSubmitting} className="btn btn-primary px-6">
-            {isSubmitting ? 'Đang lưu...' : 'Lưu địa chỉ'}
+            {isSubmitting ? 'Saving...' : 'Save address'}
           </button>
         </div>
       </form>

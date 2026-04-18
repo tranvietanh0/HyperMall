@@ -17,7 +17,7 @@ type PersistedState = {
 const DEFAULT_WELCOME_MESSAGE: AiChatUiMessage = {
   id: 'welcome',
   role: 'assistant',
-  content: 'Xin chào! Mình có thể giúp bạn tìm sản phẩm, giải thích tính năng sản phẩm hiện tại, hoặc hướng dẫn mua sắm trên HyperMall.',
+  content: 'Hi! I can help you find products, explain the current product features, or guide you through shopping on HyperMall.',
 };
 
 const STORAGE_KEY = import.meta.env.VITE_AI_CHAT_STORAGE_KEY || 'hypermall_ai_chat_v1';
@@ -97,11 +97,11 @@ export function useAiChat() {
         {
           id: `assistant-fallback-${Date.now()}`,
           role: 'assistant',
-          content: getErrorMessage(error, 'AI assistant is temporarily unavailable. Hãy thử tìm kiếm sản phẩm hoặc mở trang chi tiết sản phẩm để xem thêm gợi ý.'),
+          content: getErrorMessage(error, 'AI assistant is temporarily unavailable. Try searching for products or open a product detail page for more recommendations.'),
           degraded: true,
           suggestedActions: [
-            { type: 'search', label: 'Tìm sản phẩm', value: trimmed },
-            { type: 'link', label: 'Xem danh mục', value: '/products' },
+            { type: 'search', label: 'Search products', value: trimmed },
+            { type: 'link', label: 'Browse catalog', value: '/products' },
           ],
         },
       ]);

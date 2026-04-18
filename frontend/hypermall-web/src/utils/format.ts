@@ -1,10 +1,10 @@
 /**
- * Format number as Vietnamese currency (VND)
+ * Format number as US currency (USD)
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('vi-VN', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'VND',
+    currency: 'USD',
   }).format(amount);
 }
 
@@ -12,27 +12,27 @@ export function formatCurrency(amount: number): string {
  * Format number with thousand separators
  */
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat('vi-VN').format(num);
+  return new Intl.NumberFormat('en-US').format(num);
 }
 
 /**
- * Format date to Vietnamese locale
+ * Format date to US locale
  */
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('vi-VN', {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
     day: '2-digit',
-    month: '2-digit',
     year: 'numeric',
   }).format(new Date(date));
 }
 
 /**
- * Format date and time to Vietnamese locale
+ * Format date and time to US locale
  */
 export function formatDateTime(date: string | Date): string {
-  return new Intl.DateTimeFormat('vi-VN', {
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
     day: '2-digit',
-    month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
@@ -53,12 +53,12 @@ export function formatRelativeTime(date: string | Date): string {
   const diffMonth = Math.floor(diffDay / 30);
   const diffYear = Math.floor(diffMonth / 12);
 
-  if (diffYear > 0) return `${diffYear} năm trước`;
-  if (diffMonth > 0) return `${diffMonth} tháng trước`;
-  if (diffDay > 0) return `${diffDay} ngày trước`;
-  if (diffHour > 0) return `${diffHour} giờ trước`;
-  if (diffMin > 0) return `${diffMin} phút trước`;
-  return 'Vừa xong';
+  if (diffYear > 0) return `${diffYear} year${diffYear > 1 ? 's' : ''} ago`;
+  if (diffMonth > 0) return `${diffMonth} month${diffMonth > 1 ? 's' : ''} ago`;
+  if (diffDay > 0) return `${diffDay} day${diffDay > 1 ? 's' : ''} ago`;
+  if (diffHour > 0) return `${diffHour} hour${diffHour > 1 ? 's' : ''} ago`;
+  if (diffMin > 0) return `${diffMin} minute${diffMin > 1 ? 's' : ''} ago`;
+  return 'Just now';
 }
 
 /**

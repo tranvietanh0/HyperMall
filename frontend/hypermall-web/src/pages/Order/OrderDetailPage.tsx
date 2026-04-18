@@ -37,20 +37,20 @@ export default function OrderDetailPage() {
     setIsLoading(true)
     orderService.getOrderById(id)
       .then(setOrder)
-      .catch(() => toast.error('Không tìm thấy đơn hàng'))
+      .catch(() => toast.error('Order not found'))
       .finally(() => setIsLoading(false))
   }, [id])
 
   const handleCancel = async () => {
-    if (!id || !cancelReason.trim()) { toast.error('Vui lòng nhập lý do hủy'); return }
+    if (!id || !cancelReason.trim()) { toast.error('Please provide a cancellation reason'); return }
     setIsCancelling(true)
     try {
       const updated = await orderService.cancelOrder(id, cancelReason)
       setOrder(updated)
       setShowCancelModal(false)
-      toast.success('Đã hủy đơn hàng')
+      toast.success('Order cancelled')
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Không thể hủy đơn hàng'))
+      toast.error(getErrorMessage(error, 'Unable to cancel order'))
     } finally {
       setIsCancelling(false)
     }
@@ -59,8 +59,8 @@ export default function OrderDetailPage() {
   if (isLoading) return <div className="flex justify-center py-32"><Loading size="lg" /></div>
   if (!order) return (
     <div className="container mx-auto px-4 py-16 text-center text-gray-500">
-      <p className="text-lg mb-4">Không tìm thấy đơn hàng</p>
-      <Link to="/orders" className="text-primary-600 hover:underline">← Danh sách đơn hàng</Link>
+      <p className="text-lg mb-4">Order not found</p>
+      <Link to="/orders" className="text-primary-600 hover:underline">← Back to orders</Link>
     </div>
   )
 
@@ -71,13 +71,13 @@ export default function OrderDetailPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <button onClick={() => navigate('/orders')} className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 mb-4">
-        <ArrowLeftIcon className="w-4 h-4 mr-1" /> Danh sách đơn hàng
+        <ArrowLeftIcon className="w-4 h-4 mr-1" /> Back to orders
       </button>
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Đơn hàng #{order.orderNumber}</h1>
-          <p className="text-sm text-gray-500 mt-1">Đặt lúc {new Date(order.createdAt).toLocaleString('vi-VN')}</p>
+          <h1 className="text-2xl font-bold">Order #{order.orderNumber}</h1>
+          <p className="text-sm text-gray-500 mt-1">Placed at {new Date(order.createdAt).toLocaleString('en-US')}</p>
         </div>
         <span className={`text-sm font-semibold px-3 py-1.5 rounded-full border ${statusColor}`}>
           {ORDER_STATUS_LABELS[order.status as OrderStatus] ?? order.status}
@@ -89,7 +89,7 @@ export default function OrderDetailPage() {
           {/* Progress tracker */}
           {order.status !== 'CANCELLED' && order.status !== 'RETURNED' && (
             <div className="bg-white rounded-xl border p-5">
-              <h2 className="font-semibold mb-5">Trạng thái đơn hàng</h2>
+              <h2 className="font-semibold mb-5">Order status</h2>
               <div className="flex items-center">
                 {ORDER_STEPS.map((step, i) => {
                   const done = currentStepIndex >= i
@@ -121,7 +121,7 @@ export default function OrderDetailPage() {
 
           {/* Items */}
           <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold mb-4">Sản phẩm ({order.items.length})</h2>
+            <h2 className="font-semibold mb-4">Items ({order.items.length})</h2>
             <div className="divide-y">
               {order.items.map((item) => (
                 <div key={item.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
@@ -137,7 +137,7 @@ export default function OrderDetailPage() {
                       <span className="text-gray-500">x{item.quantity}</span>
                       <div className="text-right">
                          <span className="font-semibold text-primary-600">{formatCurrency(item.totalPrice)}</span>
-                         <span className="text-xs text-gray-400 ml-1">({formatCurrency(item.unitPrice)}/cái)</span>
+                         <span className="text-xs text-gray-400 ml-1">({formatCurrency(item.unitPrice)}/item)</span>
                        </div>
                      </div>
                    </div>
@@ -149,7 +149,7 @@ export default function OrderDetailPage() {
           {/* Shipping address */}
           <div className="bg-white rounded-xl border p-5">
             <h2 className="font-semibold mb-3 flex items-center gap-2">
-              <TruckIcon className="w-5 h-5 text-gray-500" /> Địa chỉ giao hàng
+              <TruckIcon className="w-5 h-5 text-gray-500" /> Shipping address
             </h2>
             <div className="text-sm text-gray-700 space-y-1">
               <p className="font-medium">{order.shippingAddress.fullName}</p>
@@ -163,7 +163,7 @@ export default function OrderDetailPage() {
 
           {order.note && (
             <div className="bg-white rounded-xl border p-5">
-              <h2 className="font-semibold mb-2">Ghi chú</h2>
+              <h2 className="font-semibold mb-2">Order note</h2>
               <p className="text-sm text-gray-600">{order.note}</p>
             </div>
           )}
@@ -172,37 +172,37 @@ export default function OrderDetailPage() {
         {/* Summary sidebar */}
         <div>
           <div className="bg-white rounded-xl border p-5 sticky top-24 space-y-4">
-            <h2 className="font-semibold text-lg">Chi tiết thanh toán</h2>
+            <h2 className="font-semibold text-lg">Payment summary</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Phương thức</span>
+                <span className="text-gray-500">Method</span>
                 <span className="font-medium">{PAYMENT_METHOD_LABELS[order.paymentMethod] ?? order.paymentMethod}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Tạm tính</span>
+                <span className="text-gray-500">Subtotal</span>
                 <span>{formatCurrency(order.subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Phí vận chuyển</span>
+                <span className="text-gray-500">Shipping</span>
                 <span>{formatCurrency(order.shippingFee)}</span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Giảm giá</span>
+                  <span className="text-gray-500">Discount</span>
                   <span className="text-green-600">-{formatCurrency(order.discount)}</span>
                 </div>
               )}
             </div>
             <hr />
             <div className="flex justify-between font-bold text-lg">
-              <span>Tổng cộng</span>
+              <span>Total</span>
               <span className="text-primary-600">{formatCurrency(order.total)}</span>
             </div>
 
             {isCancellable && (
               <button onClick={() => setShowCancelModal(true)}
                 className="w-full btn btn-outline border-red-300 text-red-500 hover:bg-red-50 flex items-center justify-center gap-2">
-                <XCircleIcon className="w-4 h-4" /> Hủy đơn hàng
+                <XCircleIcon className="w-4 h-4" /> Cancel order
               </button>
             )}
           </div>
@@ -213,20 +213,20 @@ export default function OrderDetailPage() {
       {showCancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-semibold mb-4">Hủy đơn hàng</h3>
-            <p className="text-sm text-gray-600 mb-3">Vui lòng cho biết lý do hủy đơn hàng</p>
+            <h3 className="text-lg font-semibold mb-4">Cancel order</h3>
+            <p className="text-sm text-gray-600 mb-3">Please let us know why you want to cancel this order</p>
             <textarea
               rows={3}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Nhập lý do..."
+              placeholder="Enter your reason..."
               className="input w-full resize-none mb-4"
             />
             <div className="flex gap-3">
-              <button onClick={() => setShowCancelModal(false)} className="flex-1 btn btn-outline">Quay lại</button>
+              <button onClick={() => setShowCancelModal(false)} className="flex-1 btn btn-outline">Back</button>
               <button onClick={handleCancel} disabled={isCancelling}
                 className="flex-1 btn bg-red-500 hover:bg-red-600 text-white">
-                {isCancelling ? 'Đang hủy...' : 'Xác nhận hủy'}
+                {isCancelling ? 'Cancelling...' : 'Confirm cancellation'}
               </button>
             </div>
           </div>

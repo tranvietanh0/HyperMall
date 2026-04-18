@@ -139,7 +139,7 @@ export default function AdminAnalytics() {
               {Math.abs(summary.revenueChange)}%
             </span>
           </div>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{formatCurrency(summary.totalRevenue)} VND</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{formatCurrency(summary.totalRevenue)}</p>
         </div>
         <div className="p-6 bg-white rounded-lg shadow">
           <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ export default function AdminAnalytics() {
                 style={{ height: `${(stat.revenue / maxRevenue) * 100}%` }}
               />
               <p className="mt-2 text-xs text-gray-500">
-                {new Date(stat.date).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                {new Date(stat.date).toLocaleDateString('en-US', { day: '2-digit', month: '2-digit' })}
               </p>
             </div>
           ))}
@@ -225,7 +225,7 @@ export default function AdminAnalytics() {
                     {product.sales}
                   </td>
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {formatCurrency(product.revenue)} VND
+                    {formatCurrency(product.revenue)}
                   </td>
                 </tr>
               ))}

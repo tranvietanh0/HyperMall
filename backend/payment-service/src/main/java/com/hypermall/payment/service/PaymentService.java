@@ -11,6 +11,7 @@ import com.hypermall.payment.gateway.MoMoGateway;
 import com.hypermall.payment.gateway.VNPayGateway;
 import com.hypermall.payment.gateway.ZaloPayGateway;
 import com.hypermall.payment.mapper.PaymentMapper;
+import com.hypermall.payment.properties.PaymentCurrencyProperties;
 import com.hypermall.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +35,13 @@ public class PaymentService {
     private final VNPayGateway vnPayGateway;
     private final MoMoGateway moMoGateway;
     private final ZaloPayGateway zaloPayGateway;
+    private final PaymentCurrencyProperties paymentCurrencyProperties;
+
+    private static final EnumSet<PaymentMethod> ONLINE_PAYMENT_METHODS = EnumSet.of(
+            PaymentMethod.VNPAY,
+            PaymentMethod.MOMO,
+            PaymentMethod.ZALOPAY
+    );
 
     @Transactional
     public PaymentResponse createPayment(Long userId, CreatePaymentRequest request) {
@@ -41,11 +51,13 @@ public class PaymentService {
                     throw new BadRequestException("Payment already in progress for order: " + request.getOrderNumber());
                 });
 
+        BigDecimal gatewayAmount = resolveGatewayAmount(request.getMethod(), request.getAmount());
+
         Payment payment = Payment.builder()
                 .orderId(request.getOrderId())
                 .orderNumber(request.getOrderNumber())
                 .userId(userId)
-                .amount(request.getAmount())
+                .amount(gatewayAmount)
                 .method(request.getMethod())
                 .build();
 
@@ -59,7 +71,7 @@ public class PaymentService {
         }
 
         // Generate payment URL based on method
-        String paymentUrl = generatePaymentUrl(request);
+        String paymentUrl = generatePaymentUrl(request, gatewayAmount);
         payment.setPaymentUrl(paymentUrl);
 
         Payment saved = paymentRepository.save(payment);
@@ -217,28 +229,41 @@ public class PaymentService {
         return Map.of("return_code", 1, "return_message", "success");
     }
 
-    private String generatePaymentUrl(CreatePaymentRequest request) {
+    private String generatePaymentUrl(CreatePaymentRequest request, BigDecimal gatewayAmount) {
         return switch (request.getMethod()) {
             case VNPAY -> vnPayGateway.createPaymentUrl(
                     request.getOrderId(),
                     request.getOrderNumber(),
-                    request.getAmount(),
+                    gatewayAmount,
                     request.getClientIp() != null ? request.getClientIp() : "127.0.0.1"
             );
             case MOMO -> moMoGateway.createPaymentUrl(
                     request.getOrderId(),
                     request.getOrderNumber(),
-                    request.getAmount()
+                    gatewayAmount
             );
             case ZALOPAY -> zaloPayGateway.createPaymentUrl(
                     request.getOrderId(),
                     request.getOrderNumber(),
-                    request.getAmount()
+                    gatewayAmount
             );
             case BANK_TRANSFER -> throw new PaymentMethodNotImplementedException("BANK_TRANSFER");
             case WALLET -> throw new PaymentMethodNotImplementedException("WALLET");
             default -> throw new BadRequestException("Unsupported payment method for online payment: " + request.getMethod());
         };
+    }
+
+    private BigDecimal resolveGatewayAmount(PaymentMethod method, BigDecimal requestedAmount) {
+        if (!ONLINE_PAYMENT_METHODS.contains(method)) {
+            return requestedAmount;
+        }
+
+        BigDecimal exchangeRate = paymentCurrencyProperties.getUsdToVndRate();
+        if (exchangeRate == null || exchangeRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Invalid USD to VND exchange rate configuration");
+        }
+
+        return requestedAmount.multiply(exchangeRate).setScale(0, RoundingMode.HALF_UP);
     }
 
     /**

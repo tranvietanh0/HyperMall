@@ -126,18 +126,18 @@ public class ChatService {
         String normalized = message.toLowerCase(Locale.ROOT);
 
         if (!groundingResult.productSuggestions().isEmpty()) {
-            actions.add(action("search", "Tìm sản phẩm liên quan", message));
+            actions.add(action("search", "Search related products", message));
         }
 
         if (normalized.contains("order") || normalized.contains("track") || normalized.contains("đơn") || normalized.contains("theo dõi")) {
-            actions.add(action("link", "Theo dõi đơn hàng", "/profile"));
+            actions.add(action("link", "Track your order", "/profile"));
         }
 
         if (groundingResult.currentProduct() != null) {
-            actions.add(action("link", "Xem sản phẩm hiện tại", "/products/" + groundingResult.currentProduct().getId()));
+            actions.add(action("link", "View current product", "/products/" + groundingResult.currentProduct().getId()));
         }
 
-        actions.add(action("link", "Khám phá danh mục", "/products"));
+        actions.add(action("link", "Browse catalog", "/products"));
 
         if (actions.size() > 3) {
             return actions.subList(0, 3);

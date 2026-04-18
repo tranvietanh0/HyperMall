@@ -46,7 +46,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           <button
             onClick={onAddToCart}
             className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-lg translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 ease-spring hover:bg-primary-50 hover:scale-110 active:scale-95"
-            title="Thêm vào giỏ"
+            title="Add to cart"
           >
             <ShoppingCartIcon className="w-4 h-4 text-primary-600" />
           </button>
@@ -62,7 +62,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
           <div className="flex items-center justify-between">
             <StarRating rating={product.avgRating} size="sm" />
-            <span className="text-xs text-gray-500">Đã bán {product.totalSold.toLocaleString()}</span>
+            <span className="text-xs text-gray-500">{product.totalSold.toLocaleString('en-US')} sold</span>
           </div>
         </div>
       </div>

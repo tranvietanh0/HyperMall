@@ -1,6 +1,15 @@
+const getDefaultWsUrl = () => {
+  if (typeof window === 'undefined') {
+    return 'ws://localhost:8080/ws';
+  }
+
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws`;
+};
+
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
-  WS_URL: import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
+  WS_URL: import.meta.env.VITE_WS_URL || getDefaultWsUrl(),
   TIMEOUT: 30000,
 };
 
@@ -71,6 +80,8 @@ export const API_ENDPOINTS = {
   PAYMENTS: {
     CREATE: '/payments/create',
     DETAIL: (id: string) => `/payments/${id}`,
+    BY_ORDER: (orderId: string) => `/payments/order/${orderId}`,
+    VNPAY_CALLBACK: '/payments/vnpay/callback',
   },
 
   // Reviews

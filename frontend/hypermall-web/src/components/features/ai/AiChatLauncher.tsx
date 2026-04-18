@@ -10,7 +10,7 @@ export default function AiChatLauncher({ onClick }: AiChatLauncherProps) {
       type="button"
       onClick={onClick}
       className="group fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-full bg-primary-900 px-4 py-3 text-white shadow-2xl shadow-primary-900/20 transition hover:-translate-y-1 hover:bg-primary-800 md:bottom-7 md:right-7"
-      aria-label="Mở trợ lý AI"
+      aria-label="Open AI assistant"
     >
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 transition group-hover:rotate-6">
         <SparklesIcon className="h-5 w-5" />

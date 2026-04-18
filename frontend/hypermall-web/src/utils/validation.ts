@@ -1,70 +1,70 @@
 import * as Yup from 'yup';
 
 export const emailSchema = Yup.string()
-  .email('Email không hợp lệ')
-  .required('Email là bắt buộc');
+  .email('Invalid email address')
+  .required('Email is required');
 
 export const passwordSchema = Yup.string()
-  .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
-  .matches(/[a-z]/, 'Mật khẩu phải chứa ít nhất 1 chữ thường')
-  .matches(/[A-Z]/, 'Mật khẩu phải chứa ít nhất 1 chữ hoa')
-  .matches(/[0-9]/, 'Mật khẩu phải chứa ít nhất 1 số')
-  .matches(/[@#$%^&+=!]/, 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt')
-  .required('Mật khẩu là bắt buộc');
+  .min(8, 'Password must be at least 8 characters')
+  .matches(/[a-z]/, 'Password must include at least 1 lowercase letter')
+  .matches(/[A-Z]/, 'Password must include at least 1 uppercase letter')
+  .matches(/[0-9]/, 'Password must include at least 1 number')
+  .matches(/[@#$%^&+=!]/, 'Password must include at least 1 special character')
+  .required('Password is required');
 
 export const phoneSchema = Yup.string()
-  .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'Số điện thoại không hợp lệ')
-  .required('Số điện thoại là bắt buộc');
+  .matches(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'Invalid phone number')
+  .required('Phone number is required');
 
 export const loginSchema = Yup.object({
   email: emailSchema,
-  password: Yup.string().required('Mật khẩu là bắt buộc'),
+  password: Yup.string().required('Password is required'),
 });
 
 export const registerSchema = Yup.object({
   email: emailSchema,
   password: passwordSchema,
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Mật khẩu xác nhận không khớp')
-    .required('Xác nhận mật khẩu là bắt buộc'),
+    .oneOf([Yup.ref('password')], 'Password confirmation does not match')
+    .required('Password confirmation is required'),
   fullName: Yup.string()
-    .min(2, 'Họ tên phải có ít nhất 2 ký tự')
-    .max(100, 'Họ tên không được quá 100 ký tự')
-    .required('Họ tên là bắt buộc'),
+    .min(2, 'Full name must be at least 2 characters')
+    .max(100, 'Full name must not exceed 100 characters')
+    .required('Full name is required'),
   phone: phoneSchema.notRequired(),
 });
 
 export const addressSchema = Yup.object({
   fullName: Yup.string()
-    .min(2, 'Họ tên phải có ít nhất 2 ký tự')
-    .required('Họ tên là bắt buộc'),
+    .min(2, 'Full name must be at least 2 characters')
+    .required('Full name is required'),
   phone: phoneSchema,
-  province: Yup.string().required('Tỉnh/Thành phố là bắt buộc'),
-  district: Yup.string().required('Quận/Huyện là bắt buộc'),
-  ward: Yup.string().required('Phường/Xã là bắt buộc'),
+  province: Yup.string().required('Province/City is required'),
+  district: Yup.string().required('District is required'),
+  ward: Yup.string().required('Ward is required'),
   addressDetail: Yup.string()
-    .min(5, 'Địa chỉ chi tiết phải có ít nhất 5 ký tự')
-    .required('Địa chỉ chi tiết là bắt buộc'),
+    .min(5, 'Address detail must be at least 5 characters')
+    .required('Address detail is required'),
   type: Yup.string().oneOf(['HOME', 'OFFICE']).required(),
 });
 
 export const changePasswordSchema = Yup.object({
-  currentPassword: Yup.string().required('Mật khẩu hiện tại là bắt buộc'),
+  currentPassword: Yup.string().required('Current password is required'),
   newPassword: passwordSchema,
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('newPassword')], 'Mật khẩu xác nhận không khớp')
-    .required('Xác nhận mật khẩu là bắt buộc'),
+    .oneOf([Yup.ref('newPassword')], 'Password confirmation does not match')
+    .required('Password confirmation is required'),
 });
 
 export const reviewSchema = Yup.object({
   rating: Yup.number()
-    .min(1, 'Vui lòng chọn số sao')
+    .min(1, 'Please choose a rating')
     .max(5)
-    .required('Đánh giá là bắt buộc'),
+    .required('Rating is required'),
   content: Yup.string()
-    .min(10, 'Nội dung đánh giá phải có ít nhất 10 ký tự')
-    .max(1000, 'Nội dung đánh giá không được quá 1000 ký tự')
-    .required('Nội dung đánh giá là bắt buộc'),
+    .min(10, 'Review content must be at least 10 characters')
+    .max(1000, 'Review content must not exceed 1000 characters')
+    .required('Review content is required'),
 });
 
 // Helper functions

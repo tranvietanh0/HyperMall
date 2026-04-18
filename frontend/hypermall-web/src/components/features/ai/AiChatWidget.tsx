@@ -10,9 +10,9 @@ import AiMessageList from './AiMessageList';
 import type { AiChatContext } from '@/types';
 
 const starterPrompts = [
-  'Gợi ý tai nghe không dây dưới 1 triệu',
-  'Sản phẩm này phù hợp với ai?',
-  'Làm sao để theo dõi đơn hàng?',
+  'Recommend wireless earbuds under $100',
+  'Who is this product best for?',
+  'How can I track my order?',
 ];
 
 export default function AiChatWidget() {
@@ -66,16 +66,16 @@ export default function AiChatWidget() {
                     <SparklesIcon className="h-4 w-4" />
                     HyperMall AI
                   </div>
-                  <h2 className="mt-2 text-lg font-semibold">Trợ lý mua sắm cho bạn</h2>
+                  <h2 className="mt-2 text-lg font-semibold">Your shopping assistant</h2>
                   <p className="mt-1 text-sm text-white/75">
-                    Hỏi về sản phẩm, xin gợi ý mua hàng, hoặc nhờ hướng dẫn điều hướng trong web.
+                    Ask about products, get buying recommendations, or request help navigating the store.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={close}
                   className="rounded-full bg-white/10 p-2 transition hover:bg-white/20"
-                  aria-label="Đóng trợ lý AI"
+                  aria-label="Close AI assistant"
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>
@@ -104,7 +104,7 @@ export default function AiChatWidget() {
                 <textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
-                  placeholder="Ví dụ: tìm cho tôi một chiếc chuột không dây dưới 500k"
+                  placeholder="Example: find me a wireless mouse under $50"
                   rows={3}
                   className="w-full resize-none rounded-2xl border border-secondary-200 bg-secondary-50 px-4 py-3 text-sm text-primary-900 placeholder:text-secondary-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-50"
                 />
@@ -116,10 +116,10 @@ export default function AiChatWidget() {
                     className="inline-flex items-center gap-2 text-xs font-semibold text-secondary-500 transition hover:text-primary-700"
                   >
                     <ArrowPathIcon className="h-4 w-4" />
-                    Xóa hội thoại
+                    Clear conversation
                   </button>
                   <Button type="submit" isLoading={isSending} className="rounded-full px-5">
-                    Gửi câu hỏi
+                    Send message
                   </Button>
                 </div>
               </form>

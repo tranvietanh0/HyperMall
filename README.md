@@ -71,10 +71,32 @@ npm install
 npm run dev
 ```
 
+### 5. Seed demo products from a public API
+
+```bash
+python scripts/seed_products.py --limit 30
+```
+
+This importer fetches public catalog data, creates categories/brands, and fills the product database with real image URLs so the local app no longer depends on mock product data.
+
+Notes:
+
+- Requires a running HyperMall MySQL Docker container (`hypermall-mysql-dev` or `hypermall-mysql-alt`)
+- Writes directly to MySQL and validates that the target `seller_id` exists in `hypermall_users`
+- Re-running the command updates the same imported products instead of duplicating them
+
+### 6. Seed an active flash sale from current products
+
+```bash
+python scripts/seed_flash_sale.py --limit 6
+```
+
+This creates the flash sale tables if they do not exist and populates one active local flash sale with real product images from the current seeded catalog.
+
 ## Local Endpoints
 
-- Frontend: `http://localhost:3000`
-- API Gateway: `http://localhost:8080/api/*`
+- App entry (frontend + proxied API): `http://localhost:3000`
+- API Gateway debug target: `http://localhost:8080/api/*`
 - Eureka: `http://localhost:8761`
 - RabbitMQ UI: `http://localhost:15672`
 

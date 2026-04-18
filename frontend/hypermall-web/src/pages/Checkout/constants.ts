@@ -7,11 +7,11 @@ export const PAYMENT_METHOD_OPTIONS: Array<{
   label: string
   icon: string
 }> = [
-  { value: 'COD', label: 'Thanh toán khi nhan hang (COD)', icon: '💵' },
+  { value: 'COD', label: 'Cash on Delivery (COD)', icon: '💵' },
   { value: 'VNPAY', label: 'VNPay', icon: '💳' },
-  { value: 'MOMO', label: 'Vi MoMo', icon: '📱' },
+  { value: 'MOMO', label: 'MoMo Wallet', icon: '📱' },
   { value: 'ZALOPAY', label: 'ZaloPay', icon: '💙' },
-  { value: 'BANK_TRANSFER', label: 'Chuyen khoan ngan hang', icon: '🏦' },
+  { value: 'BANK_TRANSFER', label: 'Bank Transfer', icon: '🏦' },
 ]
 
 export const ADDRESS_INITIAL_VALUES: AddressRequest = {
@@ -26,14 +26,14 @@ export const ADDRESS_INITIAL_VALUES: AddressRequest = {
 }
 
 export const addressSchema = Yup.object({
-  fullName: Yup.string().required('Vui long nhap ho ten'),
+  fullName: Yup.string().required('Please enter the full name'),
   phone: Yup.string()
-    .matches(/^(0|\+84)[3-9]\d{8}$/, 'So dien thoai khong hop le')
-    .required('Vui long nhap so dien thoai'),
-  province: Yup.string().required('Vui long nhap tinh/thanh pho'),
-  district: Yup.string().required('Vui long nhap quan/huyen'),
-  ward: Yup.string().required('Vui long nhap phuong/xa'),
-  addressDetail: Yup.string().required('Vui long nhap dia chi chi tiet'),
+    .matches(/^(0|\+84)[3-9]\d{8}$/, 'Invalid phone number')
+    .required('Please enter a phone number'),
+  province: Yup.string().required('Please enter a province or city'),
+  district: Yup.string().required('Please enter a district'),
+  ward: Yup.string().required('Please enter a ward'),
+  addressDetail: Yup.string().required('Please enter the street address'),
 })
 
 export const DEFAULT_SHIPPING_METHODS: ShippingMethod[] = [

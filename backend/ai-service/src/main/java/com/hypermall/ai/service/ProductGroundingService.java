@@ -145,38 +145,22 @@ public class ProductGroundingService {
                 || normalized.contains("budget")
                 || normalized.contains("cheap")
                 || normalized.contains("under ")
-                || normalized.contains("tim ")
-                || normalized.contains("tìm ")
-                || normalized.contains("goi y")
-                || normalized.contains("gợi ý")
-                || normalized.contains("de xuat")
-                || normalized.contains("đề xuất")
-                || normalized.contains("mua ")
-                || normalized.contains("nên mua")
-                || normalized.contains("duoi")
-                || normalized.contains("cái nào")
-                || normalized.contains("loại nào")
-                || normalized.contains("tot hon")
-                || normalized.contains("tốt hơn")
-                || normalized.contains("re hon")
-                || normalized.contains("rẻ hơn")
-                || normalized.contains("phu hop")
-                || normalized.contains("phù hợp")
-                || normalized.contains("dưới");
+                || normalized.contains("buy ")
+                || normalized.contains("best")
+                || normalized.contains("better")
+                || normalized.contains("compare")
+                || normalized.contains("suitable")
+                || normalized.contains("for me");
     }
 
     private boolean isComparativeProductIntent(String message) {
         String normalized = message.toLowerCase(Locale.ROOT);
         return normalized.contains("this product")
-                || normalized.contains("sản phẩm này")
-                || normalized.contains("cái này")
-                || normalized.contains("mẫu này")
-                || normalized.contains("tot hon")
-                || normalized.contains("tốt hơn")
-                || normalized.contains("re hon")
-                || normalized.contains("rẻ hơn")
-                || normalized.contains("phu hop")
-                || normalized.contains("phù hợp");
+                || normalized.contains("this item")
+                || normalized.contains("better")
+                || normalized.contains("cheaper")
+                || normalized.contains("suitable")
+                || normalized.contains("similar");
     }
 
     private ChatResponse.ProductSuggestion toSuggestion(ProductSnapshot snapshot) {

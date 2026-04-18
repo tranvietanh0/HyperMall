@@ -23,20 +23,20 @@ class ProductGroundingServiceTest {
 
     @Test
     void detectsProductDiscoveryIntentForShoppingQueries() {
-        assertTrue(productGroundingService.isProductDiscoveryIntent("Gợi ý tai nghe không dây rẻ hơn sản phẩm này"));
+        assertTrue(productGroundingService.isProductDiscoveryIntent("Recommend wireless earbuds cheaper than this product"));
         assertTrue(productGroundingService.isProductDiscoveryIntent("Find me a budget gaming mouse"));
     }
 
     @Test
     void ignoresNonProductHelpQueries() {
         assertFalse(productGroundingService.isProductDiscoveryIntent("How do I track my order?"));
-        assertFalse(productGroundingService.isProductDiscoveryIntent("Làm sao để đổi mật khẩu?"));
+        assertFalse(productGroundingService.isProductDiscoveryIntent("How do I change my password?"));
     }
 
     @Test
     void usesCurrentProductNameOnlyForComparativeQueries() {
         ChatRequest request = ChatRequest.builder()
-                .message("Gợi ý mẫu rẻ hơn sản phẩm này")
+                .message("Recommend something cheaper than this product")
                 .context(ChatRequest.ChatContext.builder()
                         .productName("Sony WH-1000XM5")
                         .build())

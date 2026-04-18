@@ -25,8 +25,8 @@ export default function ProductDetailPage() {
   if (isLoading) return <div className="flex justify-center py-32"><Loading size="lg" /></div>
   if (!product) return (
     <div className="container mx-auto px-4 py-16 text-center text-gray-500">
-      <p className="text-lg mb-4">Không tìm thấy sản phẩm</p>
-      <Link to="/products" className="text-primary-600 hover:underline">← Quay lại danh sách</Link>
+      <p className="text-lg mb-4">Product not found</p>
+      <Link to="/products" className="text-primary-600 hover:underline">← Back to catalog</Link>
     </div>
   )
 
@@ -52,7 +52,7 @@ export default function ProductDetailPage() {
   return (
     <div className="container mx-auto px-4 py-6">
       <Link to="/products" className="inline-flex items-center text-sm text-gray-500 hover:text-primary-600 mb-4">
-        <ArrowLeftIcon className="w-4 h-4 mr-1" /> Quay lại
+        <ArrowLeftIcon className="w-4 h-4 mr-1" /> Back
       </Link>
 
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -89,7 +89,7 @@ export default function ProductDetailPage() {
             <div className="flex items-center gap-3">
               <StarRating rating={product.avgRating} size="md" showValue count={product.totalReviews} />
               <span className="text-sm text-gray-500">|</span>
-              <span className="text-sm text-gray-500">Đã bán {product.totalSold.toLocaleString()}</span>
+              <span className="text-sm text-gray-500">{product.totalSold.toLocaleString('en-US')} sold</span>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-4">
@@ -107,7 +107,7 @@ export default function ProductDetailPage() {
             {/* Variants */}
             {product.variants && product.variants.length > 0 && (
               <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">Phân loại</p>
+                <p className="text-sm font-medium text-gray-700 mb-2">Variants</p>
                 <div className="flex flex-wrap gap-2">
                   {product.variants.map((v) => (
                     <button key={v.id} onClick={() => setSelectedVariant(v.id)}
@@ -115,7 +115,7 @@ export default function ProductDetailPage() {
                       className={`px-3 py-1.5 border rounded-md text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed
                         ${selectedVariant === v.id ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:border-gray-400'}`}>
                       {v.name}
-                      {v.stock === 0 && <span className="ml-1 text-xs text-red-400">(Hết)</span>}
+                      {v.stock === 0 && <span className="ml-1 text-xs text-red-400">(Sold out)</span>}
                     </button>
                   ))}
                 </div>
@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
 
             {/* Quantity */}
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">Số lượng</span>
+              <span className="text-sm font-medium text-gray-700">Quantity</span>
               <div className="flex items-center border rounded-lg overflow-hidden">
                 <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-gray-50">
                   <MinusIcon className="w-4 h-4" />
@@ -141,10 +141,10 @@ export default function ProductDetailPage() {
             <div className="flex gap-3">
               <button onClick={handleAddToCart} className="flex-1 btn btn-outline flex items-center justify-center gap-2">
                 <ShoppingCartIcon className="w-5 h-5" />
-                Thêm vào giỏ
+                Add to cart
               </button>
               <button onClick={() => { handleAddToCart(); }} className="flex-1 btn btn-primary">
-                Mua ngay
+                Buy now
               </button>
             </div>
 
@@ -158,7 +158,7 @@ export default function ProductDetailPage() {
         {/* Description */}
         {product.description && (
           <div className="border-t p-6">
-            <h2 className="font-semibold text-lg mb-4">Mô tả sản phẩm</h2>
+            <h2 className="font-semibold text-lg mb-4">Product description</h2>
             <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
           </div>
         )}

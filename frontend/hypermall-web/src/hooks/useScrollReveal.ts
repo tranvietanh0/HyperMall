@@ -4,6 +4,7 @@ interface ScrollRevealOptions {
   threshold?: number;
   rootMargin?: string;
   once?: boolean;
+  deps?: ReadonlyArray<unknown>;
 }
 
 /**
@@ -18,7 +19,7 @@ interface ScrollRevealOptions {
 export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
   options: ScrollRevealOptions = {}
 ) {
-  const { threshold = 0.15, rootMargin = '0px 0px -40px 0px', once = true } = options;
+  const { threshold = 0.15, rootMargin = '0px 0px -40px 0px', once = true, deps = [] } = options;
   const containerRef = useRef<T>(null);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export function useScrollReveal<T extends HTMLElement = HTMLDivElement>(
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [threshold, rootMargin, once]);
+  }, [threshold, rootMargin, once, ...deps]);
 
   return containerRef;
 }

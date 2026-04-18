@@ -10,10 +10,10 @@ import { useDebounce } from '@hooks/useDebounce'
 
 const PRICE_RANGES = [
   { label: 'All', min: undefined as number | undefined, max: undefined as number | undefined },
-  { label: 'Under 100,000 VND', min: 0, max: 100000 },
-  { label: '100k - 500k VND', min: 100000, max: 500000 },
-  { label: '500k - 1M VND', min: 500000, max: 1000000 },
-  { label: 'Above 1M VND', min: 1000000, max: undefined as number | undefined },
+  { label: 'Under $100', min: 0, max: 100 },
+  { label: '$100 - $500', min: 100, max: 500 },
+  { label: '$500 - $1,000', min: 500, max: 1000 },
+  { label: 'Above $1,000', min: 1000, max: undefined as number | undefined },
 ]
 
 export default function ProductListPage() {

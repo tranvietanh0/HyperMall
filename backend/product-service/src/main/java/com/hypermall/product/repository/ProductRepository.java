@@ -19,10 +19,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySlug(String slug);
 
-    @EntityGraph(attributePaths = {"category", "brand", "images", "variants"})
+    @EntityGraph(attributePaths = {"category", "brand"})
     Optional<Product> findWithDetailsById(Long id);
 
-    @EntityGraph(attributePaths = {"category", "brand", "images", "variants"})
+    @EntityGraph(attributePaths = {"category", "brand"})
     Optional<Product> findWithDetailsBySlug(String slug);
 
     boolean existsBySlug(String slug);

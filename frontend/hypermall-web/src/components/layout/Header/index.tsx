@@ -1,4 +1,4 @@
-import { Fragment, FormEvent, useState, useEffect } from 'react';
+import { Fragment, FormEvent, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
@@ -21,6 +21,8 @@ const quickLinks = [
 const hotKeywords = ['Wireless Earbuds', 'Gaming Laptop', 'Skincare', 'Smartwatch', 'Kitchen'];
 
 export default function Header() {
+  const SCROLL_EXPAND_THRESHOLD = 24;
+  const SCROLL_COLLAPSE_THRESHOLD = 96;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
@@ -29,6 +31,7 @@ export default function Header() {
   const [desktopSearch, setDesktopSearch] = useState('');
   const [mobileSearch, setMobileSearch] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const isScrolledRef = useRef(false);
 
   const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
@@ -36,9 +39,31 @@ export default function Header() {
 
   // Scroll-aware header
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 60);
+      if (ticking) {
+        return;
+      }
+
+      ticking = true;
+
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        const nextIsScrolled = isScrolledRef.current
+          ? currentScrollY > SCROLL_EXPAND_THRESHOLD
+          : currentScrollY > SCROLL_COLLAPSE_THRESHOLD;
+
+        if (nextIsScrolled !== isScrolledRef.current) {
+          isScrolledRef.current = nextIsScrolled;
+          setIsScrolled(nextIsScrolled);
+        }
+
+        ticking = false;
+      });
     };
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);

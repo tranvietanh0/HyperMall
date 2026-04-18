@@ -84,8 +84,8 @@ if not exist node_modules (
     echo      Installing npm dependencies...
     call npm install
 )
-start "Frontend (5173)" cmd /k "cd /d %PROJECT_ROOT%\frontend\hypermall-web && npm run dev"
-echo      - Frontend starting on port 5173
+start "Frontend (3000)" cmd /k "cd /d %PROJECT_ROOT%\frontend\hypermall-web && npm run dev"
+echo      - Frontend starting on port 3000
 
 echo.
 echo ============================================
@@ -93,8 +93,8 @@ echo [6/6] All services are starting!
 echo ============================================
 echo.
 echo Access URLs:
-echo   - Frontend:        http://localhost:5173
-echo   - API Gateway:     http://localhost:8080
+echo   - App Entry:       http://localhost:3000
+echo   - API Gateway:     http://localhost:8080 ^(internal debug/proxy target^)
 echo   - Eureka:          http://localhost:8761 (eureka/eureka123)
 echo   - RabbitMQ:        http://localhost:15672 (guest/guest)
 echo.

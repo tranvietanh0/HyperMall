@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { AiProductSuggestion } from '@/types';
+import { formatCurrency } from '@utils/format';
 
 type AiSuggestedProductsProps = {
   products: AiProductSuggestion[];
@@ -7,14 +8,10 @@ type AiSuggestedProductsProps = {
 
 function formatPrice(price?: number) {
   if (typeof price !== 'number') {
-    return 'Xem chi tiết';
+    return 'View details';
   }
 
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0,
-  }).format(price);
+  return formatCurrency(price);
 }
 
 export default function AiSuggestedProducts({ products }: AiSuggestedProductsProps) {

@@ -13,11 +13,11 @@ export default function ProfilePasswordTab() {
   const formik = useFormik({
     initialValues: { currentPassword: '', newPassword: '', confirmPassword: '' },
     validationSchema: Yup.object({
-      currentPassword: Yup.string().required('Vui lòng nhập mật khẩu hiện tại'),
-      newPassword: Yup.string().min(8, 'Mật khẩu ít nhất 8 ký tự').required('Vui lòng nhập mật khẩu mới'),
+      currentPassword: Yup.string().required('Please enter your current password'),
+      newPassword: Yup.string().min(8, 'Password must be at least 8 characters').required('Please enter a new password'),
       confirmPassword: Yup.string()
-        .oneOf([Yup.ref('newPassword')], 'Mật khẩu xác nhận không khớp')
-        .required('Vui lòng xác nhận mật khẩu'),
+        .oneOf([Yup.ref('newPassword')], 'Password confirmation does not match')
+        .required('Please confirm your password'),
     }),
     onSubmit: async (values, { resetForm }) => {
       setIsSubmitting(true)
@@ -27,10 +27,10 @@ export default function ProfilePasswordTab() {
           newPassword: values.newPassword,
           confirmPassword: values.confirmPassword,
         })
-        toast.success('Đổi mật khẩu thành công')
+        toast.success('Password changed successfully')
         resetForm()
       } catch (error: unknown) {
-        toast.error(getErrorMessage(error, 'Đổi mật khẩu thất bại'))
+        toast.error(getErrorMessage(error, 'Unable to change password'))
       } finally {
         setIsSubmitting(false)
       }
@@ -39,29 +39,29 @@ export default function ProfilePasswordTab() {
 
   return (
     <div className="bg-white rounded-xl border p-6">
-      <h2 className="font-semibold text-lg mb-5">Đổi mật khẩu</h2>
+      <h2 className="font-semibold text-lg mb-5">Change password</h2>
       <form onSubmit={formik.handleSubmit} className="max-w-sm space-y-4">
         <Input
-          label="Mật khẩu hiện tại"
+          label="Current password"
           type="password"
           {...formik.getFieldProps('currentPassword')}
           error={formik.touched.currentPassword ? formik.errors.currentPassword : undefined}
         />
         <Input
-          label="Mật khẩu mới"
+          label="New password"
           type="password"
           {...formik.getFieldProps('newPassword')}
           error={formik.touched.newPassword ? formik.errors.newPassword : undefined}
         />
         <Input
-          label="Xác nhận mật khẩu mới"
+          label="Confirm new password"
           type="password"
           {...formik.getFieldProps('confirmPassword')}
           error={formik.touched.confirmPassword ? formik.errors.confirmPassword : undefined}
         />
         <div className="pt-2">
           <button type="submit" disabled={isSubmitting} className="btn btn-primary px-8">
-            {isSubmitting ? 'Đang xử lý...' : 'Đổi mật khẩu'}
+            {isSubmitting ? 'Updating...' : 'Change password'}
           </button>
         </div>
       </form>

@@ -6,6 +6,8 @@ import { CheckCircleIcon, TicketIcon } from '@heroicons/react/24/solid'
 import { useCart } from '@hooks/useCart'
 import Loading from '@components/common/Loading'
 import { orderService } from '@services/order.service'
+import { paymentService } from '@services/payment.service'
+import { PAYMENT_SETTLEMENT_CURRENCY, PAYMENT_USD_TO_VND_RATE } from '@config/constants'
 import { getErrorMessage } from '@/utils'
 import { formatCurrency } from '@utils/format'
 import type { PaymentMethod, ShippingMethod } from '@/types'
@@ -175,6 +177,23 @@ export default function CheckoutPage() {
       })
 
       await Promise.all(selectedItems.map((item) => removeItem(item.id)))
+
+      if (paymentMethod !== 'COD') {
+        const payment = await paymentService.createPayment({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          amount: order.total,
+          method: paymentMethod,
+        })
+
+        if (payment.paymentUrl) {
+          window.location.href = payment.paymentUrl
+          return
+        }
+
+        throw new Error('Payment gateway URL was not returned')
+      }
+
       toast.success('Dat hang thanh cong!')
       navigate(`/order-success/${order.id}`)
     } catch (error: unknown) {
@@ -260,6 +279,11 @@ export default function CheckoutPage() {
                 </label>
               ))}
             </div>
+            {paymentMethod !== 'COD' ? (
+              <p className="mt-3 text-xs text-gray-500">
+                Prices are shown in USD, but online payment gateways will charge in {PAYMENT_SETTLEMENT_CURRENCY} at an internal rate of 1 USD = {PAYMENT_USD_TO_VND_RATE.toLocaleString('en-US')} {PAYMENT_SETTLEMENT_CURRENCY}.
+              </p>
+            ) : null}
           </div>
 
           <div className="bg-white rounded-xl border p-5">

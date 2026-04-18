@@ -15,6 +15,7 @@ import com.hypermall.product.repository.CategoryRepository;
 import com.hypermall.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -198,6 +199,8 @@ public class ProductService {
     private Product findActiveProductById(Long id) {
         Product product = productRepository.findWithDetailsById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        Hibernate.initialize(product.getImages());
+        Hibernate.initialize(product.getVariants());
         if (product.getStatus() != ProductStatus.ACTIVE) {
             throw new ResourceNotFoundException("Product not found with id: " + id);
         }
@@ -207,6 +210,8 @@ public class ProductService {
     private Product findActiveProductBySlug(String slug) {
         Product product = productRepository.findWithDetailsBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with slug: " + slug));
+        Hibernate.initialize(product.getImages());
+        Hibernate.initialize(product.getVariants());
         if (product.getStatus() != ProductStatus.ACTIVE) {
             throw new ResourceNotFoundException("Product not found with slug: " + slug);
         }

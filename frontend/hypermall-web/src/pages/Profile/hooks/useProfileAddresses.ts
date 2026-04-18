@@ -39,16 +39,16 @@ export function useProfileAddresses() {
   }, [])
 
   const handleDelete = useCallback(async (addressId: number) => {
-    if (!confirm('Xóa địa chỉ này?')) {
+    if (!confirm('Delete this address?')) {
       return
     }
 
     try {
       await userService.deleteAddress(addressId)
-      toast.success('Đã xóa địa chỉ')
+      toast.success('Address deleted successfully')
       fetchAddresses()
     } catch {
-      toast.error('Không thể xóa địa chỉ')
+      toast.error('Unable to delete the address')
     }
   }, [fetchAddresses])
 
@@ -57,7 +57,7 @@ export function useProfileAddresses() {
       await userService.setDefaultAddress(addressId)
       fetchAddresses()
     } catch {
-      toast.error('Không thể cập nhật địa chỉ mặc định')
+      toast.error('Unable to update the default address')
     }
   }, [fetchAddresses])
 

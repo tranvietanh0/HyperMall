@@ -9,9 +9,9 @@ import ProfileSidebar from './components/ProfileSidebar'
 type Tab = 'info' | 'addresses' | 'password'
 
 const tabs = [
-  { id: 'info' as Tab, label: 'Thông tin tài khoản', icon: UserCircleIcon },
-  { id: 'addresses' as Tab, label: 'Địa chỉ', icon: MapPinIcon },
-  { id: 'password' as Tab, label: 'Đổi mật khẩu', icon: LockClosedIcon },
+  { id: 'info' as Tab, label: 'Account info', icon: UserCircleIcon },
+  { id: 'addresses' as Tab, label: 'Addresses', icon: MapPinIcon },
+  { id: 'password' as Tab, label: 'Change password', icon: LockClosedIcon },
 ]
 
 export default function ProfilePage() {
@@ -19,7 +19,7 @@ export default function ProfilePage() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Tài khoản của tôi</h1>
+      <h1 className="text-2xl font-bold mb-6">My account</h1>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1">
           <ProfileSidebar activeTab={activeTab} tabs={tabs} onChangeTab={setActiveTab} />

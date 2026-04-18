@@ -13,11 +13,10 @@ import {
 
 describe('format utilities', () => {
   describe('formatCurrency', () => {
-    it('should format number as VND currency', () => {
+    it('should format number as USD currency', () => {
       const result = formatCurrency(1000000);
-      expect(result).toContain('1.000.000');
-      // VND can be displayed as 'VND' or '₫' depending on locale
-      expect(result.includes('VND') || result.includes('₫')).toBe(true);
+      expect(result).toContain('$');
+      expect(result).toContain('1,000,000');
     });
 
     it('should handle zero', () => {
@@ -27,13 +26,13 @@ describe('format utilities', () => {
 
     it('should handle negative numbers', () => {
       const result = formatCurrency(-500000);
-      expect(result).toContain('500.000');
+      expect(result).toContain('500,000');
     });
   });
 
   describe('formatNumber', () => {
     it('should format number with thousand separators', () => {
-      expect(formatNumber(1234567)).toBe('1.234.567');
+      expect(formatNumber(1234567)).toBe('1,234,567');
     });
 
     it('should handle zero', () => {
@@ -42,29 +41,34 @@ describe('format utilities', () => {
 
     it('should handle decimal numbers', () => {
       const result = formatNumber(1234.56);
-      expect(result).toContain('1.234');
+      expect(result).toContain('1,234');
     });
   });
 
   describe('formatDate', () => {
-    it('should format date string to Vietnamese format', () => {
+    it('should format date string to US format', () => {
       const result = formatDate('2026-03-11');
-      expect(result).toMatch(/11\/03\/2026|11-03-2026/);
+      expect(result).toContain('Mar');
+      expect(result).toContain('11');
+      expect(result).toContain('2026');
     });
 
     it('should format Date object', () => {
       const date = new Date(2026, 2, 11); // March 11, 2026
       const result = formatDate(date);
-      expect(result).toMatch(/11\/03\/2026|11-03-2026/);
+      expect(result).toContain('Mar');
+      expect(result).toContain('11');
+      expect(result).toContain('2026');
     });
   });
 
   describe('formatDateTime', () => {
     it('should format date and time', () => {
       const result = formatDateTime('2026-03-11T14:30:00');
+      expect(result).toContain('Mar');
       expect(result).toContain('11');
-      expect(result).toContain('03');
       expect(result).toContain('2026');
+      expect(result).toContain('02:30');
     });
   });
 
@@ -78,34 +82,34 @@ describe('format utilities', () => {
       vi.useRealTimers();
     });
 
-    it('should return "Vừa xong" for recent times', () => {
+    it('should return "Just now" for recent times', () => {
       const date = new Date('2026-03-11T11:59:30');
-      expect(formatRelativeTime(date)).toBe('Vừa xong');
+      expect(formatRelativeTime(date)).toBe('Just now');
     });
 
     it('should return minutes ago', () => {
       const date = new Date('2026-03-11T11:30:00');
-      expect(formatRelativeTime(date)).toBe('30 phút trước');
+      expect(formatRelativeTime(date)).toBe('30 minutes ago');
     });
 
     it('should return hours ago', () => {
       const date = new Date('2026-03-11T09:00:00');
-      expect(formatRelativeTime(date)).toBe('3 giờ trước');
+      expect(formatRelativeTime(date)).toBe('3 hours ago');
     });
 
     it('should return days ago', () => {
       const date = new Date('2026-03-09T12:00:00');
-      expect(formatRelativeTime(date)).toBe('2 ngày trước');
+      expect(formatRelativeTime(date)).toBe('2 days ago');
     });
 
     it('should return months ago', () => {
       const date = new Date('2025-12-11T12:00:00');
-      expect(formatRelativeTime(date)).toBe('3 tháng trước');
+      expect(formatRelativeTime(date)).toBe('3 months ago');
     });
 
     it('should return years ago', () => {
       const date = new Date('2024-03-11T12:00:00');
-      expect(formatRelativeTime(date)).toBe('2 năm trước');
+      expect(formatRelativeTime(date)).toBe('2 years ago');
     });
   });
 

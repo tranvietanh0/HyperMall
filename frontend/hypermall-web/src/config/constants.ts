@@ -24,6 +24,10 @@ export const PRODUCT_STATUS = {
   INACTIVE: 'INACTIVE',
 } as const;
 
+export const PAYMENT_DISPLAY_CURRENCY = 'USD';
+export const PAYMENT_SETTLEMENT_CURRENCY = 'VND';
+export const PAYMENT_USD_TO_VND_RATE = 25000;
+
 export const ORDER_STATUS = {
   PENDING_PAYMENT: 'PENDING_PAYMENT',
   PAID: 'PAID',
@@ -37,15 +41,15 @@ export const ORDER_STATUS = {
 } as const;
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
-  PENDING_PAYMENT: 'Chờ thanh toán',
-  PAID: 'Đã thanh toán',
-  CONFIRMED: 'Đã xác nhận',
-  PROCESSING: 'Đang xử lý',
-  SHIPPING: 'Đang giao hàng',
-  DELIVERED: 'Đã giao hàng',
-  COMPLETED: 'Hoàn thành',
-  CANCELLED: 'Đã hủy',
-  RETURNED: 'Đã trả hàng',
+  PENDING_PAYMENT: 'Pending Payment',
+  PAID: 'Paid',
+  CONFIRMED: 'Confirmed',
+  PROCESSING: 'Processing',
+  SHIPPING: 'Shipping',
+  DELIVERED: 'Delivered',
+  COMPLETED: 'Completed',
+  CANCELLED: 'Cancelled',
+  RETURNED: 'Returned',
 };
 
 export const PAYMENT_METHODS = {
@@ -60,8 +64,8 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   VNPAY: 'VNPay',
   MOMO: 'MoMo',
   ZALOPAY: 'ZaloPay',
-  BANK_TRANSFER: 'Chuyển khoản ngân hàng',
-  COD: 'Thanh toán khi nhận hàng',
+  BANK_TRANSFER: 'Bank Transfer',
+  COD: 'Cash on Delivery',
 };
 
 export const USER_ROLES = {
@@ -71,17 +75,17 @@ export const USER_ROLES = {
 } as const;
 
 export const SORT_OPTIONS = [
-  { value: 'newest', label: 'Mới nhất' },
-  { value: 'best_selling', label: 'Bán chạy' },
-  { value: 'price_asc', label: 'Giá: Thấp đến cao' },
-  { value: 'price_desc', label: 'Giá: Cao đến thấp' },
-  { value: 'rating', label: 'Đánh giá cao' },
+  { value: 'newest', label: 'Newest' },
+  { value: 'best_selling', label: 'Best Selling' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'rating', label: 'Top Rated' },
 ];
 
 export const RATING_FILTERS = [
-  { value: 5, label: '5 sao' },
-  { value: 4, label: 'Từ 4 sao' },
-  { value: 3, label: 'Từ 3 sao' },
+  { value: 5, label: '5 stars' },
+  { value: 4, label: '4 stars & up' },
+  { value: 3, label: '3 stars & up' },
 ];
 
 export const FILE_SIZE_LIMIT = {

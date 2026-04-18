@@ -13,6 +13,7 @@ const CheckoutPage = lazy(() => import('@/pages/Checkout'));
 const OrderListPage = lazy(() => import('@/pages/Order/OrderListPage'));
 const OrderDetailPage = lazy(() => import('@/pages/Order/OrderDetailPage'));
 const OrderSuccessPage = lazy(() => import('@/pages/Order/OrderSuccessPage'));
+const VNPayCallbackPage = lazy(() => import('@/pages/Payment/VNPayCallbackPage'));
 const ProfilePage = lazy(() => import('@/pages/Profile'));
 const NotFoundPage = lazy(() => import('@/pages/NotFound'));
 
@@ -64,6 +65,10 @@ export const routes: RouteObject[] = [
   {
     path: '/order-success/:id',
     element: <ProtectedRoute><OrderSuccessPage /></ProtectedRoute>,
+  },
+  {
+    path: '/payment/vnpay/callback',
+    element: <VNPayCallbackPage />,
   },
   {
     path: '/profile',
