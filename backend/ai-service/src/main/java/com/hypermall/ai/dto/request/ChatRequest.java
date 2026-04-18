@@ -23,6 +23,8 @@ public class ChatRequest {
 
     private List<ChatMessage> history;
 
+    private ChatContext context;
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -30,5 +32,16 @@ public class ChatRequest {
     public static class ChatMessage {
         private String role; // "user" or "assistant"
         private String content;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ChatContext {
+        private String pageType;
+        private String path;
+        private Long productId;
+        private String productName;
     }
 }

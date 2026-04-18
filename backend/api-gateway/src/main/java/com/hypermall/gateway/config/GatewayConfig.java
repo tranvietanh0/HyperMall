@@ -93,6 +93,12 @@ public class GatewayConfig {
                         .filters(f -> applyProtectedFilters(f.filter(authenticationFilter)))
                         .uri("lb://search-service"))
 
+                // AI Service Routes
+                .route("ai-service", r -> r
+                        .path("/api/ai/**")
+                        .filters(f -> applyProtectedFilters(f.filter(authenticationFilter)))
+                        .uri("lb://ai-service"))
+
                 // Notification Service Routes
                 .route("notification-service", r -> r
                         .path("/api/notifications/**")

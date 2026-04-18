@@ -3,9 +3,9 @@ server:
 
 spring:
   datasource:
-    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/hypermall_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:root}
+    url: ${MYSQL_URL:jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/hypermall_notification?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${MYSQL_USERNAME:${DB_USERNAME:root}}
+    password: ${MYSQL_PASSWORD:${DB_PASSWORD:root}}
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
@@ -66,3 +66,8 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}

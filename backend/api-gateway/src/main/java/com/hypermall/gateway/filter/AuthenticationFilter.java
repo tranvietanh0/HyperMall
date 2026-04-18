@@ -61,6 +61,7 @@ public class AuthenticationFilter implements GatewayFilter {
             new PublicRoute(HttpMethod.GET, "/api/sellers/*"),
             new PublicRoute(HttpMethod.GET, "/api/sellers/slug/*"),
             new PublicRoute(HttpMethod.GET, "/api/reviews/product/**"),
+            new PublicRoute(HttpMethod.POST, "/api/ai/chat"),
             new PublicRoute(HttpMethod.GET, "/api/flash-sales"),
             new PublicRoute(HttpMethod.GET, "/api/flash-sales/**"),
             new PublicRoute(HttpMethod.GET, "/api/vouchers"),

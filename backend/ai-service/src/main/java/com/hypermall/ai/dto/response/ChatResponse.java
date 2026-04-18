@@ -17,6 +17,7 @@ public class ChatResponse {
     private String sessionId;
     private List<SuggestedAction> suggestedActions;
     private List<ProductSuggestion> productSuggestions;
+    private boolean degraded;
 
     @Data
     @Builder

@@ -1,251 +1,118 @@
-# HyperMall - E-Commerce Platform
+# HyperMall
 
-A comprehensive microservices-based e-commerce platform inspired by Shopee and Lazada, built with Spring Cloud (backend) and React (frontend).
+HyperMall is a microservices e-commerce platform with a Spring Boot/Spring Cloud backend, a React + Vite frontend, and Docker-based local infrastructure.
 
-## Overview
+`docs/` is the source of truth for architecture, standards, deployment, and testing. This README is intentionally short and acts as the project entry point.
 
-HyperMall is a full-featured online marketplace supporting:
-- Multi-vendor seller portals
-- Advanced product search (Elasticsearch)
-- Multiple payment methods (VNPay, MoMo, ZaloPay, COD)
-- Multiple shipping carriers (GHN, GHTK, ViettelPost)
-- Real-time inventory management
-- Product reviews and ratings
-- Vouchers and flash sales
-- Order tracking
+## Stack
 
-## Tech Stack
+- Backend: Java 17, Spring Boot 3.4.3, Spring Cloud 2024.0.0, Maven
+- Frontend: React 18, TypeScript, Vite, Tailwind CSS, Redux Toolkit, Vitest
+- Infrastructure: MySQL, Redis, RabbitMQ, Elasticsearch, Docker Compose
+- Platform services: Eureka, Spring Cloud Config, Spring Cloud Gateway, Prometheus/Grafana/ELK (monitoring compose)
 
-### Frontend
-- React 18 + TypeScript
-- Vite (build tool)
-- TailwindCSS (styling)
-- Redux Toolkit (state management)
-- React Router DOM 6
-- Formik + Yup (forms)
-- Vitest (testing)
+## Repository Layout
 
-### Backend
-- Spring Boot 3.4.3 (Java 17)
-- Spring Cloud 2024.0.0
-- Netflix Eureka (service discovery)
-- Spring Cloud Config (configuration)
-- Spring Cloud Gateway (API gateway)
+```text
+HyperMall/
+|- backend/                     Maven multi-module microservices
+|- frontend/hypermall-web/      React application
+|- infrastructure/docker/       Docker Compose stacks
+|- docs/                        Canonical documentation
+|- scripts/                     Local start/stop helpers
+|- PLAN.md                      Planning notes
+`- REQUIREMENTS.md              Product requirements
+```
 
-### Infrastructure
-- MySQL 8.0 (databases)
-- Redis 7 (caching, sessions, cart)
-- RabbitMQ 3 (message queue)
-- Elasticsearch 8.x (search)
-- Docker & Docker Compose
+## Backend Modules
+
+- Core: `common-lib`, `service-registry`, `config-server`, `api-gateway`
+- Domain: `user-service`, `product-service`, `cart-service`, `order-service`, `payment-service`, `inventory-service`, `shipping-service`, `promotion-service`, `review-service`, `search-service`, `notification-service`, `ai-service`, `media-service`, `seller-service`, `analytics-service`
+
+See `docs/system-architecture.md` and `docs/codebase-summary.md` for the detailed service map.
 
 ## Quick Start
 
-### Prerequisites
-- Java 17+
-- Maven 3.8+
-- Node.js 18+
-- Docker Desktop
+### 1. Start infrastructure
 
-### 1. Start Infrastructure
 ```bash
 cd infrastructure/docker
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-### 2. Start Backend Services
+### 2. Build backend
+
 ```bash
-# Build all services
 cd backend
 mvn clean install -DskipTests
-
-# Dev profile with local fallback credentials
-set SPRING_PROFILES_ACTIVE=dev
-set CONFIG_USERNAME=config
-set CONFIG_PASSWORD=config123
-set EUREKA_USERNAME=eureka
-set EUREKA_PASSWORD=eureka123
-
-# Start services in order (separate terminals)
-cd service-registry && mvn spring-boot:run     # Port 8761
-cd config-server && mvn spring-boot:run         # Port 8888
-cd api-gateway && mvn spring-boot:run          # Port 8080
-cd user-service && mvn spring-boot:run         # Port 8081
-cd product-service && mvn spring-boot:run      # Port 8082
-cd cart-service && mvn spring-boot:run         # Port 8083
 ```
 
-### 3. Start Frontend
+### 3. Start core services in order
+
+```bash
+mvn -pl service-registry spring-boot:run
+mvn -pl config-server spring-boot:run
+mvn -pl api-gateway spring-boot:run
+```
+
+Then start the business services you need, for example:
+
+```bash
+mvn -pl user-service spring-boot:run
+mvn -pl product-service spring-boot:run
+mvn -pl cart-service spring-boot:run
+```
+
+### 4. Start frontend
+
 ```bash
 cd frontend/hypermall-web
 npm install
 npm run dev
 ```
 
-Access the application:
-- Frontend: http://localhost:3000
-- API Gateway: http://localhost:8080/api
-- Eureka Dashboard: http://localhost:8761 (eureka/eureka123)
+## Local Endpoints
 
-## Project Structure
-
-```
-HyperMall/
-├── backend/                    # 18 microservices
-│   ├── common-lib/            # Shared library
-│   ├── service-registry/      # Eureka Server
-│   ├── config-server/         # Config Server
-│   ├── api-gateway/           # API Gateway
-│   ├── user-service/          # Auth & Users
-│   ├── product-service/       # Products & Categories
-│   ├── cart-service/          # Shopping Cart (Redis)
-│   ├── order-service/         # Orders
-│   ├── payment-service/       # Payments
-│   ├── inventory-service/     # Stock Management
-│   ├── shipping-service/      # Shipping Integration
-│   ├── promotion-service/     # Vouchers & Flash Sales
-│   ├── review-service/        # Reviews & Ratings
-│   ├── search-service/        # Elasticsearch
-│   ├── notification-service/  # Notifications
-│   ├── media-service/         # File Uploads
-│   ├── seller-service/        # Seller Portal
-│   └── analytics-service/    # Analytics
-├── frontend/
-│   └── hypermall-web/         # React frontend
-├── infrastructure/
-│   └── docker/               # Docker Compose
-├── docs/                      # Documentation
-└── scripts/                   # Utility scripts
-```
-
-## Service Ports
-
-| Service | Port | Database |
-|---------|------|----------|
-| service-registry | 8761 | N/A |
-| config-server | 8888 | N/A |
-| api-gateway | 8080 | Redis |
-| user-service | 8081 | MySQL |
-| product-service | 8082 | MySQL |
-| cart-service | 8083 | Redis |
-| order-service | 8084 | MySQL |
-| payment-service | 8085 | MySQL |
-| inventory-service | 8086 | MySQL |
-| shipping-service | 8087 | MySQL |
-| promotion-service | 8088 | MySQL |
-| review-service | 8089 | MySQL |
-| search-service | 8090 | Elasticsearch |
-| notification-service | 8091 | MySQL |
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login
-- `POST /api/auth/refresh` - Refresh token
-
-### Products
-- `GET /api/products` - List products
-- `GET /api/products/{id}` - Product details
-- `GET /api/categories` - List categories
-
-### Cart
-- `GET /api/cart` - Get cart
-- `POST /api/cart/items` - Add to cart
-
-### Orders
-- `POST /api/orders` - Create order
-- `GET /api/orders` - Order history
-
-See [API Documentation](./docs/API.md) for complete endpoint reference.
-
-## Key Features
-
-### User Features
-- User registration and authentication
-- Product browsing with filters
-- Shopping cart management
-- Order placement and tracking
-- Product reviews and ratings
-
-### Seller Features
-- Seller registration
-- Product management
-- Order fulfillment
-- Sales analytics
-
-### Admin Features
-- Category and brand management
-- User management
-- Platform analytics
-
-## Documentation
-
-- [API Documentation](./docs/API.md)
-- [Deployment Guide](./docs/DEPLOYMENT.md)
-- [Local Testing Guide](./docs/LOCAL_TESTING.md)
-- [Project Overview & PDR](./docs/project-overview-pdr.md)
-- [Code Standards](./docs/code-standards.md)
-- [System Architecture](./docs/system-architecture.md)
-- [Codebase Summary](./docs/codebase-summary.md)
-
-## Security
-
-- JWT authentication (15 min access, 7 day refresh)
-- Role-based access control (USER, SELLER, ADMIN)
-- Rate limiting (100-500 req/min)
-- Password hashing with BCrypt
+- Frontend: `http://localhost:3000`
+- API Gateway: `http://localhost:8080/api/*`
+- Eureka: `http://localhost:8761`
+- RabbitMQ UI: `http://localhost:15672`
 
 ## Testing
 
 ### Backend
+
 ```bash
 cd backend
 mvn test
-
-# Single service
-cd backend/user-service
-mvn test -Dtest=AuthServiceTest
 ```
 
 ### Frontend
+
 ```bash
 cd frontend/hypermall-web
-
-# Watch mode
 npm run test
-
-# Single run
-npx vitest run
-
-# Coverage
 npm run test:coverage
 ```
 
-## Configuration
+## Documentation
 
-### Environment Variables
-```env
-DB_USERNAME=root
-DB_PASSWORD=root
-REDIS_HOST=localhost
-REDIS_PORT=6379
-JWT_SECRET=<base64-encoded-secret>
-```
+- `docs/project-overview-pdr.md`: project scope, goals, current risk signals
+- `docs/codebase-summary.md`: codebase inventory and module map
+- `docs/code-standards.md`: coding, testing, and documentation conventions
+- `docs/system-architecture.md`: service architecture, ports, infra topology
+- `docs/API.md`: API reference
+- `docs/DEPLOYMENT.md`: deployment and environment guidance
+- `docs/LOCAL_TESTING.md`: local verification workflows
 
-## Contributing
+## Current Project Signals
 
-1. Fork the repository
-2. Create a feature branch: `feature/TICKET-description`
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+- Several backend modules still have little or no automated test coverage
+- `scripts/start-dev.*` only starts a subset of services; full-stack local runs still require manual startup
+- Existing JVM crash logs (`hs_err_pid*.log`, `replay_pid*.log`) indicate previous runtime instability that should be reviewed before production hardening
+- Frontend test runs currently surface React Router future-flag warnings
 
-## License
+## Notes
 
-Private - All rights reserved
-
-## Support
-
-- Documentation: See `/docs` folder
-- Issues: Create GitHub issue
+- Keep detailed documentation updates in `docs/` whenever service ports, environment variables, scripts, or architecture change.
+- Avoid treating this README as the full spec; link back to the docs instead.

@@ -1,604 +1,108 @@
 # HyperMall Code Standards and Conventions
 
-## Table of Contents
-1. [General Principles](#general-principles)
-2. [Java Backend Standards](#java-backend-standards)
-3. [TypeScript/React Standards](#typescriptreact-standards)
-4. [Database Standards](#database-standards)
-5. [API Design Standards](#api-design-standards)
-6. [Git Workflow](#git-workflow)
-7. [Documentation Standards](#documentation-standards)
-8. [Testing Standards](#testing-standards)
+This document codifies the practices embodied in the HyperMall codebase. Keep `docs/` as the source of truth, and update this page whenever naming, layering, or testing expectations shift.
 
----
+## 1. Principles
 
-## 1. General Principles
-
-### Code Quality Goals
-- **Readability**: Code should be self-documenting with clear naming
-- **Maintainability**: Easy to modify and extend without introducing bugs
-- **Performance**: Efficient algorithms and database queries
-- **Security**: Input validation, parameterized queries, no secrets in code
-
-### Naming Conventions
-- Use meaningful, descriptive names
-- Avoid abbreviations unless widely understood (URL, ID, API)
-- Use PascalCase for class names, camelCase for variables and methods
-- Use SCREAMING_SNAKE_CASE for constants
-- Use kebab-case for file names (except Java/TypeScript)
-
-### File Organization
-- One class per file (Java)
-- One component per file (React)
-- Group related files in dedicated directories
-- Follow standard project structure conventions
-
----
+- **Clarity**: Favor meaningful names, short methods, and self-explanatory structure.
+- **Maintainability**: Isolate each domain (entity, controller, service, repository, DTO) and avoid side effects.
+- **Security & Observability**: Guard every endpoint with validation, log context-rich information, and emit metrics via Spring Boot Actuator + Prometheus.
+- **Consistency**: Apply the same patterns shared libraries (`common-lib`, `frontend/src/services`) expose—mismatches must be documented in this file.
 
 ## 2. Java Backend Standards
 
-### Project Structure
+### Project structure
+
+Each module follows the `service-name` package root (e.g., `com.hypermall.user`). The folder layout is always:
+
 ```
 src/main/java/com/hypermall/{service}/
-├── {ServiceName}Application.java    # Main class
-├── config/                           # Configuration classes
-├── controller/                      # REST controllers
-├── service/                         # Business logic
-├── repository/                      # Data access
-├── entity/                          # JPA entities
+├── {ServiceName}Application.java
+├── config/
+├── controller/
+├── service/
+├── repository/
+├── entity/
 ├── dto/
-│   ├── request/                    # Request DTOs
-│   └── response/                   # Response DTOs
-├── mapper/                         # MapStruct mappers
-├── exception/                      # Custom exceptions
-├── security/                       # Security-related code
-└── util/                          # Utility classes
+│   ├── request/
+│   └── response/
+├── mapper/
+├── exception/
+└── security/
 ```
 
-### Package Naming
-- Use reverse domain: `com.hypermall.{service-name}`
-- All lowercase for package names
-- Singular nouns for entity packages
+### Naming and style
 
-### Class Naming
-- Controllers: `{EntityName}Controller.java`
-- Services: `{EntityName}Service.java`
-- Repositories: `{EntityName}Repository.java`
-- Entities: `{EntityName}.java`
-- DTOs: `{EntityName}{Request,Response}.java`
+- Class names use PascalCase, constants use `SCREAMING_SNAKE`, methods/fields use camelCase.
+- Controllers end with `Controller`, services with `Service`/`ServiceImpl`, repositories with `Repository`, DTOs with `Request`/`Response` suffixes, entities with domain nouns.
+- Prefer constructor injection (`@RequiredArgsConstructor`). Keep methods under ~30 lines—extract complex logic to private helpers.
+- Use Lombok for DTOs and entities (`@Data`, `@Getter/@Setter`, `@Builder`) but never hide critical behavior behind `@SneakyThrows`.
 
-### Code Style
+### Shared concerns
 
-#### Method Length
-- Maximum 30 lines per method
-- Extract complex logic to private methods
+- `common-lib` supplies `ApiResponse<T>`, `PageResponse<T>`, exception hierarchy (`BadRequestException`, `ResourceNotFoundException`, `ValidationException`), security helpers (`JwtTokenProvider`, `JwtAuthenticationFilter`, `@CurrentUser`), RabbitMQ publishers, and configuration beans (Jackson, Redis, Async). Import this module in every service.
+- Document `springdoc-openapi-starter-webmvc-ui` annotations on every controller to keep Swagger specs current.
+- MapStruct mappers live under `mapper/`; annotate interfaces with `@Mapper(componentModel = "spring")` and rely on the generated `*MapperImpl` classes.
 
-#### Constructor Injection (Preferred)
-```java
-@Service
-public class ProductService {
-    private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
+### Configuration & security
 
-    public ProductService(ProductRepository productRepository,
-                          CategoryRepository categoryRepository) {
-        this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository;
-    }
-}
-```
+- External config: `Spring Cloud Config Server` (credentials `config/config123`). Keep cloud config yaml in `config-server/src/main/resources/configurations/` and update it with any new service property.
+- API Gateway enforces JWT tokens (15-minute access, 7-day refresh) and rate limiting (100 req/min anonymous, 500 req/min authenticated). Services should not replicate token validation logic beyond `common-lib` utilities.
 
-#### Use Lombok Wisely
-```java
-// Good: Use @Data for simple DTOs
-@Data
-@Builder
-public class ProductResponse {
-    private Long id;
-    private String name;
-    private BigDecimal price;
-}
+### Testing expectations
 
-// Good: Use @Getter/@Setter for entities
-@Entity
-@Table(name = "products")
-@Getter
-@Setter
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+- Backends run `mvn test` per module. New business logic must come with controller/unit tests that exercise `Service` methods. Required coverage applies especially to buyer-facing modules (user/product/cart/order) plus payment/shipping.
+- Document the current testing gaps: `analytics-service`, `cart-service`, `inventory-service`, `media-service`, `notification-service`, `payment-service`, `product-service`, `promotion-service`, `review-service`, `search-service`, `seller-service`, `shipping-service`, and `common-lib` still lack `src/test` coverage.
+- Use Mockito, `@SpringBootTest` (lightweight), or `@WebMvcTest` depending on the scope. Record any unstable tests in `logs/` and do not suppress `Console` output without reason.
 
-    @Column(nullable = false)
-    private String name;
-}
-```
+## 3. TypeScript / React Standards
 
-### Spring Best Practices
+### Structure & aliases
 
-#### Controller Guidelines
-```java
-@RestController
-@RequestMapping("/api/products")
-@RequiredArgsConstructor
-public class ProductController {
+- Entry points: `src/main.tsx`, `src/App.tsx`, `src/routes/index.tsx`.
+- Path aliases (`tsconfig.json`):
+  - `@/*` → `src/*`
+  - `@components/*`, `@pages/*`, `@hooks/*`, `@services/*`, `@store/*`, `@types/*`, `@config/*`, `@utils/*`.
+- Keep UI primitives under `src/components/`, routing views in `src/pages/`, hooks under `src/hooks/`, API helpers under `src/services/`, and Redux logic inside `src/store/` (with slices in `src/store/slices`).
 
-    private final ProductService productService;
+### Naming and components
 
-    @GetMapping
-    public ApiResponse<PageResponse<ProductResponse>> getProducts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        // Implementation
-    }
+- Components use PascalCase filenames (`ProductCard.tsx`).
+- Hooks use `use` prefix (`useCart`, `useProductFilters`).
+- API service functions (e.g., `productService.getProducts`) live next to typed request/response DTOs (`src/types/`). Keep axios instances in `src/services/api.service.ts` and configuration in `src/config/api.config.ts`.
+- Tailwind classes follow the order: layout → spacing → typography → state (e.g., `flex flex-col gap-4 text-sm text-slate-600`). Use `clsx` to manage conditionals.
 
-    @PostMapping
-    @PreAuthorize("hasRole('SELLER') or hasRole('ADMIN')")
-    public ApiResponse<ProductResponse> createProduct(
-            @Valid @RequestBody CreateProductRequest request,
-            @CurrentUser UserPrincipal user) {
-        // Implementation
-    }
-}
-```
+### Tooling & linting
 
-#### Service Layer
-- One service per domain entity
-- Use interfaces for service definitions
-- Keep business logic in services, not controllers
-- Handle transactions at service layer
+- `frontend/hypermall-web/.eslintrc.cjs` extends `eslint:recommended`, `@typescript-eslint/recommended`, and `react-hooks/recommended`. Customizations:
+  - Warn on `@typescript-eslint/no-unused-vars` (args starting with `_` ignored).
+  - Warn on `@typescript-eslint/no-explicit-any`.
+  - `react-refresh/only-export-components` warning mode allows constant exports.
+- `tsconfig` enforces `strict`, `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, and bundler resolution.
 
-#### Repository Layer
-- Extend `JpaRepository` or `CrudRepository`
-- Use custom queries only when necessary
-- Prefer method naming conventions over @Query
+### State & effects
 
-### Exception Handling
-```java
-// Custom exception
-public class ProductNotFoundException extends ResourceNotFoundException {
-    public ProductNotFoundException(Long id) {
-        super("Product not found with id: " + id);
-    }
-}
+- Global state prefers Redux Toolkit slices with `createAsyncThunk` for API side effects. `src/store/index.ts` wires the root reducer and middleware.
+- Local state uses `useState` or `useReducer` when necessary; complex shared state may also live in `zustand` stores alongside Redux if the feature demands it.
 
-// Service layer
-public Product getProduct(Long id) {
-    return productRepository.findById(id)
-        .orElseThrow(() -> new ProductNotFoundException(id));
-}
-```
+### Testing
 
----
+- Vitest drives the front-end suite: `npm run test`, `npm run test:coverage`, `npx vitest run [path]`. The global setup file (`src/test/setup.ts`) mocks `window.matchMedia`, `localStorage`, and `IntersectionObserver` to keep tests deterministic.
+- Keep `React Router DOM` routes declarative; avoid dynamic route arrays that break server-side hydration. When Vitest warns about React Router future flags, capture the warning text before bumping to v7.
 
-## 3. TypeScript/React Standards
+## 4. API & Response Standards
 
-### Project Structure
-```
-src/
-├── components/              # Reusable UI components
-│   ├── common/             # Generic components
-│   ├── layout/             # Layout components
-│   └── {feature}/          # Feature-specific components
-├── pages/                  # Page components
-├── hooks/                  # Custom hooks
-├── services/               # API services
-├── store/                  # Redux store
-│   └── slices/            # Redux slices
-├── types/                  # TypeScript types
-├── utils/                  # Utility functions
-└── config/                 # Configuration
-```
+- Every REST endpoint returns `ApiResponse<T>` (success flag, message, payload). Paginated endpoints wrap results in `PageResponse<T>` with page/size/total metadata.
+- Controllers should annotate with `@Operation(summary = "...")` and `@ApiResponse` where appropriate so Swagger/OpenAPI docs stay in sync.
+- Error handlers rely on `ErrorResponse` objects; custom exceptions extend `BaseException` from `common-lib`.
 
-### Naming Conventions
+## 5. Documentation Standards
 
-#### Files
-- PascalCase for components: `ProductCard.tsx`
-- camelCase for utilities: `formatCurrency.ts`
-- kebab-case for configs: `api-config.ts`
+- `docs/` is canonical; README acts as a pointer. When code changes, edit the related docs inside `docs/` (e.g., API changes → `docs/API.md`, deployment changes → `docs/DEPLOYMENT.md`).
+- Add metadata (version, last updated, author) where helpful and use Markdown tables for configuration values.
+- Mention known runtime artifacts (JVM crash logs `hs_err_pid*.log`, `replay_pid*.log`) in `docs/system-architecture.md` or release notes so future engineers know why the files exist.
 
-#### Components
-```tsx
-// Functional component with TypeScript
-interface ProductCardProps {
-  product: Product;
-  onAddToCart: (productId: number) => void;
-}
+## 6. Continuous Improvement
 
-export const ProductCard: React.FC<ProductCardProps> = ({
-  product,
-  onAddToCart
-}) => {
-  return (
-    <div className="product-card">
-      <h3>{product.name}</h3>
-      <button onClick={() => onAddToCart(product.id)}>
-        Add to Cart
-      </button>
-    </div>
-  );
-};
-```
-
-### React Best Practices
-
-#### State Management
-- Use Redux Toolkit for global state
-- Use useState for component-local state
-- Use useReducer for complex state logic
-
-#### Hooks
-```tsx
-// Custom hook example
-export const useProduct = (productId: number) => {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    fetchProduct(productId)
-      .then(setProduct)
-      .catch(setError)
-      .finally(() => setLoading(false));
-  }, [productId]);
-
-  return { product, loading, error };
-};
-```
-
-#### API Services
-```typescript
-// api/productService.ts
-import axios from 'axios';
-import { Product, ProductListResponse } from '@/types';
-
-const api = axios.create({
-  baseURL: '/api',
-  headers: { 'Content-Type': 'application/json' }
-});
-
-export const productService = {
-  getProducts: (params: ProductQueryParams) =>
-    api.get<ProductListResponse>('/products', { params }),
-
-  getProduct: (id: number) =>
-    api.get<Product>(`/products/${id}`),
-
-  createProduct: (data: CreateProductRequest) =>
-    api.post<Product>('/seller/products', data),
-
-  updateProduct: (id: number, data: UpdateProductRequest) =>
-    api.put<Product>(`/seller/products/${id}`, data),
-
-  deleteProduct: (id: number) =>
-    api.delete(`/seller/products/${id}`)
-};
-```
-
-### TypeScript Guidelines
-
-#### Interfaces vs Types
-```typescript
-// Use interface for object shapes
-interface User {
-  id: number;
-  email: string;
-  name: string;
-}
-
-// Use type for unions, primitives
-type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered';
-```
-
-#### Avoid 'any'
-```typescript
-// Bad
-const data: any = fetchData();
-
-// Good
-const data: ProductResponse = fetchData();
-
-// If type is unknown
-const data: unknown = fetchData();
-if (isProductResponse(data)) {
-  // use data
-}
-```
-
----
-
-## 4. Database Standards
-
-### Naming Conventions
-
-#### Tables
-- Singular noun: `user`, `product`, `order`
-- Snake_case: `user_address`, `order_item`
-- Prefix with service name in shared DB: `hypermall_users`
-
-#### Columns
-- Primary key: `id`
-- Foreign key: `{table_name}_id` (e.g., `user_id`, `product_id`)
-- Timestamps: `created_at`, `updated_at`
-- Boolean: `is_active`, `is_deleted`
-
-### Entity Design
-```java
-@Entity
-@Table(name = "products")
-@Getter
-@Setter
-public class Product {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false, length = 255)
-    private String name;
-
-    @Column(unique = true, length = 255)
-    private String slug;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    @Column(precision = 10, scale = 2)
-    private BigDecimal basePrice;
-
-    @Column(name = "category_id")
-    private Long categoryId;
-
-    @Column(name = "is_active")
-    private Boolean isActive = true;
-
-    @Column(name = "created_at", updatable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = Instant.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
-}
-```
-
-### Indexing
-- Index foreign keys
-- Index columns used in WHERE clauses
-- Index columns used in ORDER BY
-- Use composite indexes for multi-column queries
-
----
-
-## 5. API Design Standards
-
-### RESTful Conventions
-
-#### URL Structure
-- Resource names: plural nouns (`/products`, `/orders`)
-- Nested resources: `/orders/{orderId}/items`
-- Actions: use HTTP methods, not verbs in URL
-
-#### HTTP Methods
-| Method | Usage | Example |
-|--------|-------|---------|
-| GET | Retrieve | GET /products, GET /products/1 |
-| POST | Create | POST /products |
-| PUT | Update (full) | PUT /products/1 |
-| PATCH | Update (partial) | PATCH /products/1 |
-| DELETE | Delete | DELETE /products/1 |
-
-### Response Format
-```json
-{
-  "success": true,
-  "message": "Operation successful",
-  "data": { }
-}
-```
-
-```json
-{
-  "success": false,
-  "message": "Validation failed",
-  "errors": [
-    {
-      "field": "email",
-      "message": "Email is required"
-    }
-  ]
-}
-```
-
-### Pagination
-```json
-{
-  "success": true,
-  "data": {
-    "content": [],
-    "page": 0,
-    "size": 20,
-    "totalElements": 100,
-    "totalPages": 5,
-    "first": true,
-    "last": false
-  }
-}
-```
-
-### Error Codes
-| Code | Usage |
-|------|-------|
-| 200 | Success |
-| 201 | Created |
-| 400 | Bad Request |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Not Found |
-| 409 | Conflict |
-| 500 | Internal Error |
-
----
-
-## 6. Git Workflow
-
-### Branch Naming
-- Feature: `feature/{ticket-number}-{short-description}`
-- Bugfix: `bugfix/{ticket-number}-{short-description}`
-- Hotfix: `hotfix/{ticket-number}-{short-description}`
-- Example: `feature/HM-123-user-authentication`
-
-### Commit Messages
-```
-type(scope): description
-
-[optional body]
-
-[optional footer]
-```
-
-Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-Example:
-```
-feat(auth): add password reset functionality
-
-- Add forgot password endpoint
-- Add email sending with reset token
-- Add reset password endpoint
-
-Closes #123
-```
-
-### Pull Request
-- Title: Clear description of changes
-- Description: What, Why, How
-- Link to ticket
-- Screenshots for UI changes
-
----
-
-## 7. Documentation Standards
-
-### Code Comments
-- Comment WHY, not WHAT
-- Use Javadoc for public APIs
-- Keep comments updated with code changes
-
-### README Files
-Each service should have a README with:
-- Brief description
-- Prerequisites
-- Configuration
-- Running locally
-- API endpoints
-
-### API Documentation
-- Use Swagger/OpenAPI annotations
-- Document all parameters
-- Provide request/response examples
-
----
-
-## 8. Testing Standards
-
-### Backend Testing
-```java
-@SpringBootTest
-class ProductServiceTest {
-
-    @Autowired
-    private ProductService productService;
-
-    @Test
-    void getProduct_WithValidId_ReturnsProduct() {
-        // Given
-        Long productId = 1L;
-
-        // When
-        Product result = productService.getProduct(productId);
-
-        // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(productId);
-    }
-}
-```
-
-### Frontend Testing
-```typescript
-import { render, screen, fireEvent } from '@testing-library/react';
-import { ProductCard } from './ProductCard';
-
-describe('ProductCard', () => {
-  it('renders product name', () => {
-    const product = { id: 1, name: 'Test Product', price: 100 };
-    render(<ProductCard product={product} onAddToCart={() => {}} />);
-    expect(screen.getByText('Test Product')).toBeInTheDocument();
-  });
-
-  it('calls onAddToCart when button clicked', () => {
-    const onAddToCart = vi.fn();
-    const product = { id: 1, name: 'Test Product', price: 100 };
-    render(<ProductCard product={product} onAddToCart={onAddToCart} />);
-    fireEvent.click(screen.getByText('Add to Cart'));
-    expect(onAddToCart).toHaveBeenCalledWith(1);
-  });
-});
-```
-
-### Test Coverage Goals
-- Minimum 80% coverage for business logic
-- 100% coverage for critical paths
-- Include integration tests for API endpoints
-
----
-
-## Code Review Checklist
-
-### Before Submitting PR
-- [ ] Code follows naming conventions
-- [ ] No hardcoded secrets
-- [ ] Unit tests added/updated
-- [ ] No console.log/debug code
-- [ ] Code formatted (Prettier/Formatter)
-- [ ] No TODO comments (or documented)
-
-### Reviewer Checklist
-- [ ] Logic is correct
-- [ ] Error handling is adequate
-- [ ] Performance considerations
-- [ ] Security implications
-- [ ] Documentation updated
-
----
-
-## Tools & Configuration
-
-### Backend
-- IDE: IntelliJ IDEA (recommended)
-- Formatter: google-java-format
-- Lombok: Enable annotation processing
-
-### Frontend
-- IDE: VS Code (recommended)
-- Formatter: Prettier
-- Linter: ESLint
-- Package Manager: npm
-
-### Git
-- Hooks: Husky (pre-commit, commit-msg)
-- Merge: Squash and merge PRs
-
----
-
-*Last Updated: 2024-03-13*
+- Pull requests must include tests (unit/integration), follow `feat|fix|docs|test|chore` commit conventions, and link to the relevant plan/ticket.
+- Any change touching `docs/` should call out the files that now describe the new contract; e.g., adding a new service requires a row in `docs/system-architecture.md` and a mention in `docs/API.md`.
