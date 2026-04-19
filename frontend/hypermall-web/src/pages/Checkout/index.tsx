@@ -125,23 +125,23 @@ export default function CheckoutPage() {
 
   const handleSubmit = useCallback(async () => {
     if (selectedItems.length === 0) {
-      toast.error('Vui long chon san pham')
+      toast.error('Please select at least one product')
       return
     }
 
     if (!selectedAddressId || !selectedAddress) {
-      toast.error('Vui long chon dia chi giao hang')
+      toast.error('Please choose a shipping address')
       return
     }
 
     if (!selectedShippingMethod) {
-      toast.error('Vui long chon phuong thuc van chuyen')
+      toast.error('Please choose a shipping method')
       return
     }
 
     const sellerIds = [...new Set(selectedItems.map((item) => item.sellerId))]
     if (sellerIds.length > 1) {
-      toast.error('Vui long chi thanh toan cac san pham cung mot nha ban trong mot lan')
+      toast.error('Please check out products from a single seller at a time')
       return
     }
 
@@ -176,8 +176,6 @@ export default function CheckoutPage() {
         voucherCode: appliedVoucher || undefined,
       })
 
-      await Promise.all(selectedItems.map((item) => removeItem(item.id)))
-
       if (paymentMethod !== 'COD') {
         const payment = await paymentService.createPayment({
           orderId: order.id,
@@ -194,10 +192,12 @@ export default function CheckoutPage() {
         throw new Error('Payment gateway URL was not returned')
       }
 
-      toast.success('Dat hang thanh cong!')
+      await Promise.all(selectedItems.map((item) => removeItem(item.id)))
+
+      toast.success('Order placed successfully!')
       navigate(`/order-success/${order.id}`)
     } catch (error: unknown) {
-      toast.error(getErrorMessage(error, 'Dat hang that bai'))
+      toast.error(getErrorMessage(error, 'Unable to place the order'))
     } finally {
       setIsSubmitting(false)
     }
@@ -218,17 +218,17 @@ export default function CheckoutPage() {
   if (!cart || selectedItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center text-gray-500">
-        <p className="text-lg mb-4">Khong co san pham de thanh toan</p>
-        <button onClick={() => navigate('/cart')} className="btn btn-primary">
-          Quay lai gio hang
-        </button>
+        <p className="text-lg mb-4">There are no items ready for checkout</p>
+          <button onClick={() => navigate('/cart')} className="btn btn-primary">
+            Back to cart
+          </button>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold mb-6">Thanh toan</h1>
+      <h1 className="text-2xl font-bold mb-6">Checkout</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
           />
 
           <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-lg mb-4">Phuong thuc thanh toan</h2>
+            <h2 className="font-semibold text-lg mb-4">Payment method</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {PAYMENT_METHOD_OPTIONS.map((method) => (
                 <label
@@ -289,7 +289,7 @@ export default function CheckoutPage() {
           <div className="bg-white rounded-xl border p-5">
             <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
               <TicketIcon className="w-5 h-5 text-primary-600" />
-              Ma giam gia
+              Voucher code
             </h2>
             {appliedVoucher ? (
               <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -301,14 +301,14 @@ export default function CheckoutPage() {
                   )}
                 </div>
                 <button onClick={handleRemoveVoucher} className="text-sm text-red-500 hover:underline">
-                  Xoa
+                  Remove
                 </button>
               </div>
             ) : (
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Nhap ma giam gia"
+                  placeholder="Enter voucher code"
                   value={voucherCode}
                   onChange={(event) => setVoucherCode(event.target.value.toUpperCase())}
                   className="input flex-1"
@@ -318,17 +318,17 @@ export default function CheckoutPage() {
                   disabled={isApplyingVoucher || !voucherCode.trim()}
                   className="btn btn-outline px-6 disabled:opacity-50"
                 >
-                  {isApplyingVoucher ? <Loading size="sm" /> : 'Ap dung'}
+                  {isApplyingVoucher ? <Loading size="sm" /> : 'Apply'}
                 </button>
               </div>
             )}
             <p className="text-xs text-gray-400 mt-2">
-              Thu: SALE10 (giam 10%, toi da 50k) hoac FREESHIP (mien phi van chuyen)
+              Try: SALE10 (10% off, capped at $50) or FREESHIP (free shipping)
             </p>
           </div>
 
           <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-lg mb-4">San pham ({selectedItems.length})</h2>
+            <h2 className="font-semibold text-lg mb-4">Items ({selectedItems.length})</h2>
             <div className="divide-y">
               {selectedItems.map((item) => (
                 <div key={item.id} className="flex gap-3 py-3">
@@ -356,7 +356,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="bg-white rounded-xl border p-5">
-            <h2 className="font-semibold text-lg mb-3">Ghi chu</h2>
+            <h2 className="font-semibold text-lg mb-3">Order note</h2>
             <textarea
               rows={2}
               className="input w-full resize-none"

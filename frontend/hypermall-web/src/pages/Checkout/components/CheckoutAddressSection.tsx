@@ -28,14 +28,14 @@ export default function CheckoutAddressSection({
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold text-lg flex items-center gap-2">
           <MapPinIcon className="w-5 h-5 text-primary-600" />
-          Dia chi giao hang
+          Shipping address
         </h2>
         <button
           onClick={onAddAddress}
           className="text-sm text-primary-600 hover:underline flex items-center gap-1"
         >
           <PlusIcon className="w-4 h-4" />
-          Them dia chi
+          Add address
         </button>
       </div>
 
@@ -45,10 +45,10 @@ export default function CheckoutAddressSection({
         </div>
       ) : addresses.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
-          <p className="mb-3">Ban chua co dia chi nao</p>
+          <p className="mb-3">You do not have any saved addresses yet</p>
           <button onClick={onAddAddress} className="btn btn-outline">
             <PlusIcon className="w-4 h-4 mr-1" />
-            Them dia chi moi
+            Add a new address
           </button>
         </div>
       ) : (
@@ -76,11 +76,11 @@ export default function CheckoutAddressSection({
                   <span className="text-gray-600">{address.phone}</span>
                   {address.isDefault && (
                     <span className="text-xs bg-primary-100 text-primary-600 px-2 py-0.5 rounded">
-                      Mac dinh
+                      Default
                     </span>
                   )}
                   <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
-                    {address.type === 'HOME' ? 'Nha rieng' : 'Van phong'}
+                    {address.type === 'HOME' ? 'Home' : 'Office'}
                   </span>
                 </div>
                 <p className="text-sm text-gray-500 mt-1">

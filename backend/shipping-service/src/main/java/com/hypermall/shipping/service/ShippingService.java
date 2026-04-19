@@ -8,7 +8,6 @@ import com.hypermall.shipping.dto.response.ShipmentResponse;
 import com.hypermall.shipping.dto.response.ShippingOptionResponse;
 import com.hypermall.shipping.dto.response.TrackingResponse;
 import com.hypermall.shipping.entity.*;
-import com.hypermall.shipping.mapper.ShippingMapper;
 import com.hypermall.shipping.repository.ShipmentRepository;
 import com.hypermall.shipping.repository.TrackingEventRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +30,6 @@ public class ShippingService {
 
     private final ShipmentRepository shipmentRepository;
     private final TrackingEventRepository trackingEventRepository;
-    private final ShippingMapper shippingMapper;
 
     public List<ShippingOptionResponse> calculateShipping(CalculateShippingRequest request) {
         List<ShippingOptionResponse> options = new ArrayList<>();
@@ -181,14 +179,14 @@ public class ShippingService {
 
         log.info("Shipment created for order {} with tracking {}", request.getOrderId(), trackingNumber);
 
-        return shippingMapper.toShipmentResponse(shipment);
+        return toShipmentResponse(shipment);
     }
 
     @Transactional(readOnly = true)
     public ShipmentResponse getShipmentByOrderId(Long orderId) {
         Shipment shipment = shipmentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Shipment not found for order: " + orderId));
-        return shippingMapper.toShipmentResponse(shipment);
+        return toShipmentResponse(shipment);
     }
 
     @Transactional(readOnly = true)
@@ -207,14 +205,14 @@ public class ShippingService {
                 .receiverAddress(shipment.getReceiverAddress())
                 .expectedDeliveryDate(shipment.getExpectedDeliveryDate())
                 .deliveredAt(shipment.getDeliveredAt())
-                .events(shippingMapper.toTrackingEventResponseList(events))
+                .events(events.stream().map(this::toTrackingEventResponse).toList())
                 .build();
     }
 
     @Transactional(readOnly = true)
     public Page<ShipmentResponse> getSellerShipments(Long sellerId, Pageable pageable) {
         Page<Shipment> shipments = shipmentRepository.findBySellerId(sellerId, pageable);
-        return shipments.map(shippingMapper::toShipmentResponse);
+        return shipments.map(this::toShipmentResponse);
     }
 
     @Transactional
@@ -236,7 +234,44 @@ public class ShippingService {
 
         log.info("Shipment {} status updated to {}", shipmentId, newStatus);
 
-        return shippingMapper.toShipmentResponse(shipment);
+        return toShipmentResponse(shipment);
+    }
+
+    private ShipmentResponse toShipmentResponse(Shipment shipment) {
+        return ShipmentResponse.builder()
+                .id(shipment.getId())
+                .orderId(shipment.getOrderId())
+                .sellerId(shipment.getSellerId())
+                .provider(shipment.getProvider())
+                .providerName(shipment.getProvider().getDisplayName())
+                .trackingNumber(shipment.getTrackingNumber())
+                .providerOrderCode(shipment.getProviderOrderCode())
+                .status(shipment.getStatus())
+                .senderName(shipment.getSenderName())
+                .senderPhone(shipment.getSenderPhone())
+                .senderAddress(shipment.getSenderAddress())
+                .receiverName(shipment.getReceiverName())
+                .receiverPhone(shipment.getReceiverPhone())
+                .receiverAddress(shipment.getReceiverAddress())
+                .weight(shipment.getWeight())
+                .codAmount(shipment.getCodAmount())
+                .shippingFee(shipment.getShippingFee())
+                .insuranceFee(shipment.getInsuranceFee())
+                .note(shipment.getNote())
+                .expectedDeliveryDate(shipment.getExpectedDeliveryDate())
+                .pickedUpAt(shipment.getPickedUpAt())
+                .deliveredAt(shipment.getDeliveredAt())
+                .createdAt(shipment.getCreatedAt())
+                .build();
+    }
+
+    private TrackingResponse.TrackingEventResponse toTrackingEventResponse(TrackingEvent event) {
+        return TrackingResponse.TrackingEventResponse.builder()
+                .status(event.getStatus())
+                .description(event.getDescription())
+                .location(event.getLocation())
+                .eventTime(event.getEventTime())
+                .build();
     }
 
     private void addTrackingEvent(Shipment shipment, ShipmentStatus status, String description, String location) {

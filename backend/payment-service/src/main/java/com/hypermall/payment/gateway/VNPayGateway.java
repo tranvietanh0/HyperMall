@@ -1,6 +1,7 @@
 package com.hypermall.payment.gateway;
 
 import com.hypermall.payment.properties.VNPayProperties;
+import com.hypermall.common.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,10 @@ public class VNPayGateway {
     private final VNPayProperties properties;
 
     public String createPaymentUrl(Long orderId, String orderNumber, BigDecimal amount, String ipAddress) {
+        validateConfiguration();
+
         String vnpTxnRef = orderNumber;
-        String vnpOrderInfo = "Thanh toan don hang " + orderNumber;
+        String vnpOrderInfo = "Payment for order " + orderNumber;
         long vnpAmount = amount.multiply(BigDecimal.valueOf(100)).longValue();
 
         Map<String, String> vnpParams = new TreeMap<>();
@@ -59,6 +62,16 @@ public class VNPayGateway {
         String paymentUrl = properties.getUrl() + "?" + query;
         log.debug("VNPay payment URL created for order: {}", orderNumber);
         return paymentUrl;
+    }
+
+    private void validateConfiguration() {
+        if (isBlank(properties.getTmnCode()) || isBlank(properties.getHashSecret()) || isBlank(properties.getUrl()) || isBlank(properties.getReturnUrl())) {
+            throw new BadRequestException("VNPay is not configured for this environment");
+        }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     public boolean verifyCallback(Map<String, String> params) {

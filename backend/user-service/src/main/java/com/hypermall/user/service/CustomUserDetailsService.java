@@ -1,5 +1,6 @@
 package com.hypermall.user.service;
 
+import com.hypermall.common.security.UserPrincipal;
 import com.hypermall.user.entity.User;
 import com.hypermall.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,14 +26,12 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        return new org.springframework.security.core.userdetails.User(
+        return UserPrincipal.create(
+                user.getId(),
                 user.getEmail(),
                 user.getPassword(),
-                user.getStatus() == com.hypermall.user.entity.UserStatus.ACTIVE,
-                true,
-                true,
-                true,
-                Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+                List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name())),
+                user.getStatus() == com.hypermall.user.entity.UserStatus.ACTIVE
         );
     }
 }

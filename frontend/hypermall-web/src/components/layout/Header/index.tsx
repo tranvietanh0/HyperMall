@@ -1,13 +1,15 @@
 import { Fragment, FormEvent, useEffect, useRef, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
+  ChevronDownIcon,
   MagnifyingGlassIcon,
   ShoppingCartIcon,
   UserIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setCartDrawerOpen, setMobileMenuOpen } from '@/store/slices/uiSlice';
 
@@ -25,6 +27,7 @@ export default function Header() {
   const SCROLL_COLLAPSE_THRESHOLD = 96;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const { isAuthenticated, user } = useAppSelector((state) => state.auth);
   const { cart } = useAppSelector((state) => state.cart);
   const isMobileMenuOpen = useAppSelector((state) => state.ui.isMobileMenuOpen);
@@ -36,6 +39,11 @@ export default function Header() {
   const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
   const closeMobileMenu = () => dispatch(setMobileMenuOpen(false));
+
+  const handleLogout = async () => {
+    closeMobileMenu();
+    await logout();
+  };
 
   // Scroll-aware header
   useEffect(() => {
@@ -107,9 +115,11 @@ export default function Header() {
             <Link to="/profile" className="transition hover:text-primary-900">Notifications</Link>
             <Link to="/profile" className="transition hover:text-primary-900">Help</Link>
             {isAuthenticated ? (
-              <Link to="/profile" className="font-bold text-primary-900 transition hover:text-accent-600">
-                {user?.fullName?.split(' ')[0] || 'My Account'}
-              </Link>
+              <div className="flex items-center gap-4">
+                <Link to="/profile" className="font-bold text-primary-900 transition hover:text-accent-600">
+                  {user?.fullName?.split(' ')[0] || 'My Account'}
+                </Link>
+              </div>
             ) : (
               <div className="flex items-center gap-4">
                 <Link to="/register" className="transition hover:text-primary-900">Sign Up</Link>
@@ -199,19 +209,75 @@ export default function Header() {
             
             <div className="hidden items-center gap-3 md:flex">
               {isAuthenticated ? (
-                <Link to="/profile" className="flex items-center gap-3 rounded-xl border border-secondary-100 bg-white p-1 pr-3 transition-all duration-200 hover:border-secondary-200 hover:shadow-md hover:-translate-y-0.5">
-                  {user?.avatar ? (
-                    <img src={user.avatar} alt={user.fullName} className="h-8 w-8 rounded-lg object-cover" />
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-100 text-secondary-600">
-                      <UserIcon className="h-5 w-5" />
+                <Menu as="div" className="relative">
+                  <Menu.Button className="flex items-center gap-3 rounded-xl border border-secondary-100 bg-white p-1 pr-3 transition-all duration-200 hover:border-secondary-200 hover:shadow-md hover:-translate-y-0.5">
+                    {user?.avatar ? (
+                      <img src={user.avatar} alt={user.fullName} className="h-8 w-8 rounded-lg object-cover" />
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-100 text-secondary-600">
+                        <UserIcon className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] font-bold uppercase tracking-tighter text-secondary-400">Account</span>
+                      <span className="max-w-[8rem] truncate text-xs font-bold text-primary-900">{user?.fullName?.split(' ')[0] || 'My Account'}</span>
                     </div>
-                  )}
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-tighter text-secondary-400">Profile</span>
-                    <span className="max-w-[8rem] truncate text-xs font-bold text-primary-900">{user?.fullName?.split(' ')[0]}</span>
-                  </div>
-                </Link>
+                    <ChevronDownIcon className="h-4 w-4 text-secondary-400" />
+                  </Menu.Button>
+
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-150"
+                    enterFrom="transform opacity-0 -translate-y-1"
+                    enterTo="transform opacity-100 translate-y-0"
+                    leave="transition ease-in duration-100"
+                    leaveFrom="transform opacity-100 translate-y-0"
+                    leaveTo="transform opacity-0 -translate-y-1"
+                  >
+                    <Menu.Items className="absolute right-0 z-50 mt-3 w-56 overflow-hidden rounded-2xl border border-secondary-100 bg-white p-2 shadow-2xl shadow-primary-900/10 focus:outline-none">
+                      <div className="border-b border-secondary-100 px-3 py-2">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-secondary-400">Signed in</p>
+                        <p className="mt-1 truncate text-sm font-semibold text-primary-900">{user?.fullName || 'My Account'}</p>
+                        <p className="truncate text-xs text-secondary-500">{user?.email}</p>
+                      </div>
+                      <div className="py-2">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              to="/profile"
+                              className={`flex rounded-xl px-3 py-2 text-sm font-medium ${active ? 'bg-secondary-50 text-primary-900' : 'text-secondary-600'}`}
+                            >
+                              My Profile
+                            </Link>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              to="/orders"
+                              className={`flex rounded-xl px-3 py-2 text-sm font-medium ${active ? 'bg-secondary-50 text-primary-900' : 'text-secondary-600'}`}
+                            >
+                              My Orders
+                            </Link>
+                          )}
+                        </Menu.Item>
+                      </div>
+                      <div className="border-t border-secondary-100 pt-2">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              type="button"
+                              onClick={handleLogout}
+                              className={`flex w-full rounded-xl px-3 py-2 text-left text-sm font-semibold ${active ? 'bg-red-50 text-red-600' : 'text-red-500'}`}
+                            >
+                              Logout
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
               ) : (
                 <Link to="/login" className="btn-primary py-2 text-xs">Login</Link>
               )}
@@ -305,10 +371,15 @@ export default function Header() {
                       </div>
                     </div>
 
-                    {!isAuthenticated && (
+                    {!isAuthenticated ? (
                       <div className="grid gap-3 pt-6 border-t border-secondary-100">
                         <Link to="/login" onClick={closeMobileMenu} className="btn-primary w-full py-4 text-sm">Login</Link>
                         <Link to="/register" onClick={closeMobileMenu} className="btn-outline w-full py-4 text-sm">Create Account</Link>
+                      </div>
+                    ) : (
+                      <div className="grid gap-3 pt-6 border-t border-secondary-100">
+                        <Link to="/profile" onClick={closeMobileMenu} className="btn-outline w-full py-4 text-sm">My Account</Link>
+                        <button type="button" onClick={handleLogout} className="btn-primary w-full py-4 text-sm">Logout</button>
                       </div>
                     )}
                   </div>

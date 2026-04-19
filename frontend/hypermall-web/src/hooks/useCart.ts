@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import {
   fetchCart,
@@ -10,9 +11,11 @@ import {
 import { setCartDrawerOpen } from '@/store/slices/uiSlice';
 import type { AddToCartRequest } from '@/types';
 import toast from 'react-hot-toast';
+import { getErrorMessage } from '@/utils';
 
 export const useCart = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const { cart, isLoading, error } = useAppSelector((state) => state.cart);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -24,17 +27,27 @@ export const useCart = () => {
 
   const handleAddToCart = useCallback(
     async (data: AddToCartRequest) => {
+      if (!isAuthenticated) {
+        toast.error('Please sign in to add items to your cart');
+        navigate('/login');
+        return false;
+      }
+
       const result = await dispatch(addToCart(data));
       if (addToCart.fulfilled.match(result)) {
         toast.success('Added to cart');
         dispatch(setCartDrawerOpen(true));
         return true;
       } else {
-        toast.error('Failed to add to cart');
+        toast.error(
+          typeof result.payload === 'string'
+            ? result.payload
+            : getErrorMessage(result.error, 'Failed to add to cart')
+        );
         return false;
       }
     },
-    [dispatch]
+    [dispatch, isAuthenticated, navigate]
   );
 
   const handleUpdateQuantity = useCallback(

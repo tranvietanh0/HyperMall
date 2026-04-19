@@ -42,12 +42,12 @@ export function applyVoucherCode(
   const normalizedCode = code.trim().toUpperCase();
 
   if (!normalizedCode) {
-    return { discount: 0, appliedVoucher: null, shippingFee, error: 'Ma giam gia khong hop le hoac da het han' };
+    return { discount: 0, appliedVoucher: null, shippingFee, error: 'The voucher code is invalid or expired' };
   }
 
   if (normalizedCode === 'SALE10') {
     return {
-      discount: Math.min(selectedTotal * 0.1, 50000),
+      discount: Math.min(selectedTotal * 0.1, 50),
       appliedVoucher: normalizedCode,
       shippingFee,
     };
@@ -65,7 +65,7 @@ export function applyVoucherCode(
     discount: 0,
     appliedVoucher: null,
     shippingFee,
-    error: 'Ma giam gia khong hop le hoac da het han',
+    error: 'The voucher code is invalid or expired',
   };
 }
 

@@ -24,11 +24,11 @@ export default function CheckoutShippingSection({
     <div className="bg-white rounded-xl border p-5">
       <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
         <TruckIcon className="w-5 h-5 text-primary-600" />
-        Phuong thuc van chuyen
+        Shipping method
       </h2>
 
       {shippingMethods.length === 0 ? (
-        <p className="text-gray-500 text-sm">Vui long chon dia chi de xem phuong thuc van chuyen</p>
+        <p className="text-gray-500 text-sm">Select a shipping address to see available delivery methods</p>
       ) : (
         <div className="relative">
           <button
@@ -39,7 +39,7 @@ export default function CheckoutShippingSection({
             <div className="flex items-center gap-3">
               <TruckIcon className="w-5 h-5 text-gray-400" />
               <div className="text-left">
-                <p className="font-medium">{selectedShipping?.name || 'Chon phuong thuc'}</p>
+                <p className="font-medium">{selectedShipping?.name || 'Choose a shipping method'}</p>
                 <p className="text-sm text-gray-500">{selectedShipping?.estimatedDays}</p>
               </div>
             </div>

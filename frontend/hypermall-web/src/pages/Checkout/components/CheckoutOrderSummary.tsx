@@ -27,7 +27,7 @@ export default function CheckoutOrderSummary({
 }: CheckoutOrderSummaryProps) {
   return (
     <div className="bg-white rounded-xl border p-5 sticky top-24 space-y-4">
-      <h2 className="font-semibold text-lg">Tom tat don hang</h2>
+      <h2 className="font-semibold text-lg">Order summary</h2>
 
       {selectedAddress && (
         <div className="p-3 bg-gray-50 rounded-lg text-sm">
@@ -41,25 +41,25 @@ export default function CheckoutOrderSummary({
 
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
-          <span className="text-gray-600">Tam tinh ({selectedItemsCount} san pham)</span>
+          <span className="text-gray-600">Subtotal ({selectedItemsCount} items)</span>
           <span>{formatCurrency(selectedTotal)}</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-gray-600">Phi van chuyen</span>
+          <span className="text-gray-600">Shipping</span>
           <span>
-            {shippingFee === 0 ? <span className="text-green-600">Mien phi</span> : formatCurrency(shippingFee)}
+            {shippingFee === 0 ? <span className="text-green-600">Free</span> : formatCurrency(shippingFee)}
           </span>
         </div>
         {discount > 0 && (
           <div className="flex justify-between text-green-600">
-            <span>Giam gia</span>
+            <span>Discount</span>
             <span>-{formatCurrency(discount)}</span>
           </div>
         )}
       </div>
       <hr />
       <div className="flex justify-between font-bold text-lg">
-        <span>Tong cong</span>
+        <span>Total</span>
         <span className="text-primary-600">{formatCurrency(total)}</span>
       </div>
       <button
@@ -68,10 +68,10 @@ export default function CheckoutOrderSummary({
         className="btn btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {isSubmitting ? <Loading size="sm" /> : null}
-        {isSubmitting ? 'Dang xu ly...' : 'Dat hang'}
+        {isSubmitting ? 'Processing...' : 'Place order'}
       </button>
       <p className="text-xs text-center text-gray-400">
-        Bang cach dat hang, ban dong y voi dieu khoan su dung
+        By placing this order, you agree to the terms of service
       </p>
     </div>
   )

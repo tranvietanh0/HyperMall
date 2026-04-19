@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -44,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
                 UsernamePasswordAuthenticationToken authentication;
 
-                if (userDetailsService != null) {
+                if (shouldUseUserDetailsService()) {
                     // Use UserDetailsService if available (user-service)
                     String username = jwtTokenProvider.extractUsername(jwt);
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -91,5 +92,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UserPrincipal principal = new UserPrincipal(userId, username, grantedAuthorities);
 
         return new UsernamePasswordAuthenticationToken(principal, null, grantedAuthorities);
+    }
+
+    private boolean shouldUseUserDetailsService() {
+        return userDetailsService != null
+                && !(userDetailsService instanceof InMemoryUserDetailsManager);
     }
 }

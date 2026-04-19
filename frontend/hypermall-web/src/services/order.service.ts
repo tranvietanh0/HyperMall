@@ -1,5 +1,6 @@
 import { api } from './api.service';
 import { API_ENDPOINTS } from '@/config/api.config';
+import { PAYMENT_USD_TO_VND_RATE } from '@/config/constants';
 import { userService } from './user.service';
 import type {
   ApiResponse,
@@ -78,7 +79,7 @@ export const orderService = {
       name: method.providerName,
       description: method.serviceName,
       estimatedDays: String(method.estimatedDays),
-      fee: method.shippingFee,
+      fee: Number((method.shippingFee / PAYMENT_USD_TO_VND_RATE).toFixed(2)),
     }));
   },
 };

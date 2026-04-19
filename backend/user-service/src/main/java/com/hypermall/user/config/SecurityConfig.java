@@ -36,6 +36,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Authenticated self-service endpoints
+                        .requestMatchers("/api/users/addresses/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/profile").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/users/change-password").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/users/avatar").authenticated()
                         // Admin only
                         .requestMatchers(HttpMethod.GET, "/api/users/{id}").hasRole("ADMIN")
                         // Authenticated endpoints

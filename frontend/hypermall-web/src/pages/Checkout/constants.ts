@@ -1,5 +1,6 @@
 import * as Yup from 'yup'
 
+import { PAYMENT_USD_TO_VND_RATE } from '@config/constants'
 import type { AddressRequest, PaymentMethod, ShippingMethod } from '@/types'
 
 export const PAYMENT_METHOD_OPTIONS: Array<{
@@ -40,15 +41,15 @@ export const DEFAULT_SHIPPING_METHODS: ShippingMethod[] = [
   {
     id: 'ghn',
     name: 'GHN',
-    description: '3-5 ngay',
-    estimatedDays: '3-5 ngay',
-    fee: 30000,
+    description: '3-5 days',
+    estimatedDays: '3-5 days',
+    fee: Number((30000 / PAYMENT_USD_TO_VND_RATE).toFixed(2)),
   },
   {
     id: 'ghtk',
     name: 'GHTK',
-    description: '1-2 ngay',
-    estimatedDays: '1-2 ngay',
-    fee: 50000,
+    description: '1-2 days',
+    estimatedDays: '1-2 days',
+    fee: Number((50000 / PAYMENT_USD_TO_VND_RATE).toFixed(2)),
   },
 ]
