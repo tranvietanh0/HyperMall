@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { SparklesIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
@@ -20,6 +20,7 @@ export default function AiChatWidget() {
   const { currentProduct } = useAppSelector((state) => state.product);
   const { isOpen, isSending, messages, open, close, sendMessage, clearConversation } = useAiChat();
   const [draft, setDraft] = useState('');
+  const messageContainerRef = useRef<HTMLDivElement | null>(null);
 
   const context = useMemo<AiChatContext>(() => {
     if (location.pathname.startsWith('/products/') && currentProduct) {
@@ -41,6 +42,17 @@ export default function AiChatWidget() {
 
     return { pageType: 'other', path: `${location.pathname}${location.search}` };
   }, [currentProduct, location.pathname, location.search]);
+
+  useEffect(() => {
+    if (!isOpen || !messageContainerRef.current) {
+      return;
+    }
+
+    messageContainerRef.current.scrollTo({
+      top: messageContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    });
+  }, [isOpen, isSending, messages]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -82,8 +94,8 @@ export default function AiChatWidget() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#fffaf0] to-white px-4 py-4">
-              <AiMessageList messages={messages} />
+            <div ref={messageContainerRef} className="flex-1 overflow-y-auto bg-gradient-to-b from-[#fffaf0] to-white px-4 py-4">
+              <AiMessageList messages={messages} isTyping={isSending} />
             </div>
 
             <div className="border-t border-secondary-100 bg-white px-4 py-4">

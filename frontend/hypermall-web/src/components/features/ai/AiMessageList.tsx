@@ -5,9 +5,10 @@ import AiSuggestedProducts from './AiSuggestedProducts';
 
 type AiMessageListProps = {
   messages: AiChatUiMessage[];
+  isTyping?: boolean;
 };
 
-export default function AiMessageList({ messages }: AiMessageListProps) {
+export default function AiMessageList({ messages, isTyping = false }: AiMessageListProps) {
   const navigate = useNavigate();
 
   return (
@@ -70,6 +71,21 @@ export default function AiMessageList({ messages }: AiMessageListProps) {
           </div>
         </div>
       ))}
+
+      {isTyping ? (
+        <div className="flex justify-start">
+          <div className="max-w-[88%] rounded-2xl border border-secondary-100 bg-white px-4 py-3 text-sm text-secondary-700 shadow-sm">
+            <div className="flex items-center gap-3" aria-live="polite" aria-label="AI is typing">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary-400 [animation-delay:-0.3s]" />
+                <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary-500 [animation-delay:-0.15s]" />
+                <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-primary-600" />
+              </div>
+              <span className="text-xs font-medium text-secondary-500">AI is replying...</span>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
