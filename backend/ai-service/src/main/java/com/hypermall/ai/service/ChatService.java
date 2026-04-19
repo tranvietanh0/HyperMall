@@ -44,7 +44,7 @@ public class ChatService {
         List<CliProxyChatCompletionRequest.Message> messages = promptBuilderService.buildMessages(request, groundingResult);
 
         try {
-            String answer = cliProxyApiClient.createChatCompletion(messages);
+            String answer = createChatCompletionWithFallback(messages);
             return ChatResponse.builder()
                     .message(answer)
                     .sessionId(sessionId)
@@ -56,6 +56,36 @@ public class ChatService {
             log.warn("Returning degraded AI chat response: {}", ex.getMessage());
             return buildFallbackResponse(sessionId, groundingResult, suggestedActions);
         }
+    }
+
+    private String createChatCompletionWithFallback(List<CliProxyChatCompletionRequest.Message> messages) {
+        AiServiceUnavailableException primaryFailure = null;
+
+        try {
+            return cliProxyApiClient.createChatCompletion(messages, aiProperties.getProvider(), "Primary AI provider");
+        } catch (AiServiceUnavailableException ex) {
+            primaryFailure = ex;
+            log.warn("Primary AI provider failed, attempting fallback: {}", ex.getMessage());
+        }
+
+        if (isFallbackProviderConfigured()) {
+            try {
+                return cliProxyApiClient.createChatCompletion(messages, aiProperties.getFallbackProvider(), "Fallback AI provider");
+            } catch (AiServiceUnavailableException fallbackFailure) {
+                log.warn("Fallback AI provider failed after primary provider: {}", fallbackFailure.getMessage());
+                throw fallbackFailure;
+            }
+        }
+
+        throw primaryFailure != null ? primaryFailure : new AiServiceUnavailableException("AI assistant is temporarily unavailable");
+    }
+
+    private boolean isFallbackProviderConfigured() {
+        AiProperties.Provider fallbackProvider = aiProperties.getFallbackProvider();
+        return fallbackProvider != null
+                && fallbackProvider.isEnabled()
+                && StringUtils.hasText(fallbackProvider.getBaseUrl())
+                && StringUtils.hasText(fallbackProvider.getModel());
     }
 
     private void validateRequest(ChatRequest request) {

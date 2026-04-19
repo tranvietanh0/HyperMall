@@ -12,10 +12,17 @@ app:
   ai:
     enabled: ${AI_CHAT_ENABLED:true}
     provider:
+      enabled: ${AI_PROVIDER_ENABLED:true}
       base-url: ${AI_PROVIDER_BASE_URL:http://localhost:8317}
       api-key: ${AI_PROVIDER_API_KEY:}
       model: ${AI_PROVIDER_MODEL:gpt-4o-mini}
       timeout-ms: ${AI_PROVIDER_TIMEOUT_MS:15000}
+    fallback-provider:
+      enabled: ${AI_FALLBACK_PROVIDER_ENABLED:true}
+      base-url: ${AI_FALLBACK_PROVIDER_BASE_URL:https://api.deepseek.com}
+      api-key: ${AI_FALLBACK_PROVIDER_API_KEY:}
+      model: ${AI_FALLBACK_PROVIDER_MODEL:deepseek-chat}
+      timeout-ms: ${AI_FALLBACK_PROVIDER_TIMEOUT_MS:15000}
     chat:
       max-message-chars: ${AI_CHAT_MAX_MESSAGE_CHARS:2000}
       max-history-messages: ${AI_CHAT_MAX_HISTORY_MESSAGES:6}

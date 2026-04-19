@@ -9,6 +9,7 @@ public class AiProperties {
 
     private boolean enabled = true;
     private Provider provider = new Provider();
+    private Provider fallbackProvider = new Provider();
     private Chat chat = new Chat();
     private Product product = new Product();
 
@@ -18,6 +19,7 @@ public class AiProperties {
         private String apiKey;
         private String model = "gpt-4o-mini";
         private int timeoutMs = 15000;
+        private boolean enabled = true;
     }
 
     @Data

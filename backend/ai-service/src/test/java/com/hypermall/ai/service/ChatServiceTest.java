@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,6 +39,7 @@ class ChatServiceTest {
     @BeforeEach
     void setUp() {
         AiProperties properties = new AiProperties();
+        properties.getFallbackProvider().setEnabled(false);
         chatService = new ChatService(properties, cliProxyApiClient, promptBuilderService, productGroundingService);
     }
 
@@ -60,7 +62,7 @@ class ChatServiceTest {
         when(promptBuilderService.buildMessages(any(), any())).thenReturn(List.of(
                 CliProxyChatCompletionRequest.Message.builder().role("user").content("prompt").build()
         ));
-        when(cliProxyApiClient.createChatCompletion(any())).thenReturn("Here are three good choices.");
+        when(cliProxyApiClient.createChatCompletion(any(), any(), anyString())).thenReturn("Here are three good choices.");
 
         ChatResponse response = chatService.chat(request);
 
@@ -79,7 +81,7 @@ class ChatServiceTest {
                 new ProductGroundingService.GroundingResult(null, List.of())
         );
         when(promptBuilderService.buildMessages(any(), any())).thenReturn(List.of());
-        when(cliProxyApiClient.createChatCompletion(any())).thenThrow(new AiServiceUnavailableException("down"));
+        when(cliProxyApiClient.createChatCompletion(any(), any(), anyString())).thenThrow(new AiServiceUnavailableException("down"));
 
         ChatResponse response = chatService.chat(request);
 

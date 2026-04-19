@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Duration;
 import java.util.List;
@@ -20,27 +21,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CliProxyApiClient {
 
-    private final WebClient cliProxyWebClient;
-    private final AiProperties aiProperties;
+    private final WebClient.Builder webClientBuilder;
 
-    public String createChatCompletion(List<CliProxyChatCompletionRequest.Message> messages) {
+    public String createChatCompletion(List<CliProxyChatCompletionRequest.Message> messages, AiProperties.Provider provider, String providerName) {
         CliProxyChatCompletionRequest request = CliProxyChatCompletionRequest.builder()
-                .model(aiProperties.getProvider().getModel())
+                .model(provider.getModel())
                 .messages(messages)
                 .temperature(0.3)
                 .stream(false)
                 .build();
 
+        WebClient webClient = webClientBuilder
+                .baseUrl(provider.getBaseUrl())
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+
         try {
-            CliProxyChatCompletionResponse response = cliProxyWebClient.post()
+            CliProxyChatCompletionResponse response = webClient.post()
                     .uri("/v1/chat/completions")
-                    .headers(headers -> applyAuthHeader(headers, aiProperties.getProvider().getApiKey()))
+                    .headers(headers -> applyAuthHeader(headers, provider.getApiKey()))
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(request)
                     .retrieve()
                     .bodyToMono(CliProxyChatCompletionResponse.class)
-                    .timeout(Duration.ofMillis(aiProperties.getProvider().getTimeoutMs()))
+                    .timeout(Duration.ofMillis(provider.getTimeoutMs()))
                     .block();
 
             if (response == null || response.getChoices() == null || response.getChoices().isEmpty()) {
@@ -55,9 +60,12 @@ public class CliProxyApiClient {
             return message.getContent().trim();
         } catch (AiServiceUnavailableException ex) {
             throw ex;
+        } catch (WebClientResponseException ex) {
+            log.warn("{} request failed with status {}: {}", providerName, ex.getStatusCode().value(), ex.getResponseBodyAsString());
+            throw new AiServiceUnavailableException(providerName + " is temporarily unavailable", ex);
         } catch (Exception ex) {
-            log.warn("CLIProxyAPI request failed: {}", ex.getMessage());
-            throw new AiServiceUnavailableException("AI assistant is temporarily unavailable", ex);
+            log.warn("{} request failed: {}", providerName, ex.getMessage());
+            throw new AiServiceUnavailableException(providerName + " is temporarily unavailable", ex);
         }
     }
 
