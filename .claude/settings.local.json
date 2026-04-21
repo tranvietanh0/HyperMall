@@ -64,7 +64,32 @@
       "Bash(mvn install:*)",
       "Bash(cd /c/Projects/MyProject/HyperMall/frontend/hypermall-web && npm run build 2>&1 | tail -30)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(start:*)",
+      "Bash(netstat:*)",
+      "Bash(mysql:*)",
+      "Bash(ls:*)",
+      "Bash(python3:*)",
+      "Bash(\"/c/Program Files/MySQL/MySQL Server 8.0/bin/mysql\":*)",
+      "Bash(PATH=\"/c/Program Files/Java/jdk-21/bin:$PATH\" java:*)",
+      "Bash(\"$MYSQL\":*)",
+      "Bash(eval:*)",
+      "Bash(alias:*)",
+      "Bash(pip install:*)",
+      "Bash(where python:*)",
+      "Bash(python:*)",
+      "Bash(tasklist:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(wmic process:*)",
+      "Bash(kill:*)",
+      "Bash(powershell:*)",
+      "Bash(\"/c/Program Files/Java/jdk-21/bin/java\":*)",
+      "Bash(xargs grep:*)",
+      "Bash(/tmp/restart-all.sh:*)",
+      "Bash(bash:*)",
+      "Bash(/d/Coding/BTL_TTCS/logs/test_ai.sh:*)"
     ]
   }
 }
