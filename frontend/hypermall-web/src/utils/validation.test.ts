@@ -109,6 +109,7 @@ describe('validation utilities', () => {
       password: 'Password1@',
       confirmPassword: 'Password1@',
       fullName: 'John Doe',
+      role: 'BUYER',
     };
 
     it('should accept valid registration data', async () => {
@@ -136,6 +137,18 @@ describe('validation utilities', () => {
       await expect(
         registerSchema.validate(dataWithPhone)
       ).resolves.toBeDefined();
+    });
+
+    it('should accept seller registration role', async () => {
+      const sellerData = { ...validData, role: 'SELLER' };
+      await expect(registerSchema.validate(sellerData)).resolves.toBeDefined();
+    });
+
+    it('should reject missing account type', async () => {
+      const invalidData = { ...validData, role: undefined };
+      await expect(registerSchema.validate(invalidData)).rejects.toThrow(
+        'Account type is required'
+      );
     });
   });
 

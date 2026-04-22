@@ -1,5 +1,6 @@
 package com.hypermall.user.dto;
 
+import com.hypermall.user.entity.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -31,4 +32,6 @@ public class RegisterRequest {
 
     @Pattern(regexp = "^(\\+84|0)[0-9]{9,10}$", message = "Invalid phone number format")
     private String phone;
+
+    private UserRole role;
 }

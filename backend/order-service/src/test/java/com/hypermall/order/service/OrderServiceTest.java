@@ -51,7 +51,26 @@ class OrderServiceTest {
         request.setSellerId(99L);
         request.setPaymentMethod(PaymentMethod.COD);
         request.setShippingAddress(createShippingAddress());
-        request.setItems(List.of(createOrderItem(2, "150000"), createOrderItem(1, "50000")));
+
+        OrderItemRequest firstItem = new OrderItemRequest();
+        firstItem.setProductId(12L);
+        firstItem.setVariantId(102L);
+        firstItem.setProductName("Product 2");
+        firstItem.setVariantName("Variant 2");
+        firstItem.setThumbnail("https://example.com/item-2.png");
+        firstItem.setQuantity(2);
+        firstItem.setUnitPrice(new BigDecimal("150000"));
+
+        OrderItemRequest secondItem = new OrderItemRequest();
+        secondItem.setProductId(11L);
+        secondItem.setVariantId(101L);
+        secondItem.setProductName("Product 1");
+        secondItem.setVariantName("Variant 1");
+        secondItem.setThumbnail("https://example.com/item-1.png");
+        secondItem.setQuantity(1);
+        secondItem.setUnitPrice(new BigDecimal("50000"));
+
+        request.setItems(List.of(firstItem, secondItem));
         request.setNote("leave at door");
         request.setVoucherCode("SALE10");
 
@@ -88,15 +107,4 @@ class OrderServiceTest {
         return request;
     }
 
-    private OrderItemRequest createOrderItem(int quantity, String unitPrice) {
-        OrderItemRequest request = new OrderItemRequest();
-        request.setProductId(10L + quantity);
-        request.setVariantId(100L + quantity);
-        request.setProductName("Product " + quantity);
-        request.setVariantName("Variant " + quantity);
-        request.setThumbnail("https://example.com/item-" + quantity + ".png");
-        request.setQuantity(quantity);
-        request.setUnitPrice(new BigDecimal(unitPrice));
-        return request;
-    }
 }

@@ -5,6 +5,7 @@ import com.hypermall.common.exception.ResourceNotFoundException;
 import com.hypermall.common.util.StringUtil;
 import com.hypermall.seller.dto.request.CreateSellerRequest;
 import com.hypermall.seller.dto.request.UpdateSellerRequest;
+import com.hypermall.seller.dto.response.InternalSellerStatusResponse;
 import com.hypermall.seller.dto.response.SellerDashboardResponse;
 import com.hypermall.seller.dto.response.SellerResponse;
 import com.hypermall.seller.entity.Seller;
@@ -64,15 +65,26 @@ public class SellerService {
 
     @Transactional(readOnly = true)
     public SellerResponse getMySellerProfile(Long userId) {
-        Seller seller = sellerRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for current user"));
+        Seller seller = getSellerEntityByUserId(userId);
         return sellerMapper.toSellerResponse(seller);
     }
 
     @Transactional(readOnly = true)
-    public SellerDashboardResponse getMyDashboard(Long userId) {
+    public InternalSellerStatusResponse getInternalSellerStatusByUserId(Long userId) {
         Seller seller = sellerRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for current user"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for userId: " + userId));
+        return InternalSellerStatusResponse.builder()
+                .sellerId(seller.getId())
+                .userId(seller.getUserId())
+                .shopSlug(seller.getShopSlug())
+                .status(seller.getStatus())
+                .active(seller.getStatus() == SellerStatus.ACTIVE)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public SellerDashboardResponse getMyDashboard(Long userId) {
+        Seller seller = getSellerEntityByUserId(userId);
 
         return SellerDashboardResponse.builder()
                 .sellerId(seller.getId())
@@ -103,8 +115,7 @@ public class SellerService {
 
     @Transactional
     public SellerResponse updateMySellerProfile(Long userId, UpdateSellerRequest request) {
-        Seller seller = sellerRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for current user"));
+        Seller seller = getSellerEntityByUserId(userId);
 
         seller.setShopName(request.getShopName());
         seller.setLogo(request.getLogo());
@@ -138,9 +149,17 @@ public class SellerService {
     public SellerResponse updateSellerStatus(Long id, SellerStatus status) {
         Seller seller = sellerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Seller not found with id: " + id));
+        if (seller.getStatus() == status) {
+            throw new BadRequestException("Seller status is already " + status);
+        }
         seller.setStatus(status);
         Seller updated = sellerRepository.save(seller);
         log.info("Seller status updated. sellerId={}, status={}", id, status);
         return sellerMapper.toSellerResponse(updated);
+    }
+
+    private Seller getSellerEntityByUserId(Long userId) {
+        return sellerRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Seller profile not found for current user"));
     }
 }

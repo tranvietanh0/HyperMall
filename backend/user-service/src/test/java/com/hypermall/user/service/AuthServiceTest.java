@@ -78,6 +78,7 @@ class AuthServiceTest {
         registerRequest.setPassword("Password1@");
         registerRequest.setFullName("Test User");
         registerRequest.setPhone("0987654321");
+        registerRequest.setRole(UserRole.BUYER);
 
         loginRequest = new LoginRequest();
         loginRequest.setEmail("test@example.com");
@@ -135,6 +136,57 @@ class AuthServiceTest {
             assertThatThrownBy(() -> authService.register(registerRequest))
                     .isInstanceOf(BadRequestException.class)
                     .hasMessage("Phone number already exists");
+        }
+
+        @Test
+        @DisplayName("Should persist selected seller role during registration")
+        void register_WithSellerRole_ShouldPersistSellerRole() {
+            registerRequest.setRole(UserRole.SELLER);
+            testUser.setRole(UserRole.SELLER);
+
+            when(userRepository.existsByEmail(anyString())).thenReturn(false);
+            when(userRepository.existsByPhone(anyString())).thenReturn(false);
+            when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            when(jwtTokenProvider.generateAccessToken(anyString(), anyLong(), anyString()))
+                    .thenReturn("accessToken");
+            when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn("refreshToken");
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(userMapper.toUserResponse(any(User.class))).thenReturn(createUserResponse());
+
+            authService.register(registerRequest);
+
+            verify(userRepository).save(argThat(user -> user.getRole() == UserRole.SELLER));
+        }
+
+        @Test
+        @DisplayName("Should default to buyer role when role is not provided")
+        void register_WithoutRole_ShouldDefaultToBuyer() {
+            registerRequest.setRole(null);
+
+            when(userRepository.existsByEmail(anyString())).thenReturn(false);
+            when(userRepository.existsByPhone(anyString())).thenReturn(false);
+            when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
+            when(userRepository.save(any(User.class))).thenReturn(testUser);
+            when(jwtTokenProvider.generateAccessToken(anyString(), anyLong(), anyString()))
+                    .thenReturn("accessToken");
+            when(jwtTokenProvider.generateRefreshToken(anyString())).thenReturn("refreshToken");
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(userMapper.toUserResponse(any(User.class))).thenReturn(createUserResponse());
+
+            authService.register(registerRequest);
+
+            verify(userRepository).save(argThat(user -> user.getRole() == UserRole.BUYER));
+        }
+
+        @Test
+        @DisplayName("Should reject admin role during registration")
+        void register_WithAdminRole_ShouldThrowException() {
+            registerRequest.setRole(UserRole.ADMIN);
+
+            assertThatThrownBy(() -> authService.register(registerRequest))
+                    .isInstanceOf(BadRequestException.class)
+                    .hasMessage("Invalid role selected");
         }
     }
 

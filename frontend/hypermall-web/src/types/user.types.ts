@@ -35,6 +35,7 @@ export interface RegisterRequest {
   password: string;
   fullName: string;
   phone?: string;
+  role: Extract<UserRole, 'BUYER' | 'SELLER'>;
 }
 
 export interface AuthResponse {

@@ -38,6 +38,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
+    private final SellerGuardService sellerGuardService;
 
     @Value("${app.order.auto-cancel-after-hours:24}")
     private int autoCancelAfterHours;
@@ -135,6 +136,8 @@ public class OrderService {
     // Seller operations
     @Transactional(readOnly = true)
     public Page<OrderResponse> getSellerOrders(Long sellerId, OrderStatus status, Pageable pageable) {
+        sellerGuardService.requireActiveSeller(sellerId);
+
         Page<Order> orders = (status != null)
                 ? orderRepository.findBySellerIdAndStatus(sellerId, status, pageable)
                 : orderRepository.findBySellerId(sellerId, pageable);
@@ -143,6 +146,8 @@ public class OrderService {
 
     @Transactional
     public OrderDetailResponse updateOrderStatus(Long sellerId, Long orderId, OrderStatus newStatus) {
+        sellerGuardService.requireActiveSeller(sellerId);
+
         Order order = findOrderById(orderId);
         validateSellerOwnsOrder(order, sellerId, "update");
 

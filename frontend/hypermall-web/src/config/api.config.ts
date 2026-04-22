@@ -76,6 +76,26 @@ export const API_ENDPOINTS = {
     TRACKING: (orderNumber: string) => `/orders/tracking/${orderNumber}`,
   },
 
+  SELLER: {
+    REGISTER: '/sellers/register',
+    ME: '/sellers/me',
+    DASHBOARD: '/sellers/me/dashboard',
+    UPDATE_PROFILE: '/sellers/me',
+    LIST: '/sellers',
+    DETAIL: (id: string | number) => `/sellers/${id}`,
+    BY_SLUG: (slug: string) => `/sellers/slug/${slug}`,
+    SELLER_PRODUCTS: '/seller/products',
+    SELLER_PRODUCT_DETAIL: (id: string | number) => `/seller/products/${id}`,
+    SELLER_ORDERS: '/seller/orders',
+    UPDATE_ORDER_STATUS: (id: string | number) => `/seller/orders/${id}/status`,
+  },
+
+  ADMIN_SELLER: {
+    LIST: '/admin/sellers',
+    SEARCH: '/admin/sellers/search',
+    UPDATE_STATUS: (id: string | number) => `/admin/sellers/${id}/status`,
+  },
+
   // Payments
   PAYMENTS: {
     CREATE: '/payments/create',

@@ -6,18 +6,20 @@ import { useAuth } from '@/hooks/useAuth';
 import { registerSchema } from '@/utils/validation';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
+import type { RegisterRequest } from '@/types';
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const { register, isLoading, error } = useAuth();
 
-  const formik = useFormik({
+  const formik = useFormik<RegisterRequest & { confirmPassword: string }>({
     initialValues: {
       fullName: '',
       email: '',
       phone: '',
       password: '',
       confirmPassword: '',
+      role: 'BUYER',
     },
     validationSchema: registerSchema,
     onSubmit: async (values) => {
@@ -26,6 +28,7 @@ export default function RegisterPage() {
         email: values.email,
         phone: values.phone || undefined,
         password: values.password,
+        role: values.role,
       });
     },
   });
@@ -69,7 +72,51 @@ export default function RegisterPage() {
             error={formik.touched.phone && formik.errors.phone ? formik.errors.phone : undefined}
           />
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Account type</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                {
+                  value: 'BUYER',
+                  label: 'Buyer',
+                  description: 'Shop and place orders',
+                },
+                {
+                  value: 'SELLER',
+                  label: 'Seller',
+                  description: 'Open shop and sell products',
+                },
+              ].map((option) => (
+                <label
+                  key={option.value}
+                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all ${
+                    formik.values.role === option.value
+                      ? 'border-primary-500 bg-primary-50'
+                      : 'hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value={option.value}
+                    checked={formik.values.role === option.value}
+                    onChange={() => formik.setFieldValue('role', option.value)}
+                    className="mt-1 text-primary-600"
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{option.label}</p>
+                    <p className="text-xs text-gray-500">{option.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            {formik.touched.role && formik.errors.role ? (
+              <p className="mt-1 text-sm text-red-500">{formik.errors.role}</p>
+            ) : null}
+          </div>
+
           <Input
+
             label="Password"
             type={showPassword ? 'text' : 'password'}
             placeholder="Create a password"

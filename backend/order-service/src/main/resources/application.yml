@@ -61,6 +61,9 @@ app:
     auto-cancel-after-hours: 24
     auto-complete-after-days: 7
     default-shipping-fee: 30000
+  seller-service:
+    base-url: ${SELLER_SERVICE_URL:http://localhost:8094}
+    internal-token: ${INTERNAL_SERVICE_TOKEN:}
 
 logging:
   level:

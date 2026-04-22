@@ -2,7 +2,19 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { login, logout, register, clearError } from '@/store/slices/authSlice';
-import type { LoginRequest, RegisterRequest } from '@/types';
+import type { LoginRequest, RegisterRequest, User } from '@/types';
+
+const getRedirectPath = (user: User | null | undefined) => {
+  if (user?.role === 'ADMIN') {
+    return '/admin';
+  }
+
+  if (user?.role === 'SELLER') {
+    return '/seller';
+  }
+
+  return '/';
+};
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
@@ -13,7 +25,7 @@ export const useAuth = () => {
     async (credentials: LoginRequest) => {
       const result = await dispatch(login(credentials));
       if (login.fulfilled.match(result)) {
-        navigate('/');
+        navigate(getRedirectPath(result.payload));
         return true;
       }
       return false;
@@ -25,7 +37,7 @@ export const useAuth = () => {
     async (data: RegisterRequest) => {
       const result = await dispatch(register(data));
       if (register.fulfilled.match(result)) {
-        navigate('/');
+        navigate(getRedirectPath(result.payload));
         return true;
       }
       return false;

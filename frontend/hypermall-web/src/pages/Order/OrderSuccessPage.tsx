@@ -75,7 +75,9 @@ export default function OrderSuccessPage() {
           paymentUrl = existingPayment.paymentUrl
         }
       } catch {
+        paymentUrl = undefined
       }
+
 
       if (!paymentUrl) {
         const createdPayment = await paymentService.createPayment({

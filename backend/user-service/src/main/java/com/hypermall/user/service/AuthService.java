@@ -6,6 +6,7 @@ import com.hypermall.common.exception.UnauthorizedException;
 import com.hypermall.common.security.JwtTokenProvider;
 import com.hypermall.user.dto.*;
 import com.hypermall.user.entity.User;
+import com.hypermall.user.entity.UserRole;
 import com.hypermall.user.entity.UserStatus;
 import com.hypermall.user.mapper.UserMapper;
 import com.hypermall.user.repository.UserRepository;
@@ -177,6 +178,10 @@ public class AuthService {
     }
 
     private void validateRegisterRequest(RegisterRequest request) {
+        if (request.getRole() != null && request.getRole() == UserRole.ADMIN) {
+            throw new BadRequestException("Invalid role selected");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
@@ -187,11 +192,14 @@ public class AuthService {
     }
 
     private User buildUserFromRegisterRequest(RegisterRequest request) {
+        UserRole role = request.getRole() != null ? request.getRole() : UserRole.BUYER;
+
         return User.builder()
                 .email(request.getEmail().toLowerCase())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .fullName(request.getFullName())
                 .phone(request.getPhone())
+                .role(role)
                 .verificationToken(UUID.randomUUID().toString())
                 .build();
     }

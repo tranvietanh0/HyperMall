@@ -22,3 +22,6 @@ app:
   elasticsearch:
     host: ${ELASTICSEARCH_HOST:localhost}
     port: ${ELASTICSEARCH_PORT:9200}
+  seller-service:
+    base-url: ${SELLER_SERVICE_URL:http://localhost:8094}
+    internal-token: ${INTERNAL_SERVICE_TOKEN}

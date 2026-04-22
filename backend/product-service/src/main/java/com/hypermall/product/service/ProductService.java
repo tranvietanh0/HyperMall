@@ -34,6 +34,7 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final BrandRepository brandRepository;
     private final ProductMapper productMapper;
+    private final SellerGuardService sellerGuardService;
 
     @Transactional(readOnly = true)
     public Page<ProductResponse> getProducts(
@@ -100,8 +101,15 @@ public class ProductService {
         return products.map(productMapper::toProductResponse);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getMyProductsBySeller(Long sellerId, Pageable pageable) {
+        sellerGuardService.requireActiveSeller(sellerId);
+        return getProductsBySeller(sellerId, pageable);
+    }
+
     @Transactional
     public ProductDetailResponse createProduct(Long sellerId, ProductRequest request) {
+        sellerGuardService.requireActiveSeller(sellerId);
         validateCreateSlug(request.getSlug());
 
         Category category = findCategoryById(request.getCategoryId());
@@ -140,6 +148,8 @@ public class ProductService {
 
     @Transactional
     public ProductDetailResponse updateProduct(Long sellerId, Long productId, ProductRequest request) {
+        sellerGuardService.requireActiveSeller(sellerId);
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
@@ -184,6 +194,8 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long sellerId, Long productId) {
+        sellerGuardService.requireActiveSeller(sellerId);
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 

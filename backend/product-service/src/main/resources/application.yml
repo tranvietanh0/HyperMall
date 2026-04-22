@@ -53,6 +53,9 @@ app:
     secret: ${JWT_SECRET}
     expiration-ms: 86400000
     refresh-expiration-ms: 604800000
+  seller-service:
+    base-url: ${SELLER_SERVICE_URL:http://localhost:8094}
+    internal-token: ${INTERNAL_SERVICE_TOKEN:}
 
 logging:
   level:

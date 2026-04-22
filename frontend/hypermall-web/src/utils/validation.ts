@@ -32,7 +32,11 @@ export const registerSchema = Yup.object({
     .max(100, 'Full name must not exceed 100 characters')
     .required('Full name is required'),
   phone: phoneSchema.notRequired(),
+  role: Yup.string()
+    .oneOf(['BUYER', 'SELLER'], 'Please select account type')
+    .required('Account type is required'),
 });
+
 
 export const addressSchema = Yup.object({
   fullName: Yup.string()
