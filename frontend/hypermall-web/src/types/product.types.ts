@@ -129,4 +129,6 @@ export interface ReviewStatistics {
   totalReviews: number;
   ratingDistribution: Record<number, number>;
   withImages: number;
+  withVideos?: number;
+  verifiedPurchases?: number;
 }

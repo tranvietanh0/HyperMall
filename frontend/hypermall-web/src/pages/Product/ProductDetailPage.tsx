@@ -8,6 +8,7 @@ import { formatCurrency, calculateDiscount } from '@utils/format'
 import { sanitizeHtml } from '@utils/sanitize'
 import Loading from '@components/common/Loading'
 import StarRating from '@components/product/StarRating'
+import ReviewSection from '@components/product/ReviewSection'
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -162,6 +163,9 @@ export default function ProductDetailPage() {
             <div className="prose prose-sm max-w-none text-gray-700" dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.description) }} />
           </div>
         )}
+
+        {/* Reviews */}
+        <ReviewSection productId={product.id} />
       </div>
     </div>
   )
