@@ -11,6 +11,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { sellerService } from '@/services';
 import { setCartDrawerOpen, setMobileMenuOpen } from '@/store/slices/uiSlice';
 
 const quickLinks = [
@@ -34,9 +35,13 @@ export default function Header() {
   const [desktopSearch, setDesktopSearch] = useState('');
   const [mobileSearch, setMobileSearch] = useState('');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasSellerProfile, setHasSellerProfile] = useState(false);
   const isScrolledRef = useRef(false);
 
   const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const canAccessSellerCenter = user?.role === 'SELLER' || hasSellerProfile;
+  const sellerCenterLink = isAuthenticated && canAccessSellerCenter ? '/seller' : '/register';
+  const showSellerCenter = !isAuthenticated || canAccessSellerCenter;
 
   const closeMobileMenu = () => dispatch(setMobileMenuOpen(false));
 
@@ -46,6 +51,32 @@ export default function Header() {
   };
 
   // Scroll-aware header
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setHasSellerProfile(false);
+      return;
+    }
+
+    let active = true;
+
+    sellerService
+      .getMySellerProfile()
+      .then(() => {
+        if (active) {
+          setHasSellerProfile(true);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setHasSellerProfile(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isAuthenticated, user?.id]);
+
   useEffect(() => {
     let ticking = false;
 
@@ -108,7 +139,9 @@ export default function Header() {
       >
         <div className="container flex items-center justify-between text-[11px] font-medium tracking-wide text-secondary-500 uppercase">
           <div className="flex items-center gap-6">
-            <Link to="/register" className="transition hover:text-primary-900">Seller Centre</Link>
+            {showSellerCenter ? (
+              <Link to={sellerCenterLink} className="transition hover:text-primary-900">Seller Centre</Link>
+            ) : null}
             <Link to="/products" className="transition hover:text-primary-900">Download App</Link>
           </div>
           <div className="flex items-center gap-6">
@@ -261,6 +294,18 @@ export default function Header() {
                             </Link>
                           )}
                         </Menu.Item>
+                        {user?.role === 'SELLER' ? (
+                          <Menu.Item>
+                            {({ active }) => (
+                              <Link
+                                to="/seller"
+                                className={`flex rounded-xl px-3 py-2 text-sm font-medium ${active ? 'bg-secondary-50 text-primary-900' : 'text-secondary-600'}`}
+                              >
+                                Seller Centre
+                              </Link>
+                            )}
+                          </Menu.Item>
+                        ) : null}
                       </div>
                       <div className="border-t border-secondary-100 pt-2">
                         <Menu.Item>
@@ -356,6 +401,16 @@ export default function Header() {
                     <div>
                       <p className="mb-4 text-[10px] font-bold uppercase tracking-widest text-secondary-400">Discover</p>
                       <div className="grid gap-3">
+                        {showSellerCenter ? (
+                          <Link
+                            to={sellerCenterLink}
+                            onClick={closeMobileMenu}
+                            className="flex items-center justify-between rounded-xl bg-secondary-50 px-4 py-4 text-sm font-bold text-primary-900 transition-all duration-300 hover:bg-secondary-100 hover:translate-x-1"
+                          >
+                            Seller Centre
+                            <XMarkIcon className="h-4 w-4 -rotate-45 text-secondary-300" />
+                          </Link>
+                        ) : null}
                         {quickLinks.map((item, index) => (
                           <Link
                             key={item.label}

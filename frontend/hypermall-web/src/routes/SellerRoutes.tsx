@@ -15,7 +15,7 @@ const SellerSettingsPage = lazy(() => import('@/pages/Seller/Settings'));
 export const sellerRoutes: RouteObject = {
   path: '/seller',
   element: (
-    <ProtectedRoute requiredRole="SELLER">
+    <ProtectedRoute>
       <SellerGuard>
         <SellerLayout />
       </SellerGuard>

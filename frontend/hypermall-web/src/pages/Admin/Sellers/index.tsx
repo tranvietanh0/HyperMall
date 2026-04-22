@@ -77,9 +77,9 @@ export default function AdminSellers() {
   const handleStatusUpdate = async (sellerId: number, status: SellerStatus) => {
     setUpdatingSellerId(sellerId);
     try {
-      const updatedSeller = await sellerService.updateAdminSellerStatus(sellerId, status);
-      setSellers((current) => current.map((seller) => (seller.id === sellerId ? updatedSeller : seller)));
+      await sellerService.updateAdminSellerStatus(sellerId, status);
       toast.success('Seller status updated successfully');
+      await loadSellers();
     } catch (err) {
       toast.error(getErrorMessage(err, 'Unable to update seller status'));
     } finally {

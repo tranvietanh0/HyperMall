@@ -48,24 +48,59 @@ npm -v                  # 9.x+
 
 For developers who want to get started quickly:
 
+### Windows
+
+```bat
+REM 1. Ensure Docker Desktop is running
+REM 2. Ensure backend\.env exists and contains at least:
+REM    SPRING_PROFILES_ACTIVE=dev
+REM    JWT_SECRET=...
+
+scripts\start-dev.bat
+```
+
+### Linux / macOS
+
+```bash
+# 1. Ensure Docker daemon is running
+# 2. Ensure backend/.env exists and contains at least:
+#    SPRING_PROFILES_ACTIVE=dev
+#    JWT_SECRET=...
+
+chmod +x scripts/start-dev.sh
+./scripts/start-dev.sh
+```
+
+### Manual startup
+
 ```bash
 # 1. Start infrastructure
 cd infrastructure/docker
 docker-compose -f docker-compose.dev.yml up -d
 
-# 2. Build backend
+# 2. Export env from backend/.env before running Maven services
+# Required minimum:
+#   SPRING_PROFILES_ACTIVE=dev
+#   JWT_SECRET=...
+# Optional defaults used locally if omitted:
+#   EUREKA_USERNAME=eureka
+#   EUREKA_PASSWORD=eureka123
+#   CONFIG_USERNAME=config
+#   CONFIG_PASSWORD=config123
+
+# 3. Build backend
 cd ../../backend
 mvn clean install -DskipTests
 
-# 3. Start services (each in separate terminal)
+# 4. Start services in order
 cd service-registry && mvn spring-boot:run
-cd config-server && mvn spring-boot:run
-cd api-gateway && mvn spring-boot:run
-cd user-service && mvn spring-boot:run
-cd product-service && mvn spring-boot:run
-cd cart-service && mvn spring-boot:run
+cd ../config-server && mvn spring-boot:run
+cd ../api-gateway && mvn spring-boot:run
+cd ../user-service && mvn spring-boot:run
+cd ../product-service && mvn spring-boot:run
+cd ../cart-service && mvn spring-boot:run
 
-# 4. Start frontend
+# 5. Start frontend
 cd ../../frontend/hypermall-web
 npm install
 npm run dev

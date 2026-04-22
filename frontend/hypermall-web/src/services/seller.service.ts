@@ -12,13 +12,9 @@ import type {
 } from '@/types';
 
 export const sellerService = {
-  getMySellerProfile: async (): Promise<SellerProfile | null> => {
-    try {
-      const response = await api.get<ApiResponse<SellerProfile>>(API_ENDPOINTS.SELLER.ME);
-      return response.data;
-    } catch {
-      return null;
-    }
+  getMySellerProfile: async (): Promise<SellerProfile> => {
+    const response = await api.get<ApiResponse<SellerProfile>>(API_ENDPOINTS.SELLER.ME);
+    return response.data;
   },
 
   registerSeller: async (payload: CreateSellerRequest): Promise<SellerProfile> => {

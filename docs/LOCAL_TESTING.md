@@ -82,46 +82,69 @@ curl http://localhost:9200
 1. service-registry (Eureka)
 2. config-server
 3. api-gateway
-4. Các business services khác
+4. user-service, product-service, cart-service
+5. Các business services khác
 ```
 
-### Option 1: Chạy từng service (Development)
+### Cách khởi động khuyến nghị
 
-**Terminal 1 - Service Registry:**
+**Windows:**
+```bat
+scripts\start-dev.bat
+```
+
+**Linux / macOS:**
+```bash
+./scripts/start-dev.sh
+```
+
+### Nếu chạy thủ công từng service
+
+Trước khi chạy Maven, cần nạp env từ `backend/.env`.
+
+**Tối thiểu phải có:**
+- `SPRING_PROFILES_ACTIVE=dev`
+- `JWT_SECRET=<base64-secret>`
+
+**Mặc định local nếu chưa set:**
+- `EUREKA_USERNAME=eureka`
+- `EUREKA_PASSWORD=eureka123`
+- `CONFIG_USERNAME=config`
+- `CONFIG_PASSWORD=config123`
+- `CONFIG_SERVER_USERNAME=config`
+- `CONFIG_SERVER_PASSWORD=config123`
+
+**PowerShell:**
+```powershell
+Get-Content backend/.env | ForEach-Object {
+  if ($_ -match '^[A-Za-z_][A-Za-z0-9_]*=') {
+    $name, $value = $_ -split '=', 2
+    [System.Environment]::SetEnvironmentVariable($name, $value, 'Process')
+  }
+}
+```
+
+**Sau đó mới chạy services:**
+
 ```bash
 cd backend/service-registry
 mvn spring-boot:run
-# Đợi thấy: "Started ServiceRegistryApplication"
-# Mở http://localhost:8761 để xem Eureka Dashboard
-```
 
-**Terminal 2 - Config Server:**
-```bash
-cd backend/config-server
+cd ../config-server
 mvn spring-boot:run
-# Đợi thấy: "Started ConfigServerApplication"
-```
 
-**Terminal 3 - API Gateway:**
-```bash
-cd backend/api-gateway
+cd ../api-gateway
 mvn spring-boot:run
-# Đợi thấy: "Started ApiGatewayApplication"
-```
 
-**Terminal 4 - User Service:**
-```bash
-cd backend/user-service
+cd ../user-service
+mvn spring-boot:run
+
+cd ../product-service
+mvn spring-boot:run
+
+cd ../cart-service
 mvn spring-boot:run
 ```
-
-**Terminal 5 - Product Service:**
-```bash
-cd backend/product-service
-mvn spring-boot:run
-```
-
-**Thêm services khác tùy nhu cầu test...**
 
 ### Option 2: Build tất cả trước
 
@@ -161,6 +184,8 @@ npm install
 ```bash
 npm run dev
 ```
+
+Hoặc dùng script startup để boot cả stack local trước rồi mới mở frontend.
 
 ### 3. Mở browser
 

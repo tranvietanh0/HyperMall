@@ -1,79 +1,56 @@
-import { useEffect, useState } from 'react';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import toast from 'react-hot-toast';
-import Button from '@/components/common/Button';
-import Input from '@/components/common/Input';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import {
+  BuildingStorefrontIcon,
+  CreditCardIcon,
+  BellIcon,
+  ShieldCheckIcon,
+  MapPinIcon,
+  CameraIcon,
+} from '@heroicons/react/24/outline';
 import Loading from '@/components/common/Loading';
+import Button from '@/components/common/Button';
 import { sellerService } from '@/services';
 import type { SellerProfile, UpdateSellerRequest } from '@/types';
-import { formatDate, getErrorMessage } from '@/utils';
+import { getErrorMessage } from '@/utils';
+import clsx from 'clsx';
+import toast from 'react-hot-toast';
 
-const settingsSchema = Yup.object({
-  shopName: Yup.string().trim().required('Please enter your shop name'),
-  description: Yup.string().max(1000, 'Description is too long'),
-  logo: Yup.string().url('Logo must be a valid URL').optional(),
-  banner: Yup.string().url('Banner must be a valid URL').optional(),
-  businessType: Yup.mixed<'INDIVIDUAL' | 'HOUSEHOLD' | 'COMPANY'>().oneOf(['INDIVIDUAL', 'HOUSEHOLD', 'COMPANY']).required('Please select a business type'),
-  businessLicense: Yup.string().max(255, 'Business license is too long'),
-  taxCode: Yup.string().max(255, 'Tax code is too long'),
-  bankAccountNumber: Yup.string().max(100, 'Bank account number is too long'),
-  bankName: Yup.string().max(255, 'Bank name is too long'),
-  bankAccountHolder: Yup.string().max(255, 'Bank account holder is too long'),
+const SETTINGS_TABS = [
+  { id: 'profile', label: 'Store Profile', icon: BuildingStorefrontIcon },
+  { id: 'payment', label: 'Payments', icon: CreditCardIcon },
+  { id: 'shipping', label: 'Shipping Address', icon: MapPinIcon },
+  { id: 'notifications', label: 'Notifications', icon: BellIcon },
+  { id: 'security', label: 'Security', icon: ShieldCheckIcon },
+] as const;
+
+const createFormValues = (profile: SellerProfile | null): UpdateSellerRequest => ({
+  shopName: profile?.shopName ?? '',
+  logo: profile?.logo ?? '',
+  banner: profile?.banner ?? '',
+  description: profile?.description ?? '',
+  businessType: profile?.businessType ?? 'INDIVIDUAL',
+  businessLicense: profile?.businessLicense ?? '',
+  taxCode: profile?.taxCode ?? '',
+  bankAccountNumber: profile?.bankAccountNumber ?? '',
+  bankName: profile?.bankName ?? '',
+  bankAccountHolder: profile?.bankAccountHolder ?? '',
 });
 
 export default function SellerSettingsPage() {
   const [profile, setProfile] = useState<SellerProfile | null>(null);
+  const [formValues, setFormValues] = useState<UpdateSellerRequest>(createFormValues(null));
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  const formik = useFormik<UpdateSellerRequest>({
-    enableReinitialize: true,
-    initialValues: {
-      shopName: profile?.shopName ?? '',
-      description: profile?.description ?? '',
-      logo: profile?.logo ?? '',
-      banner: profile?.banner ?? '',
-      businessType: profile?.businessType ?? 'INDIVIDUAL',
-      businessLicense: profile?.businessLicense ?? '',
-      taxCode: profile?.taxCode ?? '',
-      bankAccountNumber: profile?.bankAccountNumber ?? '',
-      bankName: profile?.bankName ?? '',
-      bankAccountHolder: profile?.bankAccountHolder ?? '',
-    },
-    validationSchema: settingsSchema,
-    onSubmit: async (values) => {
-      setSubmitting(true);
-      try {
-        const updated = await sellerService.updateMySellerProfile({
-          ...values,
-          description: values.description || undefined,
-          logo: values.logo || undefined,
-          banner: values.banner || undefined,
-          businessLicense: values.businessLicense || undefined,
-          taxCode: values.taxCode || undefined,
-          bankAccountNumber: values.bankAccountNumber || undefined,
-          bankName: values.bankName || undefined,
-          bankAccountHolder: values.bankAccountHolder || undefined,
-        });
-        setProfile(updated);
-        toast.success('Seller profile updated successfully');
-      } catch (error: unknown) {
-        toast.error(getErrorMessage(error, 'Unable to update seller profile'));
-      } finally {
-        setSubmitting(false);
-      }
-    },
-  });
+  const [activeTab, setActiveTab] = useState('profile');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
-      setLoading(true);
       try {
-        const response = await sellerService.getMySellerProfile();
-        setProfile(response);
-      } catch {
-        setProfile(null);
+        const data = await sellerService.getMySellerProfile();
+        setProfile(data);
+        setFormValues(createFormValues(data));
+      } catch (err) {
+        toast.error(getErrorMessage(err, 'Unable to load profile'));
       } finally {
         setLoading(false);
       }
@@ -82,119 +59,232 @@ export default function SellerSettingsPage() {
     void loadProfile();
   }, []);
 
+  const hasChanges = useMemo(() => JSON.stringify(formValues) !== JSON.stringify(createFormValues(profile)), [formValues, profile]);
+
+  const handleInputChange = (field: keyof UpdateSellerRequest) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const value = event.target.value;
+    setFormValues((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updatedProfile = await sellerService.updateMySellerProfile({
+        ...formValues,
+        shopName: formValues.shopName?.trim() || '',
+        logo: formValues.logo?.trim() || undefined,
+        banner: formValues.banner?.trim() || undefined,
+        description: formValues.description?.trim() || undefined,
+        businessLicense: formValues.businessLicense?.trim() || undefined,
+        taxCode: formValues.taxCode?.trim() || undefined,
+        bankAccountNumber: formValues.bankAccountNumber?.trim() || undefined,
+        bankName: formValues.bankName?.trim() || undefined,
+        bankAccountHolder: formValues.bankAccountHolder?.trim() || undefined,
+      });
+      setProfile(updatedProfile);
+      setFormValues(createFormValues(updatedProfile));
+      toast.success('Settings updated successfully');
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Unable to save settings'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDiscard = () => {
+    setFormValues(createFormValues(profile));
+  };
+
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <Loading size="lg" text="Loading seller settings..." />
+      <div className="flex min-h-[400px] flex-col items-center justify-center">
+        <Loading size="lg" />
+        <p className="mt-4 text-sm font-medium text-gray-500">Loading your preferences...</p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <div className="rounded-3xl bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-gray-900">Seller settings</h1>
-        <p className="mt-1 text-sm text-gray-500">Keep your shop profile, payout details, and compliance data up to date.</p>
+    <div className="space-y-10 pb-20 animate-in fade-in duration-700">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Store Settings</h1>
+        <p className="text-gray-500">Manage your shop identity, payout methods and preferences.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-        <form onSubmit={formik.handleSubmit} className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <section className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900">Store information</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Input
-                label="Shop name"
-                {...formik.getFieldProps('shopName')}
-                error={formik.touched.shopName ? formik.errors.shopName : undefined}
-              />
-              <div>
-                <label className="mb-1 block text-sm font-medium text-gray-700">Business type</label>
-                <select
-                  name="businessType"
-                  value={formik.values.businessType}
-                  onChange={formik.handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500"
+      <div className="grid grid-cols-1 gap-10 lg:grid-cols-[280px_1fr]">
+        <aside className="space-y-1">
+          {SETTINGS_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={clsx(
+                'flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-bold transition-all',
+                activeTab === tab.id ? 'bg-cyan-50 text-cyan-700' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+              )}
+            >
+              <tab.icon className={clsx('h-5 w-5', activeTab === tab.id ? 'text-cyan-600' : 'text-gray-400')} />
+              {tab.label}
+            </button>
+          ))}
+        </aside>
+
+        <div className="space-y-8">
+          {activeTab === 'profile' && (
+            <div className="space-y-8">
+              <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-sm">
+                <h3 className="text-lg font-bold text-gray-900">Shop Branding</h3>
+                <div className="mt-6 flex flex-col items-center gap-6 sm:flex-row">
+                  <div className="relative group cursor-pointer">
+                    <div className="flex h-32 w-32 items-center justify-center rounded-[2.5rem] bg-slate-900 text-3xl font-bold text-white ring-4 ring-slate-900/5">
+                      {formValues.shopName?.charAt(0) || 'S'}
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center rounded-[2.5rem] bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <CameraIcon className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                  <div className="space-y-4 w-full max-w-xl">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Logo URL</label>
+                      <input
+                        type="text"
+                        value={formValues.logo ?? ''}
+                        onChange={handleInputChange('logo')}
+                        placeholder="https://example.com/logo.png"
+                        className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-gray-700 ml-1">Banner URL</label>
+                      <input
+                        type="text"
+                        value={formValues.banner ?? ''}
+                        onChange={handleInputChange('banner')}
+                        placeholder="https://example.com/banner.png"
+                        className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[2.5rem] border border-gray-100 bg-white p-8 shadow-sm">
+                <h3 className="mb-8 text-lg font-bold text-gray-900">Basic Information</h3>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Shop Name</label>
+                    <input
+                      type="text"
+                      value={formValues.shopName}
+                      onChange={handleInputChange('shopName')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Shop Slug</label>
+                    <div className="flex items-center gap-2 rounded-2xl bg-gray-100 py-3.5 px-5 text-sm font-medium text-gray-500 ring-1 ring-gray-200">
+                      <span>hypermall.com/s/</span>
+                      <span className="font-bold text-gray-900">{profile?.shopSlug || '-'}</span>
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2 space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Store Description</label>
+                    <textarea
+                      rows={4}
+                      value={formValues.description ?? ''}
+                      onChange={handleInputChange('description')}
+                      placeholder="Tell customers about your brand..."
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Business Type</label>
+                    <select
+                      value={formValues.businessType}
+                      onChange={handleInputChange('businessType')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    >
+                      <option value="INDIVIDUAL">Individual</option>
+                      <option value="HOUSEHOLD">Household</option>
+                      <option value="COMPANY">Company</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Business License</label>
+                    <input
+                      type="text"
+                      value={formValues.businessLicense ?? ''}
+                      onChange={handleInputChange('businessLicense')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Tax Code</label>
+                    <input
+                      type="text"
+                      value={formValues.taxCode ?? ''}
+                      onChange={handleInputChange('taxCode')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Bank Name</label>
+                    <input
+                      type="text"
+                      value={formValues.bankName ?? ''}
+                      onChange={handleInputChange('bankName')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Bank Account Holder</label>
+                    <input
+                      type="text"
+                      value={formValues.bankAccountHolder ?? ''}
+                      onChange={handleInputChange('bankAccountHolder')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Bank Account Number</label>
+                    <input
+                      type="text"
+                      value={formValues.bankAccountNumber ?? ''}
+                      onChange={handleInputChange('bankAccountNumber')}
+                      className="w-full rounded-2xl border-none bg-gray-50 py-3.5 px-5 text-sm font-medium ring-1 ring-gray-200 focus:ring-2 focus:ring-cyan-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="outline" className="rounded-2xl px-8" onClick={handleDiscard} disabled={!hasChanges || saving}>
+                  Discard
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  isLoading={saving}
+                  disabled={!hasChanges || saving}
+                  className="rounded-2xl bg-cyan-600 px-10 shadow-lg shadow-cyan-600/20"
                 >
-                  <option value="INDIVIDUAL">INDIVIDUAL</option>
-                  <option value="HOUSEHOLD">HOUSEHOLD</option>
-                  <option value="COMPANY">COMPANY</option>
-                </select>
+                  Save Changes
+                </Button>
               </div>
             </div>
-            <Input
-              label="Logo URL"
-              {...formik.getFieldProps('logo')}
-              error={formik.touched.logo ? formik.errors.logo : undefined}
-            />
-            <Input
-              label="Banner URL"
-              {...formik.getFieldProps('banner')}
-              error={formik.touched.banner ? formik.errors.banner : undefined}
-            />
-            <div>
-              <label htmlFor="description" className="mb-1 block text-sm font-medium text-gray-700">
-                Description
-              </label>
-              <textarea
-                id="description"
-                rows={5}
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary-500"
-                {...formik.getFieldProps('description')}
-              />
-            </div>
-          </section>
+          )}
 
-          <section className="space-y-4 border-t border-gray-100 pt-6">
-            <h2 className="text-lg font-semibold text-gray-900">Compliance + payout</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Input label="Business license" {...formik.getFieldProps('businessLicense')} />
-              <Input label="Tax code" {...formik.getFieldProps('taxCode')} />
-              <Input label="Bank name" {...formik.getFieldProps('bankName')} />
-              <Input label="Account holder" {...formik.getFieldProps('bankAccountHolder')} />
+          {activeTab === 'payment' && (
+            <div className="rounded-[2.5rem] border border-gray-100 bg-white p-12 text-center shadow-sm">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-50">
+                <CreditCardIcon className="h-10 w-10 text-cyan-600" />
+              </div>
+              <h3 className="mt-6 text-xl font-bold text-gray-900">Payout Methods</h3>
+              <p className="mt-2 text-gray-500">Configure how you want to receive your earnings.</p>
+              <Button className="mt-8 rounded-2xl bg-slate-900">Add Bank Account</Button>
             </div>
-            <Input label="Account number" {...formik.getFieldProps('bankAccountNumber')} />
-          </section>
-
-          <div className="flex justify-end border-t border-gray-100 pt-6">
-            <Button type="submit" isLoading={submitting}>Save changes</Button>
-          </div>
-        </form>
-
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Current status</h2>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Status</span>
-                <span className="font-medium text-gray-900">{profile?.status ?? '-'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Rating</span>
-                <span className="font-medium text-gray-900">{profile?.rating?.toFixed(1) ?? '0.0'}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Products</span>
-                <span className="font-medium text-gray-900">{profile?.totalProducts ?? 0}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Followers</span>
-                <span className="font-medium text-gray-900">{profile?.totalFollowers ?? 0}</span>
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-gray-500">Created</span>
-                <span className="font-medium text-gray-900">{profile?.createdAt ? formatDate(profile.createdAt) : '-'}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">Tips</h2>
-            <div className="mt-4 space-y-3 text-sm text-gray-600">
-              <p>• Keep branding assets updated for better trust.</p>
-              <p>• Complete tax and bank fields before requesting payout support.</p>
-              <p>• Review product statuses regularly to keep catalog discoverable.</p>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

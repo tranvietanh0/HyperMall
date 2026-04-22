@@ -12,9 +12,31 @@ echo ""
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+ENV_FILE="$PROJECT_ROOT/backend/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    echo "[ERROR] Missing env file: $ENV_FILE"
+    exit 1
+fi
+
+set -a
+source "$ENV_FILE"
+set +a
+
+if [ -z "$SPRING_PROFILES_ACTIVE" ] || [ -z "$JWT_SECRET" ]; then
+    echo "[ERROR] backend/.env must define SPRING_PROFILES_ACTIVE and JWT_SECRET"
+    exit 1
+fi
+
+export EUREKA_USERNAME="${EUREKA_USERNAME:-eureka}"
+export EUREKA_PASSWORD="${EUREKA_PASSWORD:-eureka123}"
+export CONFIG_USERNAME="${CONFIG_USERNAME:-config}"
+export CONFIG_PASSWORD="${CONFIG_PASSWORD:-config123}"
+export CONFIG_SERVER_USERNAME="${CONFIG_SERVER_USERNAME:-$CONFIG_USERNAME}"
+export CONFIG_SERVER_PASSWORD="${CONFIG_SERVER_PASSWORD:-$CONFIG_PASSWORD}"
+
 # Check Docker is running
 if ! docker info > /dev/null 2>&1; then
-    echo "[ERROR] Docker is not running. Please start Docker first."
+    echo "[ERROR] Docker daemon is not running. Please start Docker Desktop/daemon first."
     exit 1
 fi
 
