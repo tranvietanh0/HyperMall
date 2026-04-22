@@ -121,17 +121,32 @@ export default function SellerDashboardPage() {
       setLoading(true);
       setError('');
       try {
-        const [profileData, dashboardData, productsData, ordersData] = await Promise.all([
-          sellerService.getMySellerProfile(),
+        const profileData = await sellerService.getMySellerProfile();
+        setProfile(profileData);
+
+        const [dashboardResult, productsResult, ordersResult] = await Promise.allSettled([
           sellerService.getSellerDashboard(),
           sellerProductService.getMyProducts(0, 5),
           sellerOrderService.getSellerOrders(0, 5),
         ]);
 
-        setProfile(profileData);
-        setDashboard(dashboardData);
-        setProductCount(productsData.totalElements);
-        setRecentOrders(ordersData.content);
+        if (dashboardResult.status === 'fulfilled') {
+          setDashboard(dashboardResult.value);
+        } else {
+          setDashboard(null);
+        }
+
+        if (productsResult.status === 'fulfilled') {
+          setProductCount(productsResult.value.totalElements);
+        } else {
+          setProductCount(0);
+        }
+
+        if (ordersResult.status === 'fulfilled') {
+          setRecentOrders(ordersResult.value.content);
+        } else {
+          setRecentOrders([]);
+        }
       } catch (err) {
         setError(getErrorMessage(err, 'Unable to load seller dashboard'));
       } finally {

@@ -15,37 +15,74 @@ export function formatNumber(num: number): string {
   return new Intl.NumberFormat('en-US').format(num);
 }
 
+function parseDateValue(date: string | Date): Date | null {
+  if (date instanceof Date) {
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const directDate = new Date(date);
+  if (!Number.isNaN(directDate.getTime())) {
+    return directDate;
+  }
+
+  const match = date.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/);
+  if (!match) {
+    return null;
+  }
+
+  const [, day, month, year, hour = '00', minute = '00', second = '00'] = match;
+  const parsedDate = new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+}
+
 /**
  * Format date to US locale
  */
 export function formatDate(date: string | Date): string {
+  const parsedDate = parseDateValue(date);
+  if (!parsedDate) return '-';
+
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: '2-digit',
     year: 'numeric',
-  }).format(new Date(date));
+  }).format(parsedDate);
 }
 
 /**
  * Format date and time to US locale
  */
 export function formatDateTime(date: string | Date): string {
+  const parsedDate = parseDateValue(date);
+  if (!parsedDate) return '-';
+
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(date));
+  }).format(parsedDate);
 }
 
 /**
  * Format relative time (e.g., "2 hours ago")
  */
 export function formatRelativeTime(date: string | Date): string {
+  const then = parseDateValue(date);
+  if (!then) return 'Just now';
+
   const now = new Date();
-  const then = new Date(date);
   const diffMs = now.getTime() - then.getTime();
+
   const diffSec = Math.floor(diffMs / 1000);
   const diffMin = Math.floor(diffSec / 60);
   const diffHour = Math.floor(diffMin / 60);

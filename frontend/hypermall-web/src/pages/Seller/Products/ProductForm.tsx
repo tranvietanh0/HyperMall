@@ -10,6 +10,13 @@ import { productService, sellerProductService } from '@/services';
 import type { SellerProductFormValues } from '@/types';
 import { getErrorMessage } from '@/utils';
 
+const createSlug = (value: string) => value
+  .trim()
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '')
+  .slice(0, 300);
+
 const productSchema = Yup.object({
   categoryId: Yup.number().required('Please enter a category ID').min(1, 'Category ID must be greater than 0'),
   brandId: Yup.number().nullable().transform((value, originalValue) => (originalValue === '' ? null : value)),
@@ -34,7 +41,7 @@ export default function SellerProductFormPage() {
   const formik = useFormik<SellerProductFormValues>({
     enableReinitialize: true,
     initialValues: {
-      categoryId: 0,
+      categoryId: 1,
       brandId: undefined,
       name: '',
       slug: '',
@@ -52,14 +59,38 @@ export default function SellerProductFormPage() {
     onSubmit: async (values) => {
       setSubmitting(true);
       try {
+        const normalizedImages = values.images
+          ?.filter((image) => image.url.trim().length > 0)
+          .map((image, index) => ({
+            ...image,
+            url: image.url.trim(),
+            sortOrder: image.sortOrder ?? index,
+            isMain: image.isMain ?? index === 0,
+          }));
+
+        const normalizedVariants = values.variants
+          ?.filter((variant) => variant.sku.trim().length > 0 || variant.name.trim().length > 0)
+          .map((variant) => ({
+            ...variant,
+            sku: variant.sku.trim(),
+            name: variant.name.trim(),
+            image: variant.image?.trim() || undefined,
+            salePrice: variant.salePrice || undefined,
+            isActive: variant.isActive ?? true,
+          }));
+
         const payload: SellerProductFormValues = {
           ...values,
+          name: values.name.trim(),
+          slug: values.slug.trim().toLowerCase(),
+          thumbnail: values.thumbnail.trim(),
           brandId: values.brandId || undefined,
-          description: values.description || undefined,
-          shortDescription: values.shortDescription || undefined,
+          description: values.description?.trim() || undefined,
+          shortDescription: values.shortDescription?.trim() || undefined,
           salePrice: values.salePrice || undefined,
-          images: values.images?.length ? values.images : undefined,
-          variants: values.variants?.length ? values.variants : undefined,
+          hasVariants: Boolean(normalizedVariants?.length),
+          images: normalizedImages?.length ? normalizedImages : undefined,
+          variants: normalizedVariants?.length ? normalizedVariants : undefined,
         };
 
         if (isEditMode && id) {
@@ -72,7 +103,7 @@ export default function SellerProductFormPage() {
 
         navigate('/seller/products');
       } catch (error: unknown) {
-        toast.error(getErrorMessage(error, 'Unable to save product'));
+        toast.error(getErrorMessage(error, 'Unable to save product. Slug must be at least 3 characters and use lowercase letters, numbers, or hyphens.'));
       } finally {
         setSubmitting(false);
       }
@@ -151,11 +182,20 @@ export default function SellerProductFormPage() {
             <Input
               label="Product name"
               {...formik.getFieldProps('name')}
+              onChange={(event) => {
+                formik.handleChange(event);
+                if (!isEditMode || !formik.values.slug) {
+                  formik.setFieldValue('slug', createSlug(event.target.value));
+                }
+              }}
               error={formik.touched.name ? formik.errors.name : undefined}
             />
             <Input
               label="Slug"
               {...formik.getFieldProps('slug')}
+              onChange={(event) => {
+                formik.setFieldValue('slug', createSlug(event.target.value));
+              }}
               error={formik.touched.slug ? formik.errors.slug : undefined}
             />
             <Input

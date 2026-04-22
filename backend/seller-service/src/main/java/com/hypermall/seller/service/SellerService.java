@@ -52,7 +52,7 @@ public class SellerService {
                 .bankAccountNumber(request.getBankAccountNumber())
                 .bankName(request.getBankName())
                 .bankAccountHolder(request.getBankAccountHolder())
-                .status(SellerStatus.PENDING)
+                .status(SellerStatus.ACTIVE)
                 .rating(0.0)
                 .totalProducts(0)
                 .totalFollowers(0)

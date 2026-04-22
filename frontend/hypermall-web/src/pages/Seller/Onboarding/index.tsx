@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import toast from 'react-hot-toast';
@@ -29,6 +30,7 @@ const businessTypes: Array<{ value: BusinessType; label: string; description: st
 ];
 
 export default function SellerOnboardingPage() {
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const formik = useFormik<CreateSellerRequest>({
@@ -60,7 +62,7 @@ export default function SellerOnboardingPage() {
           bankAccountHolder: values.bankAccountHolder || undefined,
         });
         toast.success('Seller profile created successfully');
-        window.location.href = '/seller';
+        navigate('/seller');
       } catch (error: unknown) {
         toast.error(getErrorMessage(error, 'Unable to create seller profile'));
       } finally {
@@ -79,9 +81,9 @@ export default function SellerOnboardingPage() {
           <div>
             <p className="text-sm uppercase tracking-[0.2em] text-cyan-300">Seller onboarding</p>
             <h1 className="mt-2 text-3xl font-semibold">Create your store profile</h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-300">
-              Fill out the main business information so HyperMall can review and activate your shop.
-            </p>
+              <p className="mt-2 max-w-2xl text-sm text-slate-300">
+                Fill out the main business information to create and activate your shop instantly.
+              </p>
           </div>
         </div>
       </div>
